@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Dark surfaces */
+  --hero-bg:      #0F0F0E;
+  --hero-surface: #1A1A18;
+  --hero-border:  rgba(255,255,255,0.08);
+  --hero-text:    #F5F5F3;
+  --hero-muted:   rgba(245,245,243,0.50);
+  --hero-accent:  #C8C8BE;
+
+  /* Light surfaces */
+  --ink:          #0F0F0E;
+  --ink-2:        #1A1A18;
+  --ink-3:        #3D3D3A;
+  --ink-4:        #6B6B66;
+  --ink-5:        #9A9A94;
+  --surface:      #FAFAF9;
+  --surface-2:    #F4F4F2;
+  --surface-3:    #EEEEED;
+  --border:       rgba(15,15,14,0.10);
+  --border-2:     rgba(15,15,14,0.18);
+  --accent-light: #F0EFE8;
+
+  /* Status */
+  --win:          #2D6A27;
+  --win-bg:       #EDF5EB;
+  --win-border:   #B8D8B2;
+  --alert:        #B86A14;
+  --alert-bg:     #FFF5E6;
+  --alert-border: #F0C878;
+  --danger:       #B83A2A;
+  --danger-bg:    #FEF0EE;
+  --info:         #1A4A8A;
+  --info-bg:      #EAF0FF;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Geist', sans-serif;
+  background: var(--surface);
+  color: var(--ink-3);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input::placeholder {
+  color: var(--ink-5);
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
