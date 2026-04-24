@@ -1,16 +1,11 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { useAuth } from '../hooks/useAuth'
 
 export default function LoginPage() {
-  const { session, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
-
-  if (!authLoading && session) return <Navigate to="/dashboard" replace />
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -18,7 +13,7 @@ export default function LoginPage() {
     setError('')
     const { error: err } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${import.meta.env.VITE_APP_URL ?? window.location.origin}/dashboard` },
+      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
     })
     setLoading(false)
     if (err) {

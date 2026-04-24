@@ -162,7 +162,7 @@ function BeforePanel() {
             ...sans, fontSize: 11, color: '#64748B',
             fontStyle: 'italic', lineHeight: 1.55,
           }}>
-            &quot;Traffic was down month over month. Paid continued to perform. Let us know if you have any questions — happy to jump on a call to walk through the numbers.&quot;
+            "Traffic was down month over month. Paid continued to perform. Let us know if you have any questions — happy to jump on a call to walk through the numbers."
           </div>
 
           {/* Pain tags */}
@@ -210,9 +210,9 @@ function AfterPanel() {
               <div style={{
                 ...serif, fontSize: 12.5, fontStyle: 'italic',
                 lineHeight: 1.65, color: '#1E293B',
-                borderLeft: '2px solid #2563EB', paddingLeft: 10,
+                borderLeft: '2px solid #2563EB', paddingLeft: 10, borderRadius: 0,
               }}>
-                &quot;April&apos;s paid campaigns delivered your best conversion rate in five months at 5.1%, adding 135 more booked jobs than March. Organic softened 18% following a Google core update affecting local service pages across Dallas — the affected pages are identified and repair begins this week. The retainer is earning its return on paid; organic is the near-term watch item.&quot;
+                "April's paid campaigns delivered your best conversion rate in five months at 5.1%, adding 135 more booked jobs than March. Organic softened 18% following a Google core update affecting local service pages across Dallas — the affected pages are identified and repair begins this week. The retainer is earning its return on paid; organic is the near-term watch item."
               </div>
             </div>
 
@@ -274,13 +274,13 @@ function AfterPanel() {
           <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 8 }}>
 
             {/* Watch for */}
-            <div style={{ borderLeft: '2px solid #D97706', background: '#FFFBEB', padding: '8px 10px' }}>
+            <div style={{ borderLeft: '2px solid #D97706', borderRadius: 0, background: '#FFFBEB', padding: '8px 10px' }}>
               <div style={{ ...sans, fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.10em', color: '#B45309', marginBottom: 3 }}>Watch for</div>
               <div style={{ ...sans, fontSize: 11, lineHeight: 1.5, color: '#78350F' }}>Organic down 18% — they will open with this. Have the Google core update explanation ready before they ask.</div>
             </div>
 
             {/* Lead with */}
-            <div style={{ borderLeft: '2px solid #15803D', background: '#F0FDF4', padding: '8px 10px' }}>
+            <div style={{ borderLeft: '2px solid #15803D', borderRadius: 0, background: '#F0FDF4', padding: '8px 10px' }}>
               <div style={{ ...sans, fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.10em', color: '#15803D', marginBottom: 3 }}>Lead with</div>
               <div style={{ ...sans, fontSize: 11, lineHeight: 1.5, color: '#14532D' }}>Best conversion rate in 5 months. Paid added 135 more booked jobs vs. March despite fewer clicks.</div>
             </div>
@@ -289,7 +289,7 @@ function AfterPanel() {
             <div style={{ border: '1px solid #DBEAFE', borderRadius: 6, background: '#EFF6FF', padding: '8px 10px' }}>
               <div style={{ ...sans, fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.10em', color: '#3B82F6', marginBottom: 4 }}>Suggested script</div>
               <div style={{ ...serif, fontSize: 12, fontStyle: 'italic', lineHeight: 1.6, color: '#1E3A5F' }}>
-                &quot;Before we get into the organic numbers — your paid campaigns just hit the best conversion rate we&apos;ve seen all year. I want to make sure we cover that first.&quot;
+                "Before we get into the organic numbers — your paid campaigns just hit the best conversion rate we've seen all year. I want to make sure we cover that first."
               </div>
             </div>
 

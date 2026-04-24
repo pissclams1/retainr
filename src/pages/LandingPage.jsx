@@ -335,15 +335,14 @@ export default function LandingPage() {
               Agency intelligence platform
             </div>
             <h1 style={S.heroHeadline}>
-              Always prepared for<br />
-              the <span style={S.heroItalic}>hardest version</span><br />
-              of the call.
+              Know every client<br />
+              <span style={S.heroItalic}>before</span> they call.
             </h1>
             <p style={S.heroSub}>
-              Retainr connects to your clients' GA4 accounts, generates
-              branded monthly reports, and prepares your account managers
-              with a private briefing card — surfacing the concern first,
-              the strongest win second.
+              Retainr connects to your clients' GA4 accounts and automatically
+              generates two things: a branded report that justifies the retainer,
+              and a private briefing card that tells your account manager exactly
+              what the client will challenge — before they pick up the phone.
             </p>
             <div style={S.heroCTAs}>
               <Link to="/login" style={S.ctaPrimary}>Get started free →</Link>
@@ -372,7 +371,7 @@ export default function LandingPage() {
           {[
             { num: '2 min', label: 'Average briefing generation time' },
             { num: '100%', label: 'Of account managers feel more prepared' },
-            { num: '0', label: "Surprise client calls you won't be ready for" },
+            { num: '0', label: 'Surprise client calls you won\'t be ready for' },
           ].map((s, i) => (
             <div key={i} style={{
               ...S.statItem,
@@ -405,7 +404,7 @@ export default function LandingPage() {
               <div style={S.outputTitle}>Branded Monthly Report</div>
               <p style={S.outputDesc}>
                 A white-labeled report designed to justify the retainer and
-                survive the client&apos;s internal budget review. Your agency name,
+                survive the client's internal budget review. Your agency name,
                 your brand color — delivered as a shareable link.
               </p>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -542,11 +541,11 @@ export default function LandingPage() {
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <div style={{ ...S.sectionEyebrow, color: 'rgba(245,245,243,0.50)' }}>Start today</div>
           <h2 style={S.ctaHeadline}>
-            Never be caught<br />
-            <span style={{ fontStyle: 'italic', color: '#C8C8BE' }}>off-guard</span> again.
+            Know every client<br />
+            <span style={{ fontStyle: 'italic', color: '#C8C8BE' }}>before</span> they call.
           </h2>
           <p style={S.ctaSub}>
-            Connect your first client in under 10 minutes. First report and briefing generate automatically.
+            Connect your first client in under 10 minutes. The first report and briefing card generate automatically.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
             <Link to="/login" style={S.ctaPrimary}>Get started free →</Link>

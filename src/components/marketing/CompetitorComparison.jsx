@@ -52,7 +52,7 @@ const features = [
       { name: 'Pre-call briefing card', desc: 'Private, internal, per-client', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
       { name: 'Concern surfaced first', desc: 'The metric client will challenge, upfront', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
       { name: 'Suggested call script', desc: 'Written, ready to speak aloud', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
-      { name: 'Commitments tracker', desc: "What you promised, what's overdue", retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
+      { name: 'Commitments tracker', desc: 'What you promised, what\'s overdue', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
       { name: 'Account health score', desc: '0–100, computed daily', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
     ],
   },
@@ -98,7 +98,7 @@ export default function CompetitorComparison() {
           Already paying for a reporting tool?
         </h2>
         <p style={{ ...sans, fontSize: 14, color: '#6B6B66', lineHeight: 1.6, maxWidth: 560 }}>
-          Here&apos;s what you&apos;re getting — and what&apos;s still missing. The tools below automate the report.
+          Here's what you're getting — and what's still missing. The tools below automate the report.
           None of them prepare the person sending it.
         </p>
       </div>
@@ -221,7 +221,7 @@ export default function CompetitorComparison() {
           </div>
           <div style={{ ...sans, fontSize: 11, color: '#3B5A8A', lineHeight: 1.55 }}>
             Connect your first GA4 client, and retainr generates the initial report and briefing card immediately.
-            No template setup, no dashboard building. If it doesn&apos;t change how you walk into client calls, cancel — no questions asked.
+            No template setup, no dashboard building. If it doesn't change how you walk into client calls, cancel — no questions asked.
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
             {['No template setup', 'First report in minutes', 'Cancel anytime', 'No credit card to start'].map((t) => (

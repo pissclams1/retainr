@@ -1,73 +1,71 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
+const APP_ROUTES = ['/dashboard', '/clients', '/reports', '/alerts', '/billing']
+
 export default function AppBar() {
-  const navigate = useNavigate()
+  const location = useLocation()
+  const isAppRoute = APP_ROUTES.some(r => location.pathname.startsWith(r))
+
+  if (!isAppRoute) return null
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
-    navigate('/login')
+    window.location.href = '/'
   }
 
   return (
     <header style={{
-      height: '52px',
-      background: 'white',
-      borderBottom: '1px solid var(--border)',
-      display: 'flex',
-      alignItems: 'center',
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+      height: 52,
+      background: '#FAFAF9',
+      borderBottom: '1px solid rgba(15,15,14,0.10)',
+      display: 'flex', alignItems: 'center',
       justifyContent: 'space-between',
       padding: '0 24px',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '28px' }}>
-        <span style={{ fontFamily: 'Instrument Serif, serif', fontSize: '20px', color: 'var(--ink)', letterSpacing: '-0.3px' }}>
-          retainr
-        </span>
-        <nav style={{ display: 'flex', gap: '2px' }}>
-          {[
-            { to: '/dashboard', label: 'Dashboard' },
-            { to: '/clients',   label: 'Clients' },
-            { to: '/reports',   label: 'Reports' },
-            { to: '/alerts',    label: 'Alerts' },
-            { to: '/billing',   label: 'Billing' },
-          ].map(({ to, label }) => (
-            <NavLink
-              key={to}
-              to={to}
-              style={({ isActive }) => ({
-                fontFamily: 'Geist, sans-serif',
-                fontSize: '13px',
-                fontWeight: isActive ? 500 : 400,
-                color: isActive ? 'var(--ink-2)' : 'var(--ink-4)',
-                padding: '6px 10px',
-                borderRadius: '6px',
-                textDecoration: 'none',
-                background: isActive ? 'var(--surface-2)' : 'transparent',
-              })}
-            >
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-      </div>
+      <Link to="/dashboard" style={{
+        fontFamily: "'Instrument Serif', serif",
+        fontSize: 20, fontWeight: 400,
+        color: '#1A1A18', letterSpacing: '-0.3px',
+        textDecoration: 'none',
+      }}>
+        retainr
+      </Link>
 
-      <button
-        onClick={handleSignOut}
-        style={{
-          background: 'transparent',
-          border: 'none',
-          fontFamily: 'Geist, sans-serif',
-          fontSize: '13px',
-          color: 'var(--ink-4)',
-          cursor: 'pointer',
-          padding: '6px 10px',
-        }}
-      >
-        Sign out
-      </button>
+      <nav style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        {[
+          { label: 'Dashboard', to: '/dashboard' },
+          { label: 'Clients', to: '/clients' },
+          { label: 'Alerts', to: '/alerts' },
+          { label: 'Billing', to: '/billing' },
+        ].map(({ label, to }) => (
+          <Link key={to} to={to} style={{
+            fontFamily: "'Geist', sans-serif",
+            fontSize: 13, fontWeight: 400,
+            color: location.pathname.startsWith(to) ? '#1A1A18' : '#6B6B66',
+            fontWeight: location.pathname.startsWith(to) ? 500 : 400,
+            padding: '6px 10px', borderRadius: 6,
+            textDecoration: 'none',
+            background: location.pathname.startsWith(to) ? '#F0EFE8' : 'transparent',
+          }}>
+            {label}
+          </Link>
+        ))}
+        <button
+          onClick={handleSignOut}
+          style={{
+            fontFamily: "'Geist', sans-serif",
+            fontSize: 13, fontWeight: 500,
+            color: '#6B6B66', background: 'transparent',
+            border: '1px solid rgba(15,15,14,0.18)',
+            padding: '6px 14px', borderRadius: 7,
+            cursor: 'pointer', marginLeft: 8,
+          }}
+        >
+          Sign out
+        </button>
+      </nav>
     </header>
   )
 }
