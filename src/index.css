@@ -45,7 +45,7 @@
 
 body {
   font-family: 'Geist', sans-serif;
-  background: var(--surface);
+  background: #ffffff;
   color: var(--ink-3);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

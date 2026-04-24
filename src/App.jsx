@@ -8,6 +8,7 @@ import ClientDetailPage from './pages/ClientDetailPage'
 import GoogleCallbackPage from './pages/GoogleCallbackPage'
 import ReportViewPage from './pages/ReportViewPage'
 import BillingPage from './pages/BillingPage'
+import LandingPage from './pages/LandingPage'
 
 function AppLayout({ children }) {
   return (
@@ -35,7 +36,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
         <Route path="/r/:id" element={<ReportViewPage />} />
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<LandingPage />} />
 
         <Route path="/dashboard" element={
           <AuthGuard><AppLayout><DashboardPage /></AppLayout></AuthGuard>

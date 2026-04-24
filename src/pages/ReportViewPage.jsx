@@ -98,7 +98,7 @@ export default function ReportViewPage() {
 
 function Shell({ children }) {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--surface)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: '#ffffff', display: 'flex', flexDirection: 'column' }}>
       {children}
     </div>
   )

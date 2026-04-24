@@ -4,64 +4,119 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 
 export default function LoginPage() {
-  const { session, loading } = useAuth()
-  const [email, setEmail]   = useState('')
-  const [sending, setSending] = useState(false)
-  const [sent, setSent]     = useState(false)
-  const [error, setError]   = useState(null)
+  const { session, loading: authLoading } = useAuth()
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
 
-  if (!loading && session) return <Navigate to="/dashboard" replace />
+  if (!authLoading && session) return <Navigate to="/dashboard" replace />
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setSending(true)
-    setError(null)
-
-    const { error } = await supabase.auth.signInWithOtp({
+    setLoading(true)
+    setError('')
+    const { error: err } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: `${import.meta.env.VITE_APP_URL ?? window.location.origin}/dashboard` },
     })
-
-    if (error) setError(error.message)
-    else setSent(true)
-
-    setSending(false)
-  }
-
-  const inputStyle = {
-    width: '100%',
-    height: '42px',
-    background: 'var(--hero-surface)',
-    border: '1px solid var(--hero-border)',
-    borderRadius: '7px',
-    padding: '8px 14px',
-    fontFamily: 'Geist, sans-serif',
-    fontSize: '14px',
-    color: 'var(--hero-text)',
-    outline: 'none',
+    setLoading(false)
+    if (err) {
+      setError(err.message)
+    } else {
+      setSent(true)
+    }
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--hero-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div style={{ width: '100%', maxWidth: '360px' }}>
+    <div style={{
+      minHeight: '100vh',
+      background: '#0F0F0E',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+      fontFamily: "'Geist', sans-serif",
+    }}>
 
-        {/* Logo */}
-        <p style={{ fontFamily: 'Instrument Serif, serif', fontSize: '26px', color: 'var(--hero-text)', letterSpacing: '-0.3px', marginBottom: '52px', textAlign: 'center' }}>
-          retainr
-        </p>
+      {/* Logo */}
+      <a href="/" style={{
+        fontFamily: "'Instrument Serif', serif",
+        fontSize: 22,
+        color: '#F5F5F3',
+        letterSpacing: '-0.3px',
+        textDecoration: 'none',
+        marginBottom: 48,
+        display: 'block',
+      }}>
+        retainr
+      </a>
 
-        {!sent ? (
+      {/* Card */}
+      <div style={{
+        width: '100%',
+        maxWidth: 360,
+        background: '#1A1A18',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 14,
+        padding: 32,
+      }}>
+
+        {sent ? (
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: '50%',
+              background: 'rgba(45,106,39,0.15)',
+              border: '1px solid rgba(45,106,39,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 20px',
+              fontSize: 20,
+            }}>
+              ✓
+            </div>
+            <h2 style={{
+              fontFamily: "'Instrument Serif', serif",
+              fontSize: 24, fontWeight: 400,
+              color: '#F5F5F3', marginBottom: 10,
+            }}>
+              Check your email
+            </h2>
+            <p style={{
+              fontSize: 14, fontWeight: 300,
+              color: 'rgba(245,245,243,0.50)',
+              lineHeight: 1.6,
+            }}>
+              We sent a magic link to <strong style={{ color: 'rgba(245,245,243,0.75)', fontWeight: 500 }}>{email}</strong>.
+              Click it to sign in — no password needed.
+            </p>
+          </div>
+        ) : (
           <>
-            <h1 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '28px', color: 'var(--hero-text)', lineHeight: 1.15, marginBottom: '8px' }}>
+            <h1 style={{
+              fontFamily: "'Instrument Serif', serif",
+              fontSize: 28, fontWeight: 400,
+              color: '#F5F5F3', marginBottom: 8,
+            }}>
               Sign in
             </h1>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '14px', fontWeight: 300, color: 'var(--hero-muted)', lineHeight: 1.6, marginBottom: '32px' }}>
-              Enter your email and we'll send a magic link. No password needed.
+            <p style={{
+              fontSize: 14, fontWeight: 300,
+              color: 'rgba(245,245,243,0.50)',
+              lineHeight: 1.6, marginBottom: 28,
+            }}>
+              Enter your email and we'll send a magic link. First time? Your account is created automatically.
             </p>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <div>
-                <label style={{ display: 'block', fontFamily: 'Geist, sans-serif', fontSize: '11px', fontWeight: 600, color: 'rgba(245,245,243,0.40)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '6px' }}>
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{
+                  fontFamily: "'Geist', sans-serif",
+                  fontSize: 11, fontWeight: 600,
+                  textTransform: 'uppercase', letterSpacing: '0.12em',
+                  color: 'rgba(245,245,243,0.50)',
+                  display: 'block', marginBottom: 6,
+                }}>
                   Email address
                 </label>
                 <input
@@ -70,78 +125,82 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@youragency.com"
                   required
-                  style={inputStyle}
-                  onFocus={(e) => { e.target.style.borderColor = 'rgba(255,255,255,0.20)' }}
-                  onBlur={(e)  => { e.target.style.borderColor = 'var(--hero-border)' }}
+                  style={{
+                    width: '100%',
+                    height: 40,
+                    background: '#0F0F0E',
+                    border: error
+                      ? '1px solid rgba(184,58,42,0.6)'
+                      : '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: 7,
+                    padding: '0 12px',
+                    fontFamily: "'Geist', sans-serif",
+                    fontSize: 13,
+                    color: '#F5F5F3',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = 'rgba(255,255,255,0.30)'
+                    e.target.style.boxShadow = '0 0 0 3px rgba(255,255,255,0.04)'
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = error
+                      ? 'rgba(184,58,42,0.6)'
+                      : 'rgba(255,255,255,0.12)'
+                    e.target.style.boxShadow = 'none'
+                  }}
                 />
+                {error && (
+                  <p style={{
+                    fontFamily: "'Geist', sans-serif",
+                    fontSize: 11, color: '#B83A2A',
+                    marginTop: 6,
+                  }}>
+                    {error}
+                  </p>
+                )}
               </div>
-
-              {error && (
-                <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '12px', color: '#F87171' }}>{error}</p>
-              )}
 
               <button
                 type="submit"
-                disabled={sending || !email}
+                disabled={loading || !email}
                 style={{
                   width: '100%',
-                  height: '42px',
-                  marginTop: '4px',
-                  background: 'var(--hero-text)',
-                  color: 'var(--hero-bg)',
+                  height: 40,
+                  background: loading || !email
+                    ? 'rgba(245,245,243,0.25)'
+                    : '#F5F5F3',
+                  color: loading || !email ? 'rgba(15,15,14,0.4)' : '#0F0F0E',
                   border: 'none',
-                  borderRadius: '7px',
-                  fontFamily: 'Geist, sans-serif',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  cursor: (sending || !email) ? 'not-allowed' : 'pointer',
-                  opacity: (sending || !email) ? 0.6 : 1,
-                  transition: 'opacity 0.15s ease',
+                  borderRadius: 7,
+                  fontFamily: "'Geist', sans-serif",
+                  fontSize: 13, fontWeight: 500,
+                  cursor: loading || !email ? 'not-allowed' : 'pointer',
+                  transition: 'opacity 0.15s',
                 }}
               >
-                {sending ? 'Sending…' : 'Send magic link'}
+                {loading ? 'Sending…' : 'Send magic link'}
               </button>
             </form>
           </>
-        ) : (
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'var(--hero-surface)', border: '1px solid var(--hero-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-              <span style={{ fontSize: '20px' }}>✉</span>
-            </div>
-            <h1 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '28px', color: 'var(--hero-text)', lineHeight: 1.15, marginBottom: '12px' }}>
-              Check your inbox
-            </h1>
-            <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '14px', fontWeight: 300, color: 'var(--hero-muted)', lineHeight: 1.6, marginBottom: '32px' }}>
-              Magic link sent to{' '}
-              <span style={{ color: 'var(--hero-accent)', fontWeight: 400 }}>{email}</span>.
-              <br />Click it to sign in — no password needed.
-            </p>
-            <button
-              onClick={() => { setSent(false); setEmail('') }}
-              style={{
-                background: 'transparent',
-                border: '1px solid var(--hero-border)',
-                borderRadius: '7px',
-                padding: '8px 16px',
-                fontFamily: 'Geist, sans-serif',
-                fontSize: '13px',
-                fontWeight: 500,
-                color: 'var(--hero-muted)',
-                cursor: 'pointer',
-              }}
-            >
-              Use a different email
-            </button>
-          </div>
         )}
-
-        <p style={{ marginTop: '52px', textAlign: 'center', fontFamily: 'Geist, sans-serif', fontSize: '12px', color: 'var(--hero-muted)' }}>
-          New agency?{' '}
-          <a href="mailto:hello@retainr.io" style={{ color: 'var(--hero-accent)', textDecoration: 'none' }}>
-            Get in touch
-          </a>
-        </p>
       </div>
+
+      {/* Footer */}
+      <p style={{
+        marginTop: 32,
+        fontFamily: "'Geist', sans-serif",
+        fontSize: 12, fontWeight: 300,
+        color: 'rgba(245,245,243,0.28)',
+        textAlign: 'center',
+      }}>
+        By continuing you agree to our{' '}
+        <a href="/terms" style={{ color: 'rgba(245,245,243,0.45)', textDecoration: 'none' }}>terms</a>
+        {' '}and{' '}
+        <a href="/privacy" style={{ color: 'rgba(245,245,243,0.45)', textDecoration: 'none' }}>privacy policy</a>
+      </p>
+
     </div>
   )
 }

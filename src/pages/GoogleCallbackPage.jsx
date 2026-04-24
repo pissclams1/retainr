@@ -66,7 +66,7 @@ export default function GoogleCallbackPage() {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: 'var(--surface)',
+    background: '#ffffff',
     padding: '24px',
   }
 
