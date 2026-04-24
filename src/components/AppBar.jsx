@@ -42,7 +42,7 @@ export default function AppBar() {
         ].map(({ label, to }) => (
           <Link key={to} to={to} style={{
             fontFamily: "'Geist', sans-serif",
-            fontSize: 13, fontWeight: 400,
+            fontSize: 13,
             color: location.pathname.startsWith(to) ? '#1A1A18' : '#6B6B66',
             fontWeight: location.pathname.startsWith(to) ? 500 : 400,
             padding: '6px 10px', borderRadius: 6,
