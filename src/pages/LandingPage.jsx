@@ -319,6 +319,7 @@ export default function LandingPage() {
         <a href="/" style={S.navLogo}>retainr</a>
         <div style={S.navLinks}>
           <a href="#how-it-works" style={S.navLink}>Features</a>
+          <a href="#comparison" style={S.navLink}>Compare</a>
           <a href="#pricing" style={S.navLink}>Pricing</a>
           <Link to="/login" style={S.navCTA}>Sign in</Link>
         </div>
