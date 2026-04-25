@@ -374,7 +374,10 @@ export default function HeroTransformation() {
   }
 
   return (
-    <div style={{ background: '#FAFAF9', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: 16, overflow: 'hidden' }}>
+    <div
+      style={{ background: '#FAFAF9', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: 16, overflow: 'hidden', cursor: 'pointer' }}
+      onClick={() => document.getElementById('comparison')?.scrollIntoView({ behavior: 'smooth' })}
+    >
 
       {/* Toggle row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
