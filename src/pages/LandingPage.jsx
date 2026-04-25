@@ -3,7 +3,7 @@ import HeroTransformation from '../components/marketing/HeroTransformation'
 import CompetitorComparison from '../components/marketing/CompetitorComparison'
 
 const S = {
-  serif: { fontFamily: "'Instrument Serif', serif" },
+  serif: { fontFamily: "'Bricolage Grotesque', sans-serif" },
   sans: { fontFamily: "'Geist', sans-serif" },
 
   nav: {
@@ -15,7 +15,7 @@ const S = {
     borderBottom: '1px solid rgba(15,15,14,0.08)',
   },
   navLogo: {
-    fontFamily: "'Instrument Serif', serif",
+    fontFamily: "'Bricolage Grotesque', sans-serif",
     fontSize: 20, color: '#0F0F0E', letterSpacing: '-0.3px', textDecoration: 'none',
   },
   navLinks: { display: 'flex', alignItems: 'center', gap: 4 },
@@ -48,7 +48,7 @@ const S = {
   },
   heroDot: { width: 5, height: 5, borderRadius: '50%', background: '#0F0F0E', opacity: 0.4, flexShrink: 0 },
   heroHeadline: {
-    fontFamily: "'Instrument Serif', serif",
+    fontFamily: "'Bricolage Grotesque', sans-serif",
     fontSize: 56, fontWeight: 400, lineHeight: 1.06, letterSpacing: '-0.5px',
     color: '#0F0F0E', marginBottom: 18,
   },
@@ -101,7 +101,7 @@ const S = {
     padding: '0 32px', borderRight: '1px solid rgba(15,15,14,0.10)', textAlign: 'center',
   },
   statNumber: {
-    fontFamily: "'Instrument Serif', serif",
+    fontFamily: "'Bricolage Grotesque', sans-serif",
     fontSize: 36, color: '#0F0F0E', lineHeight: 1, marginBottom: 6,
   },
   statLabel: { fontFamily: "'Geist', sans-serif", fontSize: 11, fontWeight: 300, color: '#6B6B66' },
@@ -115,7 +115,7 @@ const S = {
     color: '#9A9A94', marginBottom: 16, textAlign: 'center',
   },
   sectionHeadline: {
-    fontFamily: "'Instrument Serif', serif",
+    fontFamily: "'Bricolage Grotesque', sans-serif",
     fontSize: 34, fontWeight: 400, lineHeight: 1.15, letterSpacing: '-0.3px',
     color: '#1A1A18', textAlign: 'center', marginBottom: 12,
   },
@@ -137,7 +137,7 @@ const S = {
     padding: '4px 10px', borderRadius: 20, marginBottom: 16,
   },
   outputTitle: {
-    fontFamily: "'Instrument Serif', serif",
+    fontFamily: "'Bricolage Grotesque', sans-serif",
     fontSize: 22, color: '#1A1A18', marginBottom: 10, lineHeight: 1.2,
   },
   outputDesc: {
@@ -152,7 +152,7 @@ const S = {
   },
   stepItem: { padding: '32px 28px', background: '#FAFAF9' },
   stepNum: {
-    fontFamily: "'Instrument Serif', serif",
+    fontFamily: "'Bricolage Grotesque', sans-serif",
     fontSize: 48, color: 'rgba(15,15,14,0.07)', lineHeight: 1, marginBottom: 20,
   },
   stepTitle: { fontFamily: "'Geist', sans-serif", fontSize: 16, fontWeight: 500, color: '#1A1A18', marginBottom: 8 },
@@ -181,7 +181,7 @@ const S = {
     fontFamily: "'Geist', sans-serif", fontSize: 12, fontWeight: 600,
     letterSpacing: '0.08em', textTransform: 'uppercase', color: '#9A9A94', marginBottom: 12,
   },
-  priceAmount: { fontFamily: "'Instrument Serif', serif", fontSize: 42, color: '#1A1A18', lineHeight: 1, marginBottom: 4 },
+  priceAmount: { fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: 42, color: '#1A1A18', lineHeight: 1, marginBottom: 4 },
   priceCadence: { fontFamily: "'Geist', sans-serif", fontSize: 12, fontWeight: 300, color: '#6B6B66', marginBottom: 6 },
   priceClients: {
     fontFamily: "'Geist', sans-serif", fontSize: 12, fontWeight: 500, color: '#3D3D3A',
@@ -200,7 +200,7 @@ const S = {
     textAlign: 'center', padding: '96px 24px',
   },
   ctaHeadline: {
-    fontFamily: "'Instrument Serif', serif",
+    fontFamily: "'Bricolage Grotesque', sans-serif",
     fontSize: 42, fontWeight: 400, color: '#F5F5F3',
     lineHeight: 1.1, letterSpacing: '-0.5px', marginBottom: 14,
   },
@@ -226,7 +226,7 @@ const S = {
     background: '#0F0F0E', borderTop: '1px solid rgba(255,255,255,0.08)',
     padding: '24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
   },
-  footerLogo: { fontFamily: "'Instrument Serif', serif", fontSize: 16, color: '#F5F5F3', letterSpacing: '-0.3px' },
+  footerLogo: { fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: 16, color: '#F5F5F3', letterSpacing: '-0.3px' },
   footerCopy: { fontFamily: "'Geist', sans-serif", fontSize: 12, fontWeight: 300, color: 'rgba(245,245,243,0.28)' },
   footerLink: { fontFamily: "'Geist', sans-serif", fontSize: 12, fontWeight: 400, color: 'rgba(245,245,243,0.50)', textDecoration: 'none' },
 }
