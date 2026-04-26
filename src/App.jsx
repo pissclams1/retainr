@@ -11,6 +11,7 @@ import BillingPage from './pages/BillingPage'
 import LandingPage from './pages/LandingPage'
 import OnboardingPage from './pages/OnboardingPage'
 import CheckoutPage from './pages/CheckoutPage'
+import { PrivacyPage, TermsPage, SecurityPage, SupportPage } from './pages/LegalPages'
 
 function Placeholder({ label }) {
   return (
@@ -40,6 +41,10 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/privacy"  element={<PrivacyPage />} />
+        <Route path="/terms"    element={<TermsPage />} />
+        <Route path="/security" element={<SecurityPage />} />
+        <Route path="/support"  element={<SupportPage />} />
         <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
         <Route path="/r/:id" element={<ReportViewPage />} />
         <Route path="/dashboard" element={

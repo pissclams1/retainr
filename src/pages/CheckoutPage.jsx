@@ -5,9 +5,9 @@ const serif = { fontFamily: "'Instrument Serif', serif" }
 const sans = { fontFamily: "'Geist', sans-serif" }
 
 const PLANS = {
-  starter: { tier: 'Starter', monthly: 149, yearly: 119, blurb: 'For small agencies standardizing client communication' },
-  growth:  { tier: 'Growth',  monthly: 399, yearly: 319, blurb: 'For teams with multiple account managers' },
-  agency:  { tier: 'Agency',  monthly: 999, yearly: 799, blurb: 'For agencies scaling communication consistency' },
+  growth: { tier: 'Growth',     monthly: 199, yearly: 159, blurb: 'Up to 10 client accounts' },
+  pro:    { tier: 'Pro Agency', monthly: 499, yearly: 399, blurb: 'Up to 30 client accounts' },
+  scale:  { tier: 'Scale',      monthly: 999, yearly: 799, blurb: 'Up to 75 client accounts' },
 }
 
 /* ─── styles ─── */
@@ -85,7 +85,7 @@ function PlanStep({ planKey, setPlanKey, onNext }) {
     <div style={card}>
       <div style={eyebrow}>Step 1 of 4</div>
       <h1 style={title}>Choose your plan</h1>
-      <p style={sub}>You can change or cancel any time.</p>
+      <p style={sub}>14-day free trial. No credit card required to start.</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {Object.entries(PLANS).map(([key, p]) => {

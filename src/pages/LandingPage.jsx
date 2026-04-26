@@ -363,7 +363,8 @@ export default function LandingPage() {
               <span style={S.heroItalic}>high-performing</span> communicator.
             </h1>
             <p style={S.heroSub}>
-              Turn Google Ads data into clear, client-ready communication across your team.
+              Turn Google Ads performance data into client-ready updates,
+              explanations, and talking points in seconds.
             </p>
             <div style={S.heroCTAs}>
               <Link to="/login" style={S.ctaPrimary}>Start Free Trial →</Link>
@@ -409,7 +410,7 @@ export default function LandingPage() {
       {/* TWO OUTPUTS */}
       <section style={S.section} id="outputs">
         <div style={S.sectionInner}>
-          <div style={S.sectionEyebrow}>Performance communication system</div>
+          <div style={S.sectionEyebrow}>What this replaces</div>
           <h2 style={S.sectionHeadline}>
             Not a dashboard.<br />
             Not reporting <span style={S.sectionItalic}>software.</span>
@@ -477,12 +478,12 @@ export default function LandingPage() {
       {/* HOW IT WORKS */}
       <section style={S.sectionAlt} id="how-it-works">
         <div style={S.sectionInner}>
-          <div style={S.sectionEyebrow}>How it works</div>
+          <div style={S.sectionEyebrow}>Why agencies use it</div>
           <h2 style={S.sectionHeadline}>
             Connected on Monday.<br />
             <span style={S.sectionItalic}>Prepared</span> by Tuesday.
           </h2>
-          <p style={S.sectionSub}>Three steps to a fully automated reporting and briefing workflow.</p>
+          <p style={S.sectionSub}>Three steps to a fully automated client communication workflow.</p>
           <div style={S.stepsGrid}>
             {[
               {
@@ -520,7 +521,7 @@ export default function LandingPage() {
         <div style={S.sectionInner}>
           <div style={S.sectionEyebrow}>Pricing</div>
           <h2 style={S.sectionHeadline}>Scales with your agency.</h2>
-          <p style={S.sectionSub}>One flat fee per tier. No per-report charges, no hidden costs.</p>
+          <p style={S.sectionSub}>14-day free trial. No credit card required. Cancel any time.</p>
 
           {/* Billing period toggle */}
           <BillingToggle billing={billing} setBilling={setBilling} />
@@ -528,9 +529,9 @@ export default function LandingPage() {
           <div style={S.pricingGrid}>
 
             {[
-              { tier: 'Starter', monthly: 149, yearly: 119, clients: 'For small agencies standardizing client communication', featured: false },
-              { tier: 'Growth', monthly: 399, yearly: 319, clients: 'For teams with multiple account managers who need consistent client reporting quality', featured: true },
-              { tier: 'Agency', monthly: 999, yearly: 799, clients: 'For agencies scaling communication consistency across all clients and account managers', featured: false },
+              { key: 'growth', tier: 'Growth',     monthly: 199, yearly: 159, clients: 'Up to 10 client accounts', featured: false },
+              { key: 'pro',    tier: 'Pro Agency', monthly: 499, yearly: 399, clients: 'Up to 30 client accounts', featured: true },
+              { key: 'scale',  tier: 'Scale',      monthly: 999, yearly: 799, clients: 'Up to 75 client accounts', featured: false },
             ].map((plan) => {
               const price = billing === 'yearly' ? plan.yearly : plan.monthly
               return (
@@ -543,7 +544,7 @@ export default function LandingPage() {
                   </div>
                   <div style={{ ...S.priceClients, marginBottom: 24 }}>{plan.clients}</div>
                   <Link
-                    to={`/checkout?plan=${plan.tier.toLowerCase()}&billing=${billing}`}
+                    to={`/checkout?plan=${plan.key}&billing=${billing}`}
                     style={{
                       ...S.priceBtn,
                       ...(plan.featured ? S.priceBtnFilled : S.priceBtnOutline),
@@ -556,19 +557,32 @@ export default function LandingPage() {
             })}
 
           </div>
+
+          {/* Enterprise / contact-us footer */}
+          <div style={{
+            marginTop: 28, textAlign: 'center',
+            fontFamily: "'Geist', sans-serif", fontSize: 13, color: '#6B6B66',
+          }}>
+            Need more than 75 accounts?{' '}
+            <a href="mailto:hello@retainr.io?subject=Enterprise%20pricing" style={{
+              color: '#1A1A18', textDecoration: 'underline', textUnderlineOffset: 3,
+            }}>
+              Contact us
+            </a>
+          </div>
         </div>
       </section>
 
       {/* CTA */}
       <section style={S.ctaSection}>
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          <div style={{ ...S.sectionEyebrow, color: 'rgba(245,245,243,0.50)' }}>Start today</div>
+          <div style={{ ...S.sectionEyebrow, color: 'rgba(245,245,243,0.50)' }}>See your first report in 60 seconds</div>
           <h2 style={S.ctaHeadline}>
-            Turn every AM into a<br />
-            <span style={{ fontStyle: 'italic', color: '#C8C8BE' }}>high-performing</span> communicator.
+            Connect Google Ads.<br />
+            Get a finished <span style={{ fontStyle: 'italic', color: '#C8C8BE' }}>client report.</span>
           </h2>
           <p style={S.ctaSub}>
-            Connect your first Google Ads account in under 10 minutes. The first narrative and talking points generate automatically.
+            One click to connect, ~60 seconds to a written narrative, drivers, client explanations, and meeting talking points.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
             <Link to="/login" style={S.ctaPrimary}>Start Free Trial →</Link>
