@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 
-const serif = { fontFamily: "'Bricolage Grotesque', sans-serif" }
-const sans = { fontFamily: "'Geist', sans-serif" }
+const serif = { fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif" }
+const sans = { fontFamily: "'Inter', system-ui, sans-serif" }
 
 const PLANS = {
   growth: { tier: 'Growth',     monthly: 199, yearly: 159, blurb: 'Up to 10 client accounts' },

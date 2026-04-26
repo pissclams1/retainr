@@ -32,12 +32,12 @@ export default function LoginPage() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '24px',
-      fontFamily: "'Geist', sans-serif",
+      fontFamily: "'Inter', system-ui, sans-serif",
     }}>
 
       {/* Logo */}
       <a href="/" style={{
-        fontFamily: "'Bricolage Grotesque', sans-serif",
+        fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
         fontSize: 22,
         color: '#F5F5F3',
         letterSpacing: '-0.3px',
@@ -71,7 +71,7 @@ export default function LoginPage() {
               ✓
             </div>
             <h2 style={{
-              fontFamily: "'Bricolage Grotesque', sans-serif",
+              fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
               fontSize: 24, fontWeight: 400,
               color: '#F5F5F3', marginBottom: 10,
             }}>
@@ -89,7 +89,7 @@ export default function LoginPage() {
         ) : (
           <>
             <h1 style={{
-              fontFamily: "'Bricolage Grotesque', sans-serif",
+              fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
               fontSize: 28, fontWeight: 400,
               color: '#F5F5F3', marginBottom: 8,
             }}>
@@ -106,7 +106,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: 16 }}>
                 <label style={{
-                  fontFamily: "'Geist', sans-serif",
+                  fontFamily: "'Inter', system-ui, sans-serif",
                   fontSize: 11, fontWeight: 600,
                   textTransform: 'uppercase', letterSpacing: '0.12em',
                   color: 'rgba(245,245,243,0.50)',
@@ -129,7 +129,7 @@ export default function LoginPage() {
                       : '1px solid rgba(255,255,255,0.12)',
                     borderRadius: 7,
                     padding: '0 12px',
-                    fontFamily: "'Geist', sans-serif",
+                    fontFamily: "'Inter', system-ui, sans-serif",
                     fontSize: 13,
                     color: '#F5F5F3',
                     outline: 'none',
@@ -148,7 +148,7 @@ export default function LoginPage() {
                 />
                 {error && (
                   <p style={{
-                    fontFamily: "'Geist', sans-serif",
+                    fontFamily: "'Inter', system-ui, sans-serif",
                     fontSize: 11, color: '#B83A2A',
                     marginTop: 6,
                   }}>
@@ -169,7 +169,7 @@ export default function LoginPage() {
                   color: loading || !email ? 'rgba(15,15,14,0.4)' : '#0F0F0E',
                   border: 'none',
                   borderRadius: 7,
-                  fontFamily: "'Geist', sans-serif",
+                  fontFamily: "'Inter', system-ui, sans-serif",
                   fontSize: 13, fontWeight: 500,
                   cursor: loading || !email ? 'not-allowed' : 'pointer',
                   transition: 'opacity 0.15s',
@@ -185,7 +185,7 @@ export default function LoginPage() {
       {/* Footer */}
       <p style={{
         marginTop: 32,
-        fontFamily: "'Geist', sans-serif",
+        fontFamily: "'Inter', system-ui, sans-serif",
         fontSize: 12, fontWeight: 300,
         color: 'rgba(245,245,243,0.28)',
         textAlign: 'center',

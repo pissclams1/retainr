@@ -22,7 +22,7 @@ export default function AppBar() {
       justifyContent: 'space-between', padding: '0 24px',
     }}>
       <Link to="/dashboard" style={{
-        fontFamily: "'Bricolage Grotesque', sans-serif",
+        fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif",
         fontSize: 20, fontWeight: 400,
         color: '#1A1A18', letterSpacing: '-0.3px', textDecoration: 'none',
       }}>
@@ -36,7 +36,7 @@ export default function AppBar() {
           { label: 'Billing', to: '/billing' },
         ].map(({ label, to }) => (
           <Link key={to} to={to} style={{
-            fontFamily: "'Geist', sans-serif",
+            fontFamily: "'Inter', system-ui, sans-serif",
             fontSize: 13,
             fontWeight: location.pathname.startsWith(to) ? 500 : 400,
             color: location.pathname.startsWith(to) ? '#1A1A18' : '#6B6B66',
@@ -47,7 +47,7 @@ export default function AppBar() {
           </Link>
         ))}
         <button onClick={handleSignOut} style={{
-          fontFamily: "'Geist', sans-serif",
+          fontFamily: "'Inter', system-ui, sans-serif",
           fontSize: 13, fontWeight: 500,
           color: '#6B6B66', background: 'transparent',
           border: '1px solid rgba(15,15,14,0.18)',
