@@ -404,8 +404,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Right — transformation widget */}
-          <div style={{ maxHeight: '520px', overflow: 'hidden' }}>
+          {/* Right — full client-ready report (the primary hero asset) */}
+          <div>
             <HeroTransformation />
           </div>
 
