@@ -259,12 +259,30 @@ function GeneratingStep() {
 
 function ReportReady({ onRegenerate }) {
   const [tone, setTone] = useState('Simple')
+  const [copied, setCopied] = useState(false)
+  const [sendOpen, setSendOpen] = useState(false)
+  const [clientEmail, setClientEmail] = useState('')
+  const [sent, setSent] = useState(false)
+
+  const shareUrl = `${window.location.origin}/r/demo-apex-april-2025`
+
+  const handleShare = async () => {
+    try { await navigator.clipboard.writeText(shareUrl) } catch {}
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1800)
+  }
+
+  const handleSend = (e) => {
+    e.preventDefault()
+    setSent(true)
+    setTimeout(() => { setSendOpen(false); setSent(false); setClientEmail('') }, 1600)
+  }
 
   return (
     <div style={{ width: '100%', maxWidth: 720 }}>
       <div style={{ ...eyebrow, color: 'rgba(245,245,243,0.50)' }}>Step 3 of 3 · Ready</div>
       <h1 style={{ ...title, fontSize: 32, marginBottom: 6 }}>
-        Your client-ready report is ready
+        Your first client-ready report is ready
       </h1>
       <p style={{ ...sub, marginBottom: 24 }}>
         Apex Digital · April 2025 · Generated in 47 seconds
@@ -278,22 +296,159 @@ function ReportReady({ onRegenerate }) {
         <button style={primaryBtn(false)} onClick={() => alert('PDF download stub')}>
           ↓ Download PDF
         </button>
+        <button style={ghostBtn} onClick={handleShare}>
+          {copied ? '✓ Link copied' : '↗ Share link'}
+        </button>
+        <button style={ghostBtn} onClick={() => setSendOpen((v) => !v)}>
+          ✉ Send to client
+        </button>
         <button style={ghostBtn} onClick={onRegenerate}>
           Generate next report
         </button>
         <ToneSelect tone={tone} setTone={setTone} />
       </div>
 
+      {/* Send to client inline form */}
+      {sendOpen && (
+        <form
+          onSubmit={handleSend}
+          style={{
+            display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16,
+            padding: 10, background: 'rgba(245,245,243,0.04)',
+            border: '1px solid rgba(255,255,255,0.10)', borderRadius: 8,
+          }}
+        >
+          <input
+            type="email"
+            required
+            placeholder="client@company.com"
+            value={clientEmail}
+            onChange={(e) => setClientEmail(e.target.value)}
+            style={{
+              flex: 1, height: 36, padding: '0 12px',
+              ...sans, fontSize: 13, color: '#F5F5F3',
+              background: '#0F0F0E',
+              border: '1px solid rgba(255,255,255,0.12)', borderRadius: 7,
+              outline: 'none',
+            }}
+          />
+          <button type="submit" style={{ ...primaryBtn(false), width: 'auto', padding: '0 16px', height: 36 }}>
+            {sent ? '✓ Sent' : 'Send report →'}
+          </button>
+        </form>
+      )}
+
       <ReportCard tone={tone} />
 
-      <div style={{ marginTop: 20, textAlign: 'center' }}>
-        <Link
-          to="/clients"
-          style={{ ...sans, fontSize: 12, color: 'rgba(245,245,243,0.50)', textDecoration: 'none' }}
-        >
-          Add another account →
-        </Link>
+      {/* Share/PDF/Send footer (mirrors actions for end of card) */}
+      <div style={{
+        marginTop: 12, padding: '12px 14px',
+        background: 'rgba(245,245,243,0.03)',
+        border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10,
+        display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <div style={{ ...sans, fontSize: 12, color: 'rgba(245,245,243,0.55)' }}>
+          Read-only share link — clients view in browser, no login required.
+        </div>
+        <div style={{ ...sans, fontSize: 11, color: 'rgba(245,245,243,0.40)', fontFamily: 'ui-monospace, Menlo, monospace' }}>
+          {shareUrl.replace(/^https?:\/\//, '')}
+        </div>
       </div>
+
+      {/* Team expansion */}
+      <TeamInvite />
+    </div>
+  )
+}
+
+function TeamInvite() {
+  const [emails, setEmails] = useState([''])
+  const [done, setDone] = useState(false)
+
+  const updateEmail = (i, v) => setEmails((arr) => arr.map((e, idx) => idx === i ? v : e))
+  const addRow = () => setEmails((arr) => [...arr, ''])
+  const sendInvites = (e) => {
+    e.preventDefault()
+    setDone(true)
+  }
+
+  return (
+    <div style={{
+      marginTop: 28,
+      padding: 24,
+      background: '#1A1A18',
+      border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: 14,
+    }}>
+      <div style={eyebrow}>Team expansion</div>
+      <h2 style={{ ...title, fontSize: 22, marginBottom: 6 }}>
+        Bring your team into retainr
+      </h2>
+      <p style={{ ...sub, marginBottom: 20 }}>
+        Standardize how your entire agency communicates with clients. Reports become
+        shared communication assets across your team.
+      </p>
+
+      {done ? (
+        <div style={{
+          padding: '12px 14px',
+          background: 'rgba(45,106,39,0.15)',
+          border: '1px solid rgba(45,106,39,0.3)',
+          borderRadius: 8,
+          ...sans, fontSize: 13, color: '#A7E2A1',
+        }}>
+          ✓ Invites sent to {emails.filter(Boolean).length} teammate{emails.filter(Boolean).length === 1 ? '' : 's'}.
+          They can view this report and the next one as soon as they accept.
+        </div>
+      ) : (
+        <form onSubmit={sendInvites} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {emails.map((email, i) => (
+            <input
+              key={i}
+              type="email"
+              placeholder="account-manager@youragency.com"
+              value={email}
+              onChange={(e) => updateEmail(i, e.target.value)}
+              style={{
+                height: 40, padding: '0 12px',
+                ...sans, fontSize: 13, color: '#F5F5F3',
+                background: '#0F0F0E',
+                border: '1px solid rgba(255,255,255,0.12)', borderRadius: 7,
+                outline: 'none',
+              }}
+            />
+          ))}
+          <button
+            type="button"
+            onClick={addRow}
+            style={{
+              ...sans, fontSize: 12, fontWeight: 500,
+              color: 'rgba(245,245,243,0.55)',
+              background: 'transparent', border: 'none', cursor: 'pointer',
+              padding: '4px 0', textAlign: 'left',
+            }}
+          >
+            + Add another teammate
+          </button>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 4 }}>
+            <button type="submit" style={primaryBtn(false)}>
+              Send invites
+            </button>
+            <Link
+              to="/dashboard"
+              style={{ ...ghostBtn, justifyContent: 'center' }}
+            >
+              Skip for now →
+            </Link>
+          </div>
+
+          <div style={{ ...sans, fontSize: 11, color: 'rgba(245,245,243,0.35)', marginTop: 6, lineHeight: 1.5 }}>
+            Invited teammates can view your reports, generate new ones for their accounts,
+            and use the same talking-point standards you do.
+          </div>
+        </form>
+      )}
     </div>
   )
 }

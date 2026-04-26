@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import HeroTransformation from '../components/marketing/HeroTransformation'
 import CompetitorComparison from '../components/marketing/CompetitorComparison'
@@ -310,7 +311,53 @@ const priceFeatures = {
   ],
 }
 
+function BillingToggle({ billing, setBilling }) {
+  const opt = (key, label, badge) => {
+    const active = billing === key
+    return (
+      <button
+        key={key}
+        onClick={() => setBilling(key)}
+        style={{
+          fontFamily: "'Geist', sans-serif",
+          fontSize: 12, fontWeight: 500,
+          padding: '7px 14px',
+          border: 'none', cursor: 'pointer',
+          borderRadius: 7,
+          background: active ? '#1A1A18' : 'transparent',
+          color: active ? '#F5F5F3' : '#6B6B66',
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          transition: 'background 0.15s, color 0.15s',
+        }}
+      >
+        {label}
+        {badge && (
+          <span style={{
+            fontSize: 9, fontWeight: 600,
+            padding: '2px 6px', borderRadius: 10,
+            background: active ? 'rgba(45,106,39,0.25)' : '#EDF5EB',
+            color: active ? '#86EFAC' : '#2D6A27',
+            letterSpacing: '0.04em',
+          }}>{badge}</span>
+        )}
+      </button>
+    )
+  }
+  return (
+    <div style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      padding: 4, marginBottom: 28,
+      background: '#F4F4F2', border: '1px solid rgba(15,15,14,0.08)',
+      borderRadius: 10,
+    }}>
+      {opt('monthly', 'Monthly')}
+      {opt('yearly', 'Yearly', 'Save 20%')}
+    </div>
+  )
+}
+
 export default function LandingPage() {
+  const [billing, setBilling] = useState('monthly')
   return (
     <div style={{ fontFamily: "'Geist', sans-serif" }}>
 
@@ -499,42 +546,51 @@ export default function LandingPage() {
         <div style={S.sectionInner}>
           <div style={S.sectionEyebrow}>Pricing</div>
           <h2 style={S.sectionHeadline}>Scales with your agency.</h2>
-          <p style={S.sectionSub}>One flat monthly fee per tier. No per-report charges, no hidden costs.</p>
+          <p style={S.sectionSub}>One flat fee per tier. No per-report charges, no hidden costs.</p>
+
+          {/* Billing period toggle */}
+          <BillingToggle billing={billing} setBilling={setBilling} />
+
           <div style={S.pricingGrid}>
 
             {[
-              { tier: 'Starter', price: '$149', cadence: 'per month', clients: 'For small agencies standardizing client communication', features: priceFeatures.starter, featured: false },
-              { tier: 'Growth', price: '$399', cadence: 'per month', clients: 'For teams with multiple account managers who need consistent client reporting quality', features: priceFeatures.growth, featured: true },
-              { tier: 'Agency', price: '$999', cadence: 'per month', clients: 'For agencies scaling communication consistency across all clients and account managers', features: priceFeatures.agency, featured: false },
-            ].map((plan) => (
-              <div key={plan.tier} style={plan.featured ? S.priceCardFeatured : S.priceCard}>
-                {plan.featured && <div style={S.priceBadge}>Most popular</div>}
-                <div style={S.priceTier}>{plan.tier}</div>
-                <div style={S.priceAmount}>{plan.price}</div>
-                <div style={S.priceCadence}>{plan.cadence}</div>
-                <div style={S.priceClients}>{plan.clients}</div>
-                <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 24 }}>
-                  {plan.features.map((f, i) => (
-                    <li key={i} style={{
-                      fontFamily: "'Geist', sans-serif", fontSize: 12,
-                      fontWeight: 400, color: '#6B6B66',
-                      display: 'flex', alignItems: 'flex-start', gap: 8, lineHeight: 1.4,
-                    }}>
-                      <span style={{ color: '#2D6A27', flexShrink: 0 }}>✓</span>{f}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to="/login"
-                  style={{
-                    ...S.priceBtn,
-                    ...(plan.featured ? S.priceBtnFilled : S.priceBtnOutline),
-                  }}
-                >
-                  Get started
-                </Link>
-              </div>
-            ))}
+              { tier: 'Starter', monthly: 149, yearly: 119, clients: 'For small agencies standardizing client communication', features: priceFeatures.starter, featured: false },
+              { tier: 'Growth', monthly: 399, yearly: 319, clients: 'For teams with multiple account managers who need consistent client reporting quality', features: priceFeatures.growth, featured: true },
+              { tier: 'Agency', monthly: 999, yearly: 799, clients: 'For agencies scaling communication consistency across all clients and account managers', features: priceFeatures.agency, featured: false },
+            ].map((plan) => {
+              const price = billing === 'yearly' ? plan.yearly : plan.monthly
+              return (
+                <div key={plan.tier} style={plan.featured ? S.priceCardFeatured : S.priceCard}>
+                  {plan.featured && <div style={S.priceBadge}>Most popular</div>}
+                  <div style={S.priceTier}>{plan.tier}</div>
+                  <div style={S.priceAmount}>${price}</div>
+                  <div style={S.priceCadence}>
+                    per month{billing === 'yearly' ? ', billed annually' : ''}
+                  </div>
+                  <div style={S.priceClients}>{plan.clients}</div>
+                  <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 24 }}>
+                    {plan.features.map((f, i) => (
+                      <li key={i} style={{
+                        fontFamily: "'Geist', sans-serif", fontSize: 12,
+                        fontWeight: 400, color: '#6B6B66',
+                        display: 'flex', alignItems: 'flex-start', gap: 8, lineHeight: 1.4,
+                      }}>
+                        <span style={{ color: '#2D6A27', flexShrink: 0 }}>✓</span>{f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    to={`/checkout?plan=${plan.tier.toLowerCase()}&billing=${billing}`}
+                    style={{
+                      ...S.priceBtn,
+                      ...(plan.featured ? S.priceBtnFilled : S.priceBtnOutline),
+                    }}
+                  >
+                    Get started
+                  </Link>
+                </div>
+              )
+            })}
 
           </div>
         </div>
