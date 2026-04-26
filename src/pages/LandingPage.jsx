@@ -288,25 +288,25 @@ const outputFeatures = {
 
 const priceFeatures = {
   starter: [
-    'GA4 connection per client',
-    'Monthly client report',
-    'Internal briefing card',
-    'White-label reports',
-    'Threshold alerts',
+    'Monthly performance narrative per account',
+    'Plain-language client explanations',
+    'Meeting talking points for every call',
+    'White-label with your agency name',
+    'Single account manager',
   ],
   growth: [
     'Everything in Starter',
-    'Commitments tracker',
-    'Account health scores',
-    'Daily data refresh',
-    'Mobile briefing card',
+    'Multiple account managers, one voice',
+    'Standardized phrasing across the team',
+    'Communication quality consistency',
+    'Priority email support',
   ],
   agency: [
     'Everything in Growth',
-    'Priority support',
-    'Early access to V2 features',
-    'Google Ads integration (V2)',
-    'Custom onboarding call',
+    'Unlimited account managers',
+    'Team-wide communication standards',
+    'Custom communication tone & vocabulary',
+    'Dedicated onboarding for the full team',
   ],
 }
 
@@ -503,9 +503,9 @@ export default function LandingPage() {
           <div style={S.pricingGrid}>
 
             {[
-              { tier: 'Starter', price: '$39', cadence: 'per month', clients: 'Up to 5 clients', features: priceFeatures.starter, featured: false },
-              { tier: 'Growth', price: '$79', cadence: 'per month', clients: 'Up to 15 clients', features: priceFeatures.growth, featured: true },
-              { tier: 'Agency', price: '$149', cadence: 'per month', clients: 'Unlimited clients', features: priceFeatures.agency, featured: false },
+              { tier: 'Starter', price: '$149', cadence: 'per month', clients: 'For small agencies standardizing client communication', features: priceFeatures.starter, featured: false },
+              { tier: 'Growth', price: '$399', cadence: 'per month', clients: 'For teams with multiple account managers who need consistent client reporting quality', features: priceFeatures.growth, featured: true },
+              { tier: 'Agency', price: '$999', cadence: 'per month', clients: 'For agencies scaling communication consistency across all clients and account managers', features: priceFeatures.agency, featured: false },
             ].map((plan) => (
               <div key={plan.tier} style={plan.featured ? S.priceCardFeatured : S.priceCard}>
                 {plan.featured && <div style={S.priceBadge}>Most popular</div>}

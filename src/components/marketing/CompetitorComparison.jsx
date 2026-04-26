@@ -67,14 +67,14 @@ const features = [
 ]
 
 const tools = [
-  { name: 'retainr', price: 'from $39/mo', isRetainr: true },
+  { name: 'retainr', price: 'from $149/mo', isRetainr: true },
   { name: 'AgencyAnalytics', price: 'from $79/mo', isRetainr: false },
   { name: 'DashThis', price: 'from $49/mo', isRetainr: false },
   { name: 'Whatagraph', price: 'from $229/mo', isRetainr: false },
 ]
 
 const pricing = [
-  { price: '$39', note: 'All features included', noteColor: '#64748B', isRetainr: true },
+  { price: '$149', note: 'Communication system, all features', noteColor: '#64748B', isRetainr: true },
   { price: '$79', note: '+ $20/client above 5', noteColor: '#B45309', isRetainr: false },
   { price: '$159', note: 'White-label on Pro tier', noteColor: '#B45309', isRetainr: false },
   { price: '$229', note: 'Annual commitment req.', noteColor: '#B45309', isRetainr: false },
