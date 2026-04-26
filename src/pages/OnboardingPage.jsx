@@ -143,7 +143,6 @@ function StepDots({ step }) {
     <div style={stepDots}>
       <div style={dot(step >= 1)} />
       <div style={dot(step >= 2)} />
-      <div style={dot(step >= 3)} />
     </div>
   )
 }
@@ -151,7 +150,7 @@ function StepDots({ step }) {
 function ConnectStep({ onNext }) {
   return (
     <div style={card}>
-      <div style={eyebrow}>Step 1 of 3</div>
+      <div style={eyebrow}>Step 1 of 2</div>
       <h1 style={title}>Connect your Google Ads account</h1>
       <p style={sub}>
         We use your campaign data to generate client-ready communication.
@@ -162,74 +161,8 @@ function ConnectStep({ onNext }) {
       </button>
       <p style={{ ...sans, fontSize: 11, color: 'rgba(245,245,243,0.35)', marginTop: 14, lineHeight: 1.5 }}>
         Read-only access. We never modify campaigns or budgets.
+        We auto-detect your active account and generate the report immediately.
       </p>
-    </div>
-  )
-}
-
-function SelectStep({ onNext, onBack }) {
-  const accounts = [
-    { id: 'apex', name: 'Apex Digital — main account', spend: '$24,180/mo' },
-    { id: 'monarch', name: 'Monarch Plumbing & HVAC', spend: '$8,420/mo' },
-    { id: 'northstar', name: 'Northstar Realty Group', spend: '$3,260/mo' },
-  ]
-  const [selected, setSelected] = useState(accounts[0].id)
-
-  return (
-    <div style={card}>
-      <div style={eyebrow}>Step 2 of 3</div>
-      <h1 style={title}>Select a client or account</h1>
-      <p style={sub}>
-        We'll generate a finished report for the account you choose.
-      </p>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-        {accounts.map((a) => {
-          const active = selected === a.id
-          return (
-            <button
-              key={a.id}
-              onClick={() => setSelected(a.id)}
-              style={{
-                ...sans,
-                textAlign: 'left',
-                padding: '12px 14px',
-                background: active ? 'rgba(245,245,243,0.06)' : 'transparent',
-                border: `1px solid ${active ? 'rgba(245,245,243,0.30)' : 'rgba(255,255,255,0.10)'}`,
-                borderRadius: 8,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 12,
-              }}
-            >
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 500, color: '#F5F5F3' }}>{a.name}</div>
-                <div style={{ fontSize: 11, color: 'rgba(245,245,243,0.45)', marginTop: 2 }}>{a.spend}</div>
-              </div>
-              <span style={{
-                width: 14, height: 14, borderRadius: '50%',
-                border: `1px solid ${active ? '#F5F5F3' : 'rgba(245,245,243,0.30)'}`,
-                background: active ? '#F5F5F3' : 'transparent',
-                flexShrink: 0,
-              }} />
-            </button>
-          )
-        })}
-      </div>
-
-      <button onClick={() => onNext(selected)} style={primaryBtn(false)}>Continue →</button>
-      <button
-        onClick={onBack}
-        style={{
-          ...sans, fontSize: 12, color: 'rgba(245,245,243,0.45)',
-          background: 'transparent', border: 'none', cursor: 'pointer',
-          marginTop: 12, width: '100%',
-        }}
-      >
-        ← Back
-      </button>
     </div>
   )
 }
@@ -237,17 +170,19 @@ function SelectStep({ onNext, onBack }) {
 function GeneratingStep() {
   return (
     <div style={{ ...card, textAlign: 'center', padding: '48px 32px' }}>
+      <div style={eyebrow}>Step 2 of 2</div>
       <div style={{
         width: 48, height: 48, borderRadius: '50%',
         border: '2px solid rgba(245,245,243,0.10)',
         borderTopColor: '#F5F5F3',
-        margin: '0 auto 24px',
+        margin: '0 auto 18px',
         animation: 'spin 0.9s linear infinite',
       }} />
       <h1 style={{ ...title, fontSize: 22, marginBottom: 6 }}>
         Generating your client-ready report…
       </h1>
       <p style={{ ...sub, marginBottom: 0 }}>
+        Account detected: <strong style={{ color: 'rgba(245,245,243,0.75)', fontWeight: 500 }}>Apex Digital</strong>.
         Writing the monthly narrative, drivers, client explanations, and call talking points.
       </p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -636,7 +571,7 @@ function GoogleMark() {
 /* ─────────── Page ─────────── */
 
 export default function OnboardingPage() {
-  const [step, setStep] = useState('connect')   // connect | select | generating | ready
+  const [step, setStep] = useState('connect')   // connect | generating | ready
 
   // Auto-advance from generating → ready
   useEffect(() => {
@@ -650,17 +585,11 @@ export default function OnboardingPage() {
       <Link to="/" style={logo}>retainr</Link>
 
       {step !== 'ready' && (
-        <StepDots step={step === 'connect' ? 1 : step === 'select' ? 2 : 3} />
+        <StepDots step={step === 'connect' ? 1 : 2} />
       )}
 
       {step === 'connect' && (
-        <ConnectStep onNext={() => setStep('select')} />
-      )}
-      {step === 'select' && (
-        <SelectStep
-          onNext={() => setStep('generating')}
-          onBack={() => setStep('connect')}
-        />
+        <ConnectStep onNext={() => setStep('generating')} />
       )}
       {step === 'generating' && <GeneratingStep />}
       {step === 'ready' && (

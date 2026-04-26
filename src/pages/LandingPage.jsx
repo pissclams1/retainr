@@ -387,9 +387,7 @@ export default function LandingPage() {
               <span style={S.heroItalic}>high-performing</span> communicator.
             </h1>
             <p style={S.heroSub}>
-              Turn Google Ads data into clear, client-ready communication
-              across your team — including performance summaries, explanations,
-              and meeting talking points.
+              Turn Google Ads data into clear, client-ready communication across your team.
             </p>
             <div style={S.heroCTAs}>
               <Link to="/login" style={S.ctaPrimary}>Start Free Trial →</Link>
