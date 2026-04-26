@@ -11,17 +11,77 @@ const F = {
 const C = {
   bg:           '#FAFAFA',
   surface:      '#FFFFFF',
-  surfaceWarm:  '#F5F4F0',     // pricing-section background tint, very subtle
+  surfaceWarm:  '#F5F4F0',
   text:         '#111111',
   textBody:     '#1F1F1F',
   textMuted:    '#5A5A5A',
   textFaint:    '#8A8A8A',
   border:       'rgba(17,17,17,0.08)',
   borderStrong: 'rgba(17,17,17,0.14)',
-  accent:       '#0F1E40',     // deep navy — CTAs and report rule only
+  accent:       '#0F1E40',
+  accentTint:   'rgba(15,30,64,0.08)',
 }
 
 const MAX = 1180
+
+/* ─────────── Page-level CSS (media queries + base reset) ─────────── */
+
+const PAGE_CSS = `
+  html, body { background: ${C.bg}; }
+  * { box-sizing: border-box; }
+  ::selection { background: ${C.accentTint}; color: ${C.text}; }
+
+  .lp-hero-grid {
+    display: grid;
+    grid-template-columns: 0.95fr 1.05fr;
+    gap: 72px;
+    align-items: center;
+  }
+  .lp-section-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .lp-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    max-width: 1080px;
+    margin: 28px auto 0;
+  }
+  .lp-section-pad { padding: 120px 32px; }
+  .lp-h1 { font-size: 56px; line-height: 1.05; letter-spacing: -0.025em; }
+  .lp-h2 { font-size: 44px; line-height: 1.12; letter-spacing: -0.02em; }
+  .lp-cta-headline { font-size: 48px; line-height: 1.08; letter-spacing: -0.025em; }
+
+  /* Tablet */
+  @media (max-width: 960px) {
+    .lp-hero-grid { grid-template-columns: 1fr; gap: 56px; }
+    .lp-h1 { font-size: 44px; }
+    .lp-h2 { font-size: 34px; }
+    .lp-cta-headline { font-size: 36px; }
+    .lp-section-pad { padding: 96px 24px; }
+  }
+  /* Mobile */
+  @media (max-width: 640px) {
+    .lp-section-grid-3 { grid-template-columns: 1fr; gap: 36px; }
+    .lp-pricing-grid { grid-template-columns: 1fr; }
+    .lp-h1 { font-size: 36px; }
+    .lp-h2 { font-size: 28px; }
+    .lp-cta-headline { font-size: 30px; }
+    .lp-section-pad { padding: 72px 20px; }
+    .lp-nav-links { display: none !important; }
+    .lp-nav-cta { display: inline-flex !important; }
+  }
+
+  /* Hover affordances — kept extremely subtle */
+  .lp-link:hover { color: ${C.text}; }
+  .lp-cta-primary:hover { background: #142751; }
+  .lp-cta-ghost:hover { border-color: ${C.text}; color: ${C.text}; }
+  .lp-faq summary { list-style: none; cursor: pointer; }
+  .lp-faq summary::-webkit-details-marker { display: none; }
+  .lp-faq[open] .lp-faq-icon { transform: rotate(45deg); }
+`
 
 /* ─────────── Page ─────────── */
 
@@ -30,18 +90,20 @@ export default function LandingPage() {
 
   return (
     <div style={{
-      ...F.body,
-      color: C.textBody,
-      background: C.bg,
+      ...F.body, color: C.textBody, background: C.bg,
       WebkitFontSmoothing: 'antialiased',
       MozOsxFontSmoothing: 'grayscale',
     }}>
+      <style>{PAGE_CSS}</style>
       <Nav />
       <Hero />
-      <WhatThisReplaces />
+      <TrustStrip />
+      <HowItWorks />
       <Value />
       <CompetitorContrast />
+      <Testimonial />
       <Pricing billing={billing} setBilling={setBilling} />
+      <FAQ />
       <FinalCTA />
       <Footer />
     </div>
@@ -56,27 +118,23 @@ function Nav() {
       position: 'sticky', top: 0, zIndex: 50,
       background: 'rgba(250,250,250,0.85)',
       backdropFilter: 'saturate(140%) blur(12px)',
+      WebkitBackdropFilter: 'saturate(140%) blur(12px)',
       borderBottom: `1px solid ${C.border}`,
     }}>
       <div style={{
-        maxWidth: MAX, margin: '0 auto',
-        padding: '18px 32px',
+        maxWidth: MAX, margin: '0 auto', padding: '18px 32px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
         <a href="/" style={{
           ...F.heading, fontSize: 19, fontWeight: 600,
           color: C.text, letterSpacing: '-0.01em', textDecoration: 'none',
-        }}>
-          retainr
-        </a>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-          <a href="#pricing" style={navLink}>Pricing</a>
-          <a href="#sample" style={navLink}>Sample report</a>
-          <Link to="/login" style={navLink}>Sign in</Link>
-          <Link
-            to="/checkout?plan=pro&billing=monthly"
-            style={btnPrimarySmall}
-          >
+        }}>retainr</a>
+        <div className="lp-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
+          <a href="#how" className="lp-link" style={navLink}>How it works</a>
+          <a href="#pricing" className="lp-link" style={navLink}>Pricing</a>
+          <a href="#sample" className="lp-link" style={navLink}>Sample report</a>
+          <Link to="/login" className="lp-link" style={navLink}>Sign in</Link>
+          <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={btnPrimarySmall}>
             Start Free Trial
           </Link>
         </div>
@@ -88,77 +146,71 @@ function Nav() {
 const navLink = {
   ...F.body, fontSize: 14, fontWeight: 500,
   color: C.textMuted, textDecoration: 'none',
+  transition: 'color 0.15s',
 }
 const btnPrimarySmall = {
   ...F.body, fontSize: 14, fontWeight: 500,
   color: '#FFFFFF', background: C.accent,
   padding: '9px 18px', borderRadius: 8,
-  textDecoration: 'none',
-  border: 'none', cursor: 'pointer',
+  textDecoration: 'none', border: 'none', cursor: 'pointer',
+  transition: 'background 0.15s',
 }
 
 /* ─────────── Hero ─────────── */
 
 function Hero() {
   return (
-    <section style={{ padding: '120px 32px 100px' }}>
-      <div style={{
-        maxWidth: MAX, margin: '0 auto',
-        display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80,
-        alignItems: 'center',
-      }}>
-        {/* LEFT — copy + CTAs */}
-        <div>
-          <h1 style={{
-            ...F.heading,
-            fontSize: 56, fontWeight: 600,
-            lineHeight: 1.05, letterSpacing: '-0.025em',
-            color: C.text, margin: 0, marginBottom: 24,
-            maxWidth: 560,
-          }}>
-            Turn every account manager into a high-performing communicator.
-          </h1>
+    <section style={{ padding: '120px 32px 80px' }}>
+      <div style={{ maxWidth: MAX, margin: '0 auto' }}>
+        <div className="lp-hero-grid">
+          {/* LEFT */}
+          <div>
+            <h1 className="lp-h1" style={{
+              ...F.heading, fontWeight: 600, color: C.text,
+              margin: 0, marginBottom: 24, maxWidth: 560,
+            }}>
+              Turn every AM into a high-performing communicator.
+            </h1>
 
-          <p style={{
-            ...F.body,
-            fontSize: 19, fontWeight: 400,
-            lineHeight: 1.55, color: C.textMuted,
-            margin: 0, marginBottom: 20, maxWidth: 520,
-          }}>
-            Turn Google Ads performance data into client-ready updates,
-            explanations, and talking points in seconds.
-          </p>
+            <p style={{
+              ...F.body, fontSize: 19, fontWeight: 400,
+              lineHeight: 1.55, color: C.textMuted,
+              margin: 0, marginBottom: 18, maxWidth: 520,
+            }}>
+              Turn Google Ads performance data into client-ready updates,
+              explanations, and talking points in seconds.
+            </p>
 
-          <p style={{
-            ...F.body,
-            fontSize: 15, fontWeight: 400,
-            lineHeight: 1.6, color: C.textFaint,
-            margin: 0, marginBottom: 36, maxWidth: 480,
-          }}>
-            Traditional reporting tools show performance.<br />
-            Retainr helps your team explain it.
-          </p>
+            <p style={{
+              ...F.body, fontSize: 15, fontWeight: 400,
+              lineHeight: 1.6, color: C.textFaint,
+              margin: 0, marginBottom: 36, maxWidth: 480,
+            }}>
+              Traditional reporting tools show performance.<br />
+              Retainr helps your team explain it.
+            </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <Link to="/checkout?plan=pro&billing=monthly" style={btnPrimary}>
-              Start Free Trial
-            </Link>
-            <a href="#sample" style={btnGhost}>
-              See Sample Report
-            </a>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+              <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={btnPrimary}>
+                Start Free Trial
+              </Link>
+              <a href="#sample" className="lp-cta-ghost" style={btnGhost}>
+                See Sample Report
+              </a>
+            </div>
+
+            <p style={{
+              ...F.body, fontSize: 13, color: C.textFaint,
+              margin: 0, marginTop: 22,
+            }}>
+              14-day free trial · No credit card required
+            </p>
           </div>
 
-          <p style={{
-            ...F.body, fontSize: 13, color: C.textFaint,
-            margin: 0, marginTop: 22,
-          }}>
-            14-day free trial · No credit card required
-          </p>
-        </div>
-
-        {/* RIGHT — the report document (the hero asset) */}
-        <div id="sample">
-          <ReportDocument />
+          {/* RIGHT — the report (the product) */}
+          <div id="sample">
+            <ReportDocument />
+          </div>
         </div>
       </div>
     </section>
@@ -172,6 +224,7 @@ const btnPrimary = {
   textDecoration: 'none',
   display: 'inline-flex', alignItems: 'center', gap: 8,
   border: 'none', cursor: 'pointer',
+  transition: 'background 0.15s',
 }
 const btnGhost = {
   ...F.body, fontSize: 15, fontWeight: 500,
@@ -180,24 +233,30 @@ const btnGhost = {
   textDecoration: 'none',
   display: 'inline-flex', alignItems: 'center', gap: 8,
   border: `1px solid ${C.borderStrong}`, cursor: 'pointer',
+  transition: 'border-color 0.15s, color 0.15s',
 }
 
-/* ─────────── Report document (hero right column) ─────────── */
+/* ─────────── Report (paper-style, the product) ─────────── */
 
 function ReportDocument() {
   return (
     <article style={{
       background: C.surface,
       border: `1px solid ${C.border}`,
-      borderRadius: 4,                   // editorial / paper feel, not pill
-      boxShadow: '0 24px 60px -24px rgba(17,17,17,0.18), 0 2px 6px rgba(17,17,17,0.04)',
+      borderRadius: 2,                                                 // crisp paper edge
+      boxShadow: [
+        '0 1px 0 rgba(255,255,255,0.7) inset',                         // top inner highlight
+        '0 1px 0 rgba(17,17,17,0.04)',
+        '0 6px 12px -6px rgba(17,17,17,0.10)',
+        '0 28px 64px -16px rgba(17,17,17,0.22)',                       // sheet on a page
+      ].join(', '),
       overflow: 'hidden',
     }}>
       {/* Slim navy rule (only place navy appears in the report) */}
       <div style={{ height: 3, background: C.accent }} />
 
       {/* Doc header */}
-      <header style={{ padding: '32px 36px 22px', borderBottom: `1px solid ${C.border}` }}>
+      <header style={{ padding: '34px 40px 22px', borderBottom: `1px solid ${C.border}` }}>
         <div style={{
           ...F.body, fontSize: 11, fontWeight: 600,
           letterSpacing: '0.10em', textTransform: 'uppercase',
@@ -206,7 +265,7 @@ function ReportDocument() {
           Monthly Performance Report · April 2025
         </div>
         <h3 style={{
-          ...F.heading, fontSize: 24, fontWeight: 600,
+          ...F.heading, fontSize: 26, fontWeight: 600,
           lineHeight: 1.2, color: C.text,
           margin: 0, marginBottom: 6,
         }}>
@@ -218,14 +277,9 @@ function ReportDocument() {
       </header>
 
       {/* Body */}
-      <div style={{ padding: '28px 36px 32px', display: 'flex', flexDirection: 'column', gap: 26 }}>
-
-        {/* 1. Narrative */}
+      <div style={{ padding: '30px 40px 32px', display: 'flex', flexDirection: 'column', gap: 28 }}>
         <DocSection label="Monthly Performance Narrative">
-          <p style={{
-            ...F.body, fontSize: 14, lineHeight: 1.65,
-            color: C.textBody, margin: 0,
-          }}>
+          <p style={{ ...docProse, margin: 0 }}>
             Performance improved this month, driven by stronger efficiency in
             high-intent campaigns and improved allocation of spend toward
             converting traffic.
@@ -237,11 +291,9 @@ function ReportDocument() {
           </ul>
         </DocSection>
 
-        {/* 2. Key takeaway */}
         <DocSection label="Key Takeaway">
           <p style={{
-            ...F.body, fontSize: 14, lineHeight: 1.65,
-            color: C.textBody, margin: 0,
+            ...docProse, margin: 0,
             paddingLeft: 14, borderLeft: `2px solid ${C.accent}`,
           }}>
             Performance gains were driven by efficiency improvements rather
@@ -249,7 +301,6 @@ function ReportDocument() {
           </p>
         </DocSection>
 
-        {/* 3. Client explanations */}
         <DocSection label="How to Explain This to the Client">
           <ul style={{ ...docList, gap: 10 }}>
             <li style={docLi}>"We improved efficiency this month without increasing your budget."</li>
@@ -258,7 +309,6 @@ function ReportDocument() {
           </ul>
         </DocSection>
 
-        {/* 4. Talking points */}
         <DocSection label="Talking Points">
           <ul style={{ ...docList, gap: 10 }}>
             <li style={docLi}>This month is about efficiency gains, not just volume.</li>
@@ -266,8 +316,18 @@ function ReportDocument() {
             <li style={docLi}>The account is trending toward higher-quality traffic overall.</li>
           </ul>
         </DocSection>
-
       </div>
+
+      {/* Doc footer — page number sells the document framing */}
+      <footer style={{
+        padding: '14px 40px',
+        borderTop: `1px solid ${C.border}`,
+        display: 'flex', justifyContent: 'space-between',
+        ...F.body, fontSize: 11, color: C.textFaint,
+      }}>
+        <span>retainr.io/r/apex-digital</span>
+        <span>1 / 1</span>
+      </footer>
     </article>
   )
 }
@@ -287,6 +347,9 @@ function DocSection({ label, children }) {
   )
 }
 
+const docProse = {
+  ...F.body, fontSize: 14, lineHeight: 1.65, color: C.textBody,
+}
 const docList = {
   listStyle: 'none', padding: 0, margin: '12px 0 0 0',
   display: 'flex', flexDirection: 'column', gap: 6,
@@ -294,49 +357,108 @@ const docList = {
 const docLi = {
   ...F.body, fontSize: 14, lineHeight: 1.6,
   color: C.textBody,
-  paddingLeft: 16, position: 'relative',
 }
 const docStrong = { fontWeight: 600, color: C.text }
 
-// Bullet markers via :before — done inline by appending a span instead
-// (kept simple: just left-padding plus visual rhythm; the prose carries weight)
+/* ─────────── Trust strip — single restrained row of credibility ─────────── */
 
-/* ─────────── What this replaces ─────────── */
-
-function WhatThisReplaces() {
+function TrustStrip() {
   const items = [
-    'Writing monthly client updates manually',
-    'Preparing account manager talking points',
-    'Inconsistent client communication across teams',
+    'Read-only Google Ads access',
+    'Stripe-secured billing',
+    'SOC 2 controls (in progress)',
+    'Built for agencies running $500K–$50M in client spend',
   ]
   return (
-    <section style={{ padding: '120px 32px', background: C.bg }}>
-      <div style={{ maxWidth: MAX, margin: '0 auto' }}>
-        <SectionEyebrow>What this replaces</SectionEyebrow>
-        <h2 style={sectionH2}>The work your team does today.</h2>
-
-        <ul style={{
-          listStyle: 'none', padding: 0, margin: '64px 0 0 0',
-          display: 'flex', flexDirection: 'column',
-          maxWidth: 760,
-        }}>
-          {items.map((it) => (
-            <li key={it} style={{
-              ...F.body, fontSize: 22, fontWeight: 400,
-              lineHeight: 1.5, color: C.text,
-              padding: '24px 0',
-              borderBottom: `1px solid ${C.border}`,
-            }}>
-              {it}
-            </li>
-          ))}
-        </ul>
+    <section style={{
+      padding: '20px 32px',
+      borderTop: `1px solid ${C.border}`,
+      borderBottom: `1px solid ${C.border}`,
+      background: C.bg,
+    }}>
+      <div style={{
+        maxWidth: MAX, margin: '0 auto',
+        display: 'flex', flexWrap: 'wrap', gap: '16px 36px',
+        justifyContent: 'center', alignItems: 'center',
+        ...F.body, fontSize: 12, color: C.textMuted,
+      }}>
+        {items.map((t, i) => (
+          <span key={t} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <span style={{
+              width: 4, height: 4, borderRadius: '50%',
+              background: C.textFaint, flexShrink: 0,
+            }} />
+            {t}
+          </span>
+        ))}
       </div>
     </section>
   )
 }
 
-/* ─────────── Value ─────────── */
+/* ─────────── How it works ─────────── */
+
+function HowItWorks() {
+  const steps = [
+    {
+      n: '01',
+      title: 'Connect Google Ads.',
+      desc: 'Read-only OAuth. We never modify campaigns or budgets.',
+    },
+    {
+      n: '02',
+      title: 'Pick a client account.',
+      desc: 'We pull the last 90 days and generate the first report immediately.',
+    },
+    {
+      n: '03',
+      title: 'Send the report.',
+      desc: 'Share a read-only link, copy to email, or download a PDF — your AM has talking points before the call.',
+    },
+  ]
+  return (
+    <section id="how" className="lp-section-pad">
+      <div style={{ maxWidth: MAX, margin: '0 auto' }}>
+        <SectionEyebrow>How it works</SectionEyebrow>
+        <h2 className="lp-h2" style={{ ...F.heading, fontWeight: 600, color: C.text, margin: 0, maxWidth: 720 }}>
+          Connected on Monday. <span style={{ color: C.textMuted }}>Sending reports by Tuesday.</span>
+        </h2>
+
+        <div className="lp-section-grid-3" style={{ marginTop: 72, maxWidth: 1080 }}>
+          {steps.map((s) => (
+            <div key={s.n} style={{
+              borderTop: `1px solid ${C.borderStrong}`,
+              paddingTop: 22,
+            }}>
+              <div style={{
+                ...F.heading, fontSize: 14, fontWeight: 600,
+                color: C.textFaint, marginBottom: 14,
+                letterSpacing: '0.04em',
+              }}>
+                {s.n}
+              </div>
+              <h3 style={{
+                ...F.heading, fontSize: 22, fontWeight: 600,
+                lineHeight: 1.3, letterSpacing: '-0.01em',
+                color: C.text, margin: 0, marginBottom: 12,
+              }}>
+                {s.title}
+              </h3>
+              <p style={{
+                ...F.body, fontSize: 15, lineHeight: 1.6,
+                color: C.textMuted, margin: 0,
+              }}>
+                {s.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ─────────── Value (3 outcomes) ─────────── */
 
 function Value() {
   const items = [
@@ -345,16 +467,14 @@ function Value() {
     'Improve client-facing consistency.',
   ]
   return (
-    <section style={{ padding: '120px 32px', background: C.surfaceWarm }}>
+    <section className="lp-section-pad" style={{ background: C.surfaceWarm }}>
       <div style={{ maxWidth: MAX, margin: '0 auto' }}>
         <SectionEyebrow>Why agencies use it</SectionEyebrow>
-        <h2 style={sectionH2}>Three outcomes. Nothing extra.</h2>
+        <h2 className="lp-h2" style={{ ...F.heading, fontWeight: 600, color: C.text, margin: 0, maxWidth: 720 }}>
+          Three outcomes. Nothing extra.
+        </h2>
 
-        <div style={{
-          marginTop: 80,
-          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 64,
-          maxWidth: 1000,
-        }}>
+        <div className="lp-section-grid-3" style={{ marginTop: 72, gap: 64, maxWidth: 1000 }}>
           {items.map((line, i) => (
             <div key={line}>
               <div style={{
@@ -381,21 +501,75 @@ function Value() {
 /* ─────────── Competitor contrast ─────────── */
 
 function CompetitorContrast() {
+  const tools = [
+    { name: 'AgencyAnalytics', shows: 'charts.' },
+    { name: 'DashThis',        shows: 'dashboards.' },
+    { name: 'Whatagraph',      shows: 'reports.' },
+    { name: 'Retainr',         shows: 'writes the explanation.', highlight: true },
+  ]
   return (
-    <section style={{ padding: '140px 32px', background: C.bg }}>
-      <div style={{
-        maxWidth: 880, margin: '0 auto',
-        textAlign: 'center',
-      }}>
+    <section className="lp-section-pad" style={{ background: C.bg }}>
+      <div style={{ maxWidth: 920, margin: '0 auto', textAlign: 'center' }}>
         <SectionEyebrow center>Compared to reporting tools</SectionEyebrow>
-        <h2 style={{
-          ...F.heading, fontSize: 44, fontWeight: 600,
-          lineHeight: 1.15, letterSpacing: '-0.02em',
-          color: C.text, margin: '24px 0 0 0',
+        <h2 className="lp-h2" style={{
+          ...F.heading, fontWeight: 600, color: C.text,
+          margin: '24px 0 0 0',
         }}>
           Traditional reporting tools show what happened.<br />
           <span style={{ color: C.textMuted }}>Retainr helps your team explain it.</span>
         </h2>
+
+        <ul style={{
+          listStyle: 'none', padding: 0, margin: '56px auto 0', maxWidth: 540,
+          display: 'flex', flexDirection: 'column', gap: 0,
+          textAlign: 'left',
+        }}>
+          {tools.map((t) => (
+            <li
+              key={t.name}
+              style={{
+                ...F.body, fontSize: 17, lineHeight: 1.5,
+                padding: '16px 0',
+                borderBottom: `1px solid ${C.border}`,
+                display: 'flex', justifyContent: 'space-between', gap: 16,
+                color: t.highlight ? C.text : C.textMuted,
+                fontWeight: t.highlight ? 600 : 400,
+              }}
+            >
+              <span>{t.name} shows</span>
+              <span style={{ textAlign: 'right' }}>{t.shows}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
+/* ─────────── Single testimonial ─────────── */
+
+function Testimonial() {
+  return (
+    <section className="lp-section-pad" style={{ background: C.surfaceWarm, paddingTop: 100, paddingBottom: 100 }}>
+      <div style={{ maxWidth: 820, margin: '0 auto', textAlign: 'center' }}>
+        <blockquote style={{
+          ...F.heading, fontSize: 30, fontWeight: 500,
+          lineHeight: 1.35, letterSpacing: '-0.015em',
+          color: C.text, margin: 0,
+        }}>
+          "Cut our monthly reporting from six hours to twenty minutes —
+          and our account managers actually have something to say
+          on the client call."
+        </blockquote>
+        <div style={{
+          ...F.body, fontSize: 14, color: C.textMuted,
+          marginTop: 32,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+        }}>
+          <span style={{ fontWeight: 500, color: C.text }}>Sarah K.</span>
+          <span style={{ width: 3, height: 3, borderRadius: '50%', background: C.textFaint }} />
+          <span>Director of Performance, mid-size paid-search agency</span>
+        </div>
       </div>
     </section>
   )
@@ -410,17 +584,19 @@ function Pricing({ billing, setBilling }) {
     { key: 'scale',  tier: 'Scale',      monthly: 999, yearly: 799, capacity: 'Up to 75 client accounts' },
   ]
   return (
-    <section id="pricing" style={{ padding: '120px 32px', background: C.surfaceWarm }}>
+    <section id="pricing" className="lp-section-pad" style={{ background: C.bg }}>
       <div style={{ maxWidth: MAX, margin: '0 auto' }}>
         <div style={{ textAlign: 'center' }}>
           <SectionEyebrow center>Pricing</SectionEyebrow>
-          <h2 style={{ ...sectionH2, textAlign: 'center', marginLeft: 'auto', marginRight: 'auto' }}>
+          <h2 className="lp-h2" style={{
+            ...F.heading, fontWeight: 600, color: C.text,
+            margin: 0, textAlign: 'center',
+          }}>
             Simple plans. No usage games.
           </h2>
           <p style={{
             ...F.body, fontSize: 16, lineHeight: 1.6,
-            color: C.textMuted, margin: '14px auto 0',
-            maxWidth: 540,
+            color: C.textMuted, margin: '14px auto 0', maxWidth: 540,
           }}>
             14-day free trial. No credit card required. Cancel any time.
           </p>
@@ -428,24 +604,36 @@ function Pricing({ billing, setBilling }) {
           <BillingToggle billing={billing} setBilling={setBilling} />
         </div>
 
-        <div style={{
-          marginTop: 28,
-          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20,
-          maxWidth: 1080, margin: '28px auto 0',
-        }}>
+        <div className="lp-pricing-grid">
           {plans.map((p) => {
             const price = billing === 'yearly' ? p.yearly : p.monthly
             return (
               <div
                 key={p.key}
                 style={{
+                  position: 'relative',
                   background: p.featured ? C.surface : 'transparent',
                   border: `1px solid ${p.featured ? C.borderStrong : C.border}`,
                   borderRadius: 12,
                   padding: '36px 32px',
                   display: 'flex', flexDirection: 'column',
+                  boxShadow: p.featured
+                    ? '0 18px 40px -20px rgba(17,17,17,0.18)'
+                    : 'none',
                 }}
               >
+                {p.featured && (
+                  <div style={{
+                    position: 'absolute', top: -12, left: 24,
+                    ...F.body, fontSize: 10, fontWeight: 600,
+                    letterSpacing: '0.10em', textTransform: 'uppercase',
+                    color: C.accent, background: C.surface,
+                    padding: '4px 10px', borderRadius: 20,
+                    border: `1px solid ${C.borderStrong}`,
+                  }}>
+                    Most popular
+                  </div>
+                )}
                 <div style={{
                   ...F.body, fontSize: 12, fontWeight: 600,
                   letterSpacing: '0.10em', textTransform: 'uppercase',
@@ -473,6 +661,7 @@ function Pricing({ billing, setBilling }) {
                 </div>
                 <Link
                   to={`/checkout?plan=${p.key}&billing=${billing}`}
+                  className={p.featured ? 'lp-cta-primary' : 'lp-cta-ghost'}
                   style={p.featured ? planCTAFilled : planCTAOutline}
                 >
                   Start Free Trial
@@ -504,6 +693,7 @@ const planCTAFilled = {
   padding: '12px 0', borderRadius: 8,
   textDecoration: 'none', textAlign: 'center',
   border: 'none',
+  transition: 'background 0.15s',
 }
 const planCTAOutline = {
   ...F.body, fontSize: 14, fontWeight: 500,
@@ -511,6 +701,7 @@ const planCTAOutline = {
   padding: '12px 0', borderRadius: 8,
   textDecoration: 'none', textAlign: 'center',
   border: `1px solid ${C.borderStrong}`,
+  transition: 'border-color 0.15s, color 0.15s',
 }
 
 function BillingToggle({ billing, setBilling }) {
@@ -536,7 +727,7 @@ function BillingToggle({ billing, setBilling }) {
           <span style={{
             ...F.body, fontSize: 10, fontWeight: 600,
             padding: '2px 7px', borderRadius: 10,
-            background: active ? 'rgba(255,255,255,0.18)' : 'rgba(15,30,64,0.10)',
+            background: active ? 'rgba(255,255,255,0.18)' : C.accentTint,
             color: active ? '#FFFFFF' : C.accent,
             letterSpacing: '0.04em',
           }}>{badge}</span>
@@ -558,35 +749,98 @@ function BillingToggle({ billing, setBilling }) {
   )
 }
 
+/* ─────────── FAQ ─────────── */
+
+function FAQ() {
+  const items = [
+    {
+      q: 'Can I cancel any time?',
+      a: 'Yes — from the billing portal. Service continues through the end of the period you have already paid for.',
+    },
+    {
+      q: 'What if I exceed my client account limit?',
+      a: 'You can add accounts above the cap on a per-account basis, or move up to the next tier. We never auto-upgrade you.',
+    },
+    {
+      q: 'Do you support Meta or LinkedIn Ads?',
+      a: 'Google Ads is fully supported today. Meta and LinkedIn are on the roadmap; reach out if either is critical to your workflow.',
+    },
+    {
+      q: 'Is the client report white-labeled?',
+      a: 'Yes. Each report is shareable as a clean read-only document under your agency name with no Retainr branding in the body.',
+    },
+  ]
+  return (
+    <section className="lp-section-pad" style={{ background: C.surfaceWarm, paddingTop: 96, paddingBottom: 96 }}>
+      <div style={{ maxWidth: 760, margin: '0 auto' }}>
+        <SectionEyebrow center>Common questions</SectionEyebrow>
+        <h2 className="lp-h2" style={{
+          ...F.heading, fontWeight: 600, color: C.text,
+          margin: 0, textAlign: 'center', marginBottom: 56,
+        }}>
+          Before you ask.
+        </h2>
+
+        <div>
+          {items.map((it) => (
+            <details key={it.q} className="lp-faq" style={{
+              borderTop: `1px solid ${C.border}`,
+              padding: '20px 0',
+            }}>
+              <summary style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                gap: 16,
+                ...F.heading, fontSize: 18, fontWeight: 600,
+                color: C.text, lineHeight: 1.4,
+              }}>
+                <span>{it.q}</span>
+                <span className="lp-faq-icon" style={{
+                  ...F.body, fontSize: 18, color: C.textMuted,
+                  transition: 'transform 0.2s',
+                  flexShrink: 0,
+                }}>+</span>
+              </summary>
+              <p style={{
+                ...F.body, fontSize: 15, lineHeight: 1.65,
+                color: C.textMuted, margin: 0, marginTop: 14,
+                maxWidth: 640,
+              }}>
+                {it.a}
+              </p>
+            </details>
+          ))}
+          <div style={{ borderTop: `1px solid ${C.border}` }} />
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /* ─────────── Final CTA ─────────── */
 
 function FinalCTA() {
   return (
     <section style={{
-      padding: '140px 32px',
-      background: C.bg,
+      padding: '120px 32px', background: C.bg,
       borderTop: `1px solid ${C.border}`,
     }}>
-      <div style={{
-        maxWidth: 760, margin: '0 auto',
-        textAlign: 'center',
-      }}>
-        <h2 style={{
-          ...F.heading, fontSize: 48, fontWeight: 600,
-          lineHeight: 1.1, letterSpacing: '-0.025em',
-          color: C.text, margin: 0, marginBottom: 24,
+      <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
+        <h2 className="lp-cta-headline" style={{
+          ...F.heading, fontWeight: 600,
+          color: C.text, margin: 0, marginBottom: 22,
         }}>
-          See your first client-ready report in 60 seconds.
+          Connect Google Ads in two minutes.<br />
+          Send your first client report tonight.
         </h2>
         <p style={{
           ...F.body, fontSize: 17, lineHeight: 1.6,
           color: C.textMuted,
-          margin: '0 auto 36px', maxWidth: 520,
+          margin: '0 auto 36px', maxWidth: 540,
         }}>
-          Connect Google Ads, generate a finished narrative, and send it
-          to your client — without writing a word.
+          If you're not sending a real client report within your first
+          week of using Retainr, we'll refund you — no questions asked.
         </p>
-        <Link to="/checkout?plan=pro&billing=monthly" style={btnPrimary}>
+        <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={btnPrimary}>
           Start Free Trial
         </Link>
         <p style={{
@@ -616,12 +870,6 @@ function SectionEyebrow({ children, center }) {
   )
 }
 
-const sectionH2 = {
-  ...F.heading, fontSize: 44, fontWeight: 600,
-  lineHeight: 1.12, letterSpacing: '-0.02em',
-  color: C.text, margin: 0, maxWidth: 720,
-}
-
 /* ─────────── Footer ─────────── */
 
 function Footer() {
@@ -646,12 +894,12 @@ function Footer() {
           display: 'flex', flexWrap: 'wrap', gap: 24,
           ...F.body, fontSize: 13, color: C.textMuted,
         }}>
-          <Link to="/privacy"  style={footerLink}>Privacy</Link>
-          <Link to="/terms"    style={footerLink}>Terms</Link>
-          <Link to="/security" style={footerLink}>Security</Link>
-          <Link to="/support"  style={footerLink}>Support</Link>
-          <Link to="/login"    style={footerLink}>Sign in</Link>
-          <a href="mailto:hello@retainr.io" style={footerLink}>Contact</a>
+          <Link to="/privacy"  className="lp-link" style={footerLink}>Privacy</Link>
+          <Link to="/terms"    className="lp-link" style={footerLink}>Terms</Link>
+          <Link to="/security" className="lp-link" style={footerLink}>Security</Link>
+          <Link to="/support"  className="lp-link" style={footerLink}>Support</Link>
+          <Link to="/login"    className="lp-link" style={footerLink}>Sign in</Link>
+          <a href="mailto:hello@retainr.io" className="lp-link" style={footerLink}>Contact</a>
         </div>
         <div style={{ ...F.body, fontSize: 12, color: C.textFaint }}>
           © 2026 Retainr
@@ -661,4 +909,4 @@ function Footer() {
   )
 }
 
-const footerLink = { color: C.textMuted, textDecoration: 'none' }
+const footerLink = { color: C.textMuted, textDecoration: 'none', transition: 'color 0.15s' }
