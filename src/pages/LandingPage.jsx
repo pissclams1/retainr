@@ -273,16 +273,16 @@ const S = {
 
 const outputFeatures = {
   client: [
-    'Executive summary a CFO reads in 20 seconds — no context required',
-    'Channel-by-channel performance with narrative, not just numbers',
+    'Monthly narrative — what changed and why, in plain English',
+    'Plain-language explanations a client can read in 60 seconds',
     'White-label with your agency name and brand color',
     'Shareable link — no client login required',
   ],
   internal: [
-    'Watch for: the metric they will challenge, surfaced first',
-    'Lead with: the strongest win, ready to speak aloud',
-    'Suggested call script, verbatim, for the opening',
-    'Commitments tracker and expansion opportunities',
+    'Talking points the AM can speak aloud on the call',
+    'Phrases for explaining gains, drops, and trade-offs',
+    'Standardized language across every client, every month',
+    'Suggested call script for the opening minute',
   ],
 }
 
@@ -326,28 +326,27 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO BAND */}
-      <section style={S.heroBand}>
+      <section style={S.heroBand} id="sample">
         <div style={S.heroInner}>
 
           {/* Left */}
           <div>
             <div style={S.heroEyebrow}>
               <span style={S.heroDot} />
-              Agency intelligence platform
+              Performance communication system
             </div>
             <h1 style={S.heroHeadline}>
-              Know every client<br />
-              <span style={S.heroItalic}>before</span> they call.
+              Turn every account manager into a<br />
+              <span style={S.heroItalic}>high-performing</span> communicator.
             </h1>
             <p style={S.heroSub}>
-              Retainr connects to your clients' GA4 accounts and automatically
-              generates two things: a branded report that justifies the retainer,
-              and a private briefing card that tells your account manager exactly
-              what the client will challenge — before they pick up the phone.
+              Turn Google Ads data into clear, client-ready communication
+              across your team — including performance summaries, explanations,
+              and meeting talking points.
             </p>
             <div style={S.heroCTAs}>
-              <Link to="/login" style={S.ctaPrimary}>Get started free →</Link>
-              <a href="#how-it-works" style={S.ctaGhost}>See how it works</a>
+              <Link to="/login" style={S.ctaPrimary}>Start Free Trial →</Link>
+              <a href="#sample" style={S.ctaGhost}>See Sample Report</a>
             </div>
             <div style={S.heroTrust}>
               <span>5 clients free</span>
@@ -359,7 +358,7 @@ export default function LandingPage() {
           </div>
 
           {/* Right — transformation widget */}
-          <div>
+          <div style={{ maxHeight: '520px', overflow: 'hidden' }}>
             <HeroTransformation />
           </div>
 
@@ -370,9 +369,9 @@ export default function LandingPage() {
       <div style={S.statsBar}>
         <div style={S.statsInner}>
           {[
-            { num: '2 min', label: 'Average briefing generation time' },
+            { num: '2 min', label: 'Average narrative generation time' },
             { num: '100%', label: 'Of account managers feel more prepared' },
-            { num: '0', label: 'Surprise client calls you won\'t be ready for' },
+            { num: '0', label: 'Client calls without a clear talking script' },
           ].map((s, i) => (
             <div key={i} style={{
               ...S.statItem,
@@ -389,11 +388,15 @@ export default function LandingPage() {
       {/* TWO OUTPUTS */}
       <section style={S.section} id="outputs">
         <div style={S.sectionInner}>
-          <div style={S.sectionEyebrow}>What retainr generates</div>
+          <div style={S.sectionEyebrow}>Performance communication system</div>
           <h2 style={S.sectionHeadline}>
-            Two outputs. Both <span style={S.sectionItalic}>automatic.</span>
+            Not a dashboard.<br />
+            Not reporting <span style={S.sectionItalic}>software.</span>
           </h2>
-          <p style={S.sectionSub}>Every month, for every client, without lifting a finger.</p>
+          <p style={S.sectionSub}>
+            We standardize how your team explains performance to clients —
+            so every account manager communicates clearly, consistently, and confidently.
+          </p>
           <div style={S.outputsGrid}>
 
             <div style={S.outputCard}>
@@ -402,11 +405,11 @@ export default function LandingPage() {
                 background: '#EAF0FF', color: '#1A4A8A',
                 border: '1px solid rgba(26,74,138,0.2)',
               }}>Client-facing</span>
-              <div style={S.outputTitle}>Branded Monthly Report</div>
+              <div style={S.outputTitle}>Monthly Performance Narrative</div>
               <p style={S.outputDesc}>
-                A white-labeled report designed to justify the retainer and
-                survive the client's internal budget review. Your agency name,
-                your brand color — delivered as a shareable link.
+                A written explanation of what changed in the account, why it changed,
+                and what it means — delivered to the client as a white-labeled,
+                shareable link. No dashboard required.
               </p>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {outputFeatures.client.map((f, i) => (
@@ -427,11 +430,11 @@ export default function LandingPage() {
                 background: '#FFF5E6', color: '#B86A14',
                 border: '1px solid rgba(184,106,20,0.2)',
               }}>Internal only</span>
-              <div style={S.outputTitle}>Pre-call Briefing Card</div>
+              <div style={S.outputTitle}>Meeting Talking Points</div>
               <p style={S.outputDesc}>
-                A private card that prepares your account manager for the
-                hardest version of every unexpected client call. The concern
-                surfaces first. Always.
+                Phrases your account manager can speak aloud on the call —
+                consistent across every client and every AM, so performance is
+                explained the same way every time.
               </p>
               <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {outputFeatures.internal.map((f, i) => (
@@ -462,16 +465,16 @@ export default function LandingPage() {
           <div style={S.stepsGrid}>
             {[
               {
-                num: '01', title: 'Connect GA4',
-                desc: 'Add a client and connect their GA4 property via OAuth. Retainr pulls the first dataset immediately and generates an initial report and briefing.',
+                num: '01', title: 'Connect Google Ads',
+                desc: 'Add an account and connect Google Ads via OAuth. Retainr pulls the first month of data immediately and generates an initial narrative and talking points.',
               },
               {
                 num: '02', title: 'Automatic daily refresh',
-                desc: 'Every morning at 6am, retainr pulls fresh data, recalculates the health score, and triggers threshold alerts if traffic drops or CPL spikes.',
+                desc: 'Every morning at 6am, retainr pulls fresh performance data, regenerates explanations, and flags spend or CPA shifts worth raising with the client.',
               },
               {
-                num: '03', title: 'Report + briefing ready',
-                desc: 'Send the client their monthly report link. Open the internal briefing card before any call. Know the concern before the client raises it.',
+                num: '03', title: 'Narrative + talking points ready',
+                desc: 'Send the client their monthly narrative link. Open the internal talking points before any call. Every AM speaks the same language about performance.',
               },
             ].map((step, i) => (
               <div key={i} style={S.stepItem}>
@@ -542,14 +545,14 @@ export default function LandingPage() {
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <div style={{ ...S.sectionEyebrow, color: 'rgba(245,245,243,0.50)' }}>Start today</div>
           <h2 style={S.ctaHeadline}>
-            Know every client<br />
-            <span style={{ fontStyle: 'italic', color: '#C8C8BE' }}>before</span> they call.
+            Turn every AM into a<br />
+            <span style={{ fontStyle: 'italic', color: '#C8C8BE' }}>high-performing</span> communicator.
           </h2>
           <p style={S.ctaSub}>
-            Connect your first client in under 10 minutes. The first report and briefing card generate automatically.
+            Connect your first Google Ads account in under 10 minutes. The first narrative and talking points generate automatically.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <Link to="/login" style={S.ctaPrimary}>Get started free →</Link>
+            <Link to="/login" style={S.ctaPrimary}>Start Free Trial →</Link>
             <a href="mailto:hello@retainr.io" style={S.ctaGhost}>Talk to us</a>
           </div>
           <div style={S.ctaTrust}>

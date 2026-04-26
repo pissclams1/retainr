@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 const serif = { fontFamily: "'Instrument Serif', serif" }
 const sans = { fontFamily: "'Geist', sans-serif" }
 
@@ -38,30 +40,28 @@ function SectionRow({ label }) {
 
 const features = [
   {
-    section: 'Client reporting',
+    section: 'Performance data',
     rows: [
-      { name: 'White-label reports', desc: 'Agency name + brand color', retainr: 'yes', aa: 'yes', dash: 'partial', what: 'yes' },
+      { name: 'Show performance data', desc: 'Charts, metrics, channel breakdowns', retainr: 'yes', aa: 'yes', dash: 'yes', what: 'yes' },
       { name: 'Automated monthly report', desc: 'Generated without manual work', retainr: 'yes', aa: 'yes', dash: 'yes', what: 'yes' },
-      { name: 'AI narrative + exec summary', desc: 'CFO-readable, no jargon, stands alone', retainr: 'yes', aa: 'partial', dash: 'partial', what: 'partial', highlight: true },
-      { name: 'Shareable link, no client login', desc: 'Send a URL, no portal setup', retainr: 'yes', aa: 'no', dash: 'yes', what: 'yes' },
+      { name: 'White-label reports', desc: 'Agency name + brand color', retainr: 'yes', aa: 'yes', dash: 'partial', what: 'yes' },
     ],
   },
   {
-    section: 'Account manager preparation',
+    section: 'Performance communication',
     rows: [
-      { name: 'Pre-call briefing card', desc: 'Private, internal, per-client', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
-      { name: 'Concern surfaced first', desc: 'The metric client will challenge, upfront', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
-      { name: 'Suggested call script', desc: 'Written, ready to speak aloud', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
-      { name: 'Commitments tracker', desc: 'What you promised, what\'s overdue', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
-      { name: 'Account health score', desc: '0–100, computed daily', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
+      { name: 'Explain performance changes', desc: 'Why the numbers moved, in plain English', retainr: 'yes', aa: 'partial', dash: 'partial', what: 'partial', highlight: true },
+      { name: 'Generate client-ready narratives', desc: 'Monthly summary written for the client', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
+      { name: 'Create meeting talking points', desc: 'Phrases the AM can say on the call', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
+      { name: 'Standardize communication quality', desc: 'Every AM speaks the same language', retainr: 'yes', aa: 'no', dash: 'no', what: 'no', highlight: true },
     ],
   },
   {
     section: 'Data and integrations',
     rows: [
-      { name: 'GA4 connected, daily refresh', desc: 'Automatic, no manual export', retainr: 'yes', aa: 'yes', dash: 'yes', what: 'yes' },
-      { name: 'Multi-platform (Ads, Meta, etc.)', desc: '70+ integrations', retainr: 'partial', aa: 'yes', dash: 'yes', what: 'yes' },
-      { name: 'Threshold alerts', desc: 'Traffic drop, CPL spike notifications', retainr: 'yes', aa: 'yes', dash: 'no', what: 'partial' },
+      { name: 'Google Ads connected', desc: 'Automatic refresh, no manual export', retainr: 'yes', aa: 'yes', dash: 'yes', what: 'yes' },
+      { name: 'Multi-platform (Meta, LinkedIn, etc.)', desc: '70+ integrations', retainr: 'partial', aa: 'yes', dash: 'yes', what: 'yes' },
+      { name: 'Threshold alerts', desc: 'Spend spike, CPA drift notifications', retainr: 'yes', aa: 'yes', dash: 'no', what: 'partial' },
     ],
   },
 ]
@@ -95,11 +95,12 @@ export default function CompetitorComparison() {
           How it compares
         </div>
         <h2 style={{ ...serif, fontSize: 34, fontWeight: 400, color: '#1A1A18', marginBottom: 8, lineHeight: 1.15 }}>
-          Already paying for a reporting tool?
+          Traditional tools show what happened.<br />
+          <span style={{ fontStyle: 'italic', color: '#6B6B66' }}>We help you explain it.</span>
         </h2>
         <p style={{ ...sans, fontSize: 14, color: '#6B6B66', lineHeight: 1.6, maxWidth: 560 }}>
-          Here's what you're getting — and what's still missing. The tools below automate the report.
-          None of them prepare the person sending it.
+          Reporting tools surface the numbers. They don't explain why performance changed,
+          or give your account managers anything to say on the call. Here's what's missing.
         </p>
       </div>
 
@@ -151,8 +152,8 @@ export default function CompetitorComparison() {
           </thead>
           <tbody>
             {features.map((group) => (
-              <>
-                <SectionRow key={group.section} label={group.section} />
+              <Fragment key={group.section}>
+                <SectionRow label={group.section} />
                 {group.rows.map((row) => (
                   <tr key={row.name} style={{ cursor: 'default' }}
                     onMouseEnter={(e) => { Array.from(e.currentTarget.cells).forEach(c => { if (!c.style.background || c.style.background === 'rgb(248, 251, 255)') c.style.background = '#FAFAFA' }) }}
@@ -170,7 +171,7 @@ export default function CompetitorComparison() {
                     <td style={tdBase}><Icon type={row.what} /></td>
                   </tr>
                 ))}
-              </>
+              </Fragment>
             ))}
 
             {/* Pricing row */}
@@ -220,8 +221,9 @@ export default function CompetitorComparison() {
             Already using one of these? Switching takes 10 minutes.
           </div>
           <div style={{ ...sans, fontSize: 11, color: '#3B5A8A', lineHeight: 1.55 }}>
-            Connect your first GA4 client, and retainr generates the initial report and briefing card immediately.
-            No template setup, no dashboard building. If it doesn't change how you walk into client calls, cancel — no questions asked.
+            Connect your first Google Ads account, and retainr generates the monthly narrative,
+            client-ready explanations, and call talking points immediately. If it doesn't change how
+            your team communicates with clients, cancel — no questions asked.
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
             {['No template setup', 'First report in minutes', 'Cancel anytime', 'No credit card to start'].map((t) => (
