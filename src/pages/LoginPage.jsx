@@ -37,7 +37,7 @@ export default function LoginPage() {
 
       {/* Logo */}
       <a href="/" style={{
-        fontFamily: "'Instrument Serif', serif",
+        fontFamily: "'Bricolage Grotesque', sans-serif",
         fontSize: 22,
         color: '#F5F5F3',
         letterSpacing: '-0.3px',
@@ -71,7 +71,7 @@ export default function LoginPage() {
               ✓
             </div>
             <h2 style={{
-              fontFamily: "'Instrument Serif', serif",
+              fontFamily: "'Bricolage Grotesque', sans-serif",
               fontSize: 24, fontWeight: 400,
               color: '#F5F5F3', marginBottom: 10,
             }}>
@@ -89,7 +89,7 @@ export default function LoginPage() {
         ) : (
           <>
             <h1 style={{
-              fontFamily: "'Instrument Serif', serif",
+              fontFamily: "'Bricolage Grotesque', sans-serif",
               fontSize: 28, fontWeight: 400,
               color: '#F5F5F3', marginBottom: 8,
             }}>

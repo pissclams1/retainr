@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
-const serif = { fontFamily: "'Instrument Serif', serif" }
+const serif = { fontFamily: "'Bricolage Grotesque', sans-serif" }
 const sans = { fontFamily: "'Geist', sans-serif" }
 
 /* ────────── Canonical demo report (matches landing hero exactly) ────────── */

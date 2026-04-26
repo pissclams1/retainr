@@ -1,4 +1,4 @@
-const serif = { fontFamily: "'Instrument Serif', serif" }
+const serif = { fontFamily: "'Bricolage Grotesque', sans-serif" }
 const sans = { fontFamily: "'Geist', sans-serif" }
 
 /**

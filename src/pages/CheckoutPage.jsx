@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 
-const serif = { fontFamily: "'Instrument Serif', serif" }
+const serif = { fontFamily: "'Bricolage Grotesque', sans-serif" }
 const sans = { fontFamily: "'Geist', sans-serif" }
 
 const PLANS = {
