@@ -287,30 +287,6 @@ const outputFeatures = {
   ],
 }
 
-const priceFeatures = {
-  starter: [
-    'Monthly performance narrative per account',
-    'Plain-language client explanations',
-    'Meeting talking points for every call',
-    'White-label with your agency name',
-    'Single account manager',
-  ],
-  growth: [
-    'Everything in Starter',
-    'Multiple account managers, one voice',
-    'Standardized phrasing across the team',
-    'Communication quality consistency',
-    'Priority email support',
-  ],
-  agency: [
-    'Everything in Growth',
-    'Unlimited account managers',
-    'Team-wide communication standards',
-    'Custom communication tone & vocabulary',
-    'Dedicated onboarding for the full team',
-  ],
-}
-
 function BillingToggle({ billing, setBilling }) {
   const opt = (key, label, badge) => {
     const active = billing === key
@@ -552,9 +528,9 @@ export default function LandingPage() {
           <div style={S.pricingGrid}>
 
             {[
-              { tier: 'Starter', monthly: 149, yearly: 119, clients: 'For small agencies standardizing client communication', features: priceFeatures.starter, featured: false },
-              { tier: 'Growth', monthly: 399, yearly: 319, clients: 'For teams with multiple account managers who need consistent client reporting quality', features: priceFeatures.growth, featured: true },
-              { tier: 'Agency', monthly: 999, yearly: 799, clients: 'For agencies scaling communication consistency across all clients and account managers', features: priceFeatures.agency, featured: false },
+              { tier: 'Starter', monthly: 149, yearly: 119, clients: 'For small agencies standardizing client communication', featured: false },
+              { tier: 'Growth', monthly: 399, yearly: 319, clients: 'For teams with multiple account managers who need consistent client reporting quality', featured: true },
+              { tier: 'Agency', monthly: 999, yearly: 799, clients: 'For agencies scaling communication consistency across all clients and account managers', featured: false },
             ].map((plan) => {
               const price = billing === 'yearly' ? plan.yearly : plan.monthly
               return (
@@ -565,18 +541,7 @@ export default function LandingPage() {
                   <div style={S.priceCadence}>
                     per month{billing === 'yearly' ? ', billed annually' : ''}
                   </div>
-                  <div style={S.priceClients}>{plan.clients}</div>
-                  <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 24 }}>
-                    {plan.features.map((f, i) => (
-                      <li key={i} style={{
-                        fontFamily: "'Geist', sans-serif", fontSize: 12,
-                        fontWeight: 400, color: '#6B6B66',
-                        display: 'flex', alignItems: 'flex-start', gap: 8, lineHeight: 1.4,
-                      }}>
-                        <span style={{ color: '#2D6A27', flexShrink: 0 }}>✓</span>{f}
-                      </li>
-                    ))}
-                  </ul>
+                  <div style={{ ...S.priceClients, marginBottom: 24 }}>{plan.clients}</div>
                   <Link
                     to={`/checkout?plan=${plan.tier.toLowerCase()}&billing=${billing}`}
                     style={{
