@@ -317,8 +317,7 @@ export default function LandingPage() {
             Performance communication system
           </div>
           <h1 style={S.heroHeadline}>
-            Turn every account manager<br />
-            into a <span style={S.heroItalic}>high-performing</span> communicator.
+            TEST VERSION
           </h1>
           <p style={S.heroSub}>
             Turn Google Ads performance data into client-ready updates,
