@@ -85,6 +85,20 @@ const REPORTS = [
       'Brand search is healthy — up in volume and converting at a premium rate.',
       'Heading into Q2 with strong momentum. Recommend maintaining current budget through May.',
     ],
+    predictedQuestions: [
+      {
+        q: 'Our impressions dropped slightly — should we be concerned?',
+        a: 'Total impressions fell 3% as we reallocated budget toward higher-intent keywords and product categories. Your conversions went up 18% as a result. We\'re reaching fewer people, but the right ones.',
+      },
+      {
+        q: 'Why did spend go up if the account is being more efficient?',
+        a: 'Spend increased only 5% while conversions rose 18% — that\'s the definition of efficiency improving. The incremental spend went entirely toward Shopping campaigns where your conversion rate is strongest.',
+      },
+      {
+        q: 'What should we expect in May?',
+        a: 'Summer is a strong period for e-commerce. We\'ll maintain the current allocation and monitor for any CPA creep. If performance holds through the first two weeks, we\'d recommend a 10–15% budget increase to capture the seasonal lift.',
+      },
+    ],
   },
   {
     id: 'northstar',
@@ -114,6 +128,20 @@ const REPORTS = [
       'CTR improved despite fewer impressions — the targeting work is paying off.',
       'April and May are typically the strongest months in this vertical. We\'re well-positioned.',
     ],
+    predictedQuestions: [
+      {
+        q: 'Our cost per lead went up — is the campaign underperforming?',
+        a: 'CPL increased 8% in March, which is consistent with Q1-end seasonality in B2B SaaS. Decision-makers are in budget finalisation mode. March 2024 saw the same pattern — CPL was up 11% that month before recovering strongly in April. This year is tracking better than last year.',
+      },
+      {
+        q: 'We got fewer conversions. Should we increase the budget to compensate?',
+        a: 'Not yet. Lead volume dipped 6% but quality metrics are holding — pipeline velocity from paid is unchanged. Increasing budget into a seasonal soft period typically raises CPL without lifting volume. April is historically when B2B SaaS bounces back; we\'d recommend holding spend and reviewing in two weeks.',
+      },
+      {
+        q: 'What\'s actually working right now?',
+        a: 'Your CTR improved 6% even with lower impression volume — that means the February targeting refinements are performing. The audience quality is up. We\'re in a position to capitalise on Q2 with a tighter, better-performing account than we had at the start of Q1.',
+      },
+    ],
   },
   {
     id: 'meridian',
@@ -142,6 +170,20 @@ const REPORTS = [
       'Service-area targeting refinements from March are measurably improving conversion efficiency.',
       'Call volume tracking 28% ahead of same period last year.',
       'Recommend increasing budget 15–20% in May to capture continued seasonal demand.',
+    ],
+    predictedQuestions: [
+      {
+        q: 'We\'re getting more calls than we can handle — should we pause the ads?',
+        a: 'This is the best problem to have in April. Rather than pausing, consider setting a daily budget cap to control lead volume, or activating call scheduling to route overflow to on-call staff. Pausing now would let competitors capture demand you\'d have to re-earn later.',
+      },
+      {
+        q: 'Spend went up 13% — did we approve that?',
+        a: 'The budget increase was within the 15% flex range we discussed for peak season. Spend rose $1,500 over March while conversions increased by 36 jobs at $68 each. The incremental spend generated roughly $3,800 in additional revenue at your average job value — a 2.5× return on the extra spend.',
+      },
+      {
+        q: 'How long does peak season last?',
+        a: 'For HVAC in your region, high conversion volume typically runs through mid-June before softening. We\'d recommend maintaining the current setup — or modestly increasing budget — through May, then reviewing in early June. July and August tend to be strong again for AC units.',
+      },
     ],
   },
 ]
@@ -467,6 +509,50 @@ function FullReport({ report }) {
             ))}
           </ul>
         </Section>
+
+        {/* Predicted questions */}
+        <div style={{ marginTop: 8 }}>
+          <div style={{
+            ...F.body, fontSize: 11, fontWeight: 700,
+            letterSpacing: '0.10em', textTransform: 'uppercase',
+            color: C.accent, marginBottom: 4,
+          }}>
+            Predicted client questions
+          </div>
+          <div style={{
+            ...F.body, fontSize: 12, color: C.textFaint,
+            marginBottom: 16, lineHeight: 1.5,
+          }}>
+            Based on this month's data, your client is likely to ask the following. Prepared answers below.
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {report.predictedQuestions.map((pq, i) => (
+              <div key={i} style={{
+                background: C.accentTint,
+                border: `1px solid rgba(15,30,64,0.12)`,
+                borderRadius: 10, padding: '14px 16px',
+              }}>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
+                  <span style={{
+                    ...F.body, fontSize: 10, fontWeight: 700,
+                    color: C.accent, background: 'rgba(15,30,64,0.10)',
+                    padding: '2px 8px', borderRadius: 10,
+                    whiteSpace: 'nowrap', flexShrink: 0,
+                  }}>
+                    Q{i + 1}
+                  </span>
+                  <div style={{ ...F.body, fontSize: 14, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>
+                    "{pq.q}"
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, paddingLeft: 2 }}>
+                  <span style={{ ...F.body, fontSize: 13, fontWeight: 700, color: '#15803D', flexShrink: 0 }}>→</span>
+                  <div style={{ ...F.body, fontSize: 13, color: C.textBody, lineHeight: 1.6 }}>{pq.a}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Footer */}

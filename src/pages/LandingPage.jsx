@@ -1,136 +1,111 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 /* ─────────── Design tokens ─────────── */
 
-const F = {
-  heading: { fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" },
-  body:    { fontFamily: "'Inter', system-ui, -apple-system, sans-serif" },
-}
+const F = { sans: { fontFamily: "'DM Sans', system-ui, -apple-system, sans-serif" } }
 
 const C = {
-  bg:           '#FAFAFA',
-  surface:      '#FFFFFF',
-  surfaceWarm:  '#F5F4F0',
-  heroTint:     '#EFEAE0',     // soft cream gradient stop for hero backdrop
-  text:         '#111111',
-  textBody:     '#1F1F1F',
-  textMuted:    '#5A5A5A',
-  textFaint:    '#8A8A8A',
-  border:       'rgba(17,17,17,0.08)',
-  borderStrong: 'rgba(17,17,17,0.14)',
-  accent:       '#0F1E40',
-  accentTint:   'rgba(15,30,64,0.08)',
-  highlight:    '#E8D7A8',     // warm sand — used only for headline accent underline
-  highlightBg:  '#F5E8C8',
-  positive:     '#15803D',
+  bg:           '#FFFFFF',
+  bgAlt:        '#F8FAFC',
+  text:         '#0F1F3D',
+  textMuted:    '#64748B',
+  textSubtle:   '#94A3B8',
+  border:       '#E2E8F0',
+  borderMid:    '#CBD5E1',
+  accent:       '#04256c',
+  accentBg:     'rgba(4,37,108,0.07)',
+  accentBorder: 'rgba(4,37,108,0.18)',
+  positive:     '#10B981',
+  amber:        '#F59E0B',
+  negative:     '#EF4444',
+  navy:         '#0F1F3D',
 }
 
 const MAX = 1180
 
-/* ─────────── Page CSS (responsive + base) ─────────── */
+/* ─────────── Page CSS ─────────── */
 
 const PAGE_CSS = `
   html, body { background: ${C.bg}; }
   * { box-sizing: border-box; }
-  ::selection { background: ${C.accentTint}; color: ${C.text}; }
+  ::selection { background: rgba(4,37,108,0.10); }
 
-  .lp-hero-backdrop {
-    background:
-      radial-gradient(ellipse 1100px 460px at 50% 0%, ${C.heroTint} 0%, rgba(239,234,224,0) 70%),
-      ${C.bg};
-  }
+  .lp-nav { background: rgba(255,255,255,0.8); border-bottom: 1px solid transparent; transition: background 0.2s, border-color 0.2s; }
+  .lp-nav.scrolled { background: rgba(255,255,255,0.94); border-bottom-color: ${C.border}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 
-  .lp-section-grid-3 {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px;
-  }
-  .lp-section-grid-4 {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
-  }
-  .lp-section-grid-2 {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
-  }
-  .lp-pricing-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-    max-width: 1080px; margin: 28px auto 0;
-  }
-  .lp-section-pad { padding: 120px 32px; }
+  .lp-nav-link { padding: 6px 12px; border-radius: 7px; color: ${C.textMuted}; text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.15s, color 0.15s; }
+  .lp-nav-link:hover { background: ${C.bgAlt}; color: ${C.text}; }
 
-  .lp-h1 {
-    font-size: 64px; line-height: 1.04; letter-spacing: -0.025em;
-  }
-  .lp-h2 { font-size: 44px; line-height: 1.12; letter-spacing: -0.02em; }
-  .lp-cta-headline { font-size: 48px; line-height: 1.08; letter-spacing: -0.025em; }
+  .lp-feature-card { padding: 28px; border-radius: 14px; border: 1px solid ${C.border}; background: ${C.bg}; transition: border-color 0.18s, background 0.18s; }
+  .lp-feature-card:hover { border-color: rgba(4,37,108,0.28); background: #FAFBFF; }
+  .lp-feature-card-hero { border-color: ${C.accentBorder}; background: ${C.accentBg}; }
+  .lp-feature-card-hero:hover { border-color: rgba(4,37,108,0.40); background: rgba(4,37,108,0.09); }
 
-  .lp-headline-accent {
-    background-image: linear-gradient(transparent 64%, ${C.highlightBg} 64%, ${C.highlightBg} 92%, transparent 92%);
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
-    padding: 0 2px;
-  }
+  .lp-pricing-card { border-radius: 16px; border: 1.5px solid ${C.border}; padding: 32px 28px; background: ${C.bg}; transition: border-color 0.2s, box-shadow 0.2s; position: relative; }
+  .lp-pricing-card:hover { border-color: rgba(4,37,108,0.45); box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+  .lp-pricing-card-featured { background: ${C.accent}; border-color: ${C.accent}; color: #fff; box-shadow: 0 8px 32px rgba(4,37,108,0.35); }
+  .lp-pricing-card-featured:hover { border-color: ${C.accent}; box-shadow: 0 12px 40px rgba(4,37,108,0.45); }
 
-  /* Logo strip greyscale */
-  .lp-logo-strip span {
-    color: ${C.textFaint};
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    transition: color 0.15s, opacity 0.15s;
-    opacity: 0.7;
-  }
-  .lp-logo-strip span:hover { color: ${C.text}; opacity: 1; }
-
-  /* Tablet */
-  @media (max-width: 960px) {
-    .lp-section-grid-4 { grid-template-columns: repeat(2, 1fr); }
-    .lp-section-grid-2 { grid-template-columns: 1fr; gap: 32px; }
-    .lp-h1 { font-size: 48px; }
-    .lp-h2 { font-size: 34px; }
-    .lp-cta-headline { font-size: 36px; }
-    .lp-section-pad { padding: 96px 24px; }
-    .lp-floating-card { display: none !important; }
-  }
-  /* Mobile */
-  @media (max-width: 640px) {
-    .lp-section-grid-3 { grid-template-columns: 1fr; gap: 36px; }
-    .lp-section-grid-4 { grid-template-columns: 1fr; gap: 12px; }
-    .lp-pricing-grid { grid-template-columns: 1fr; }
-    .lp-h1 { font-size: 38px; }
-    .lp-h2 { font-size: 28px; }
-    .lp-cta-headline { font-size: 30px; }
-    .lp-section-pad { padding: 72px 20px; }
-    .lp-nav-links { display: none !important; }
-  }
-
-  /* Affordances */
-  .lp-link:hover { color: ${C.text}; }
-  .lp-cta-primary:hover { background: #142751; }
-  .lp-cta-ghost:hover { border-color: ${C.text}; color: ${C.text}; }
   .lp-faq summary { list-style: none; cursor: pointer; }
   .lp-faq summary::-webkit-details-marker { display: none; }
   .lp-faq[open] .lp-faq-icon { transform: rotate(45deg); }
+
+  .lp-cta-primary { background: ${C.accent}; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; padding: 14px 28px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; box-shadow: 0 4px 16px rgba(4,37,108,0.35); transition: box-shadow 0.15s, opacity 0.15s; }
+  .lp-cta-primary:hover { opacity: 0.92; box-shadow: 0 6px 24px rgba(4,37,108,0.45); }
+  .lp-cta-ghost { background: ${C.bg}; color: ${C.text}; border: 1.5px solid ${C.border}; border-radius: 10px; font-size: 15px; font-weight: 600; padding: 13px 24px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; transition: border-color 0.15s; }
+  .lp-cta-ghost:hover { border-color: ${C.borderMid}; }
+
+  .lp-section-pad { padding: 96px 24px; }
+
+  .lp-h1 { font-size: 58px; line-height: 1.07; letter-spacing: -0.03em; }
+  .lp-h2 { font-size: 40px; line-height: 1.12; letter-spacing: -0.025em; }
+
+  .lp-hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .lp-features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .lp-how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .lp-testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .lp-pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 940px; margin: 56px auto 0; }
+  .lp-stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: ${C.border}; border-radius: 14px; overflow: hidden; margin-top: 48px; }
+
+  @media (max-width: 960px) {
+    .lp-hero-grid { grid-template-columns: 1fr !important; }
+    .lp-hero-mockup { display: none !important; }
+    .lp-features-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .lp-how-grid { gap: 40px !important; }
+    .lp-testimonials-grid { grid-template-columns: 1fr !important; }
+    .lp-pricing-grid { grid-template-columns: 1fr !important; max-width: 420px !important; }
+    .lp-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .lp-h1 { font-size: 42px !important; }
+    .lp-h2 { font-size: 32px !important; }
+    .lp-section-pad { padding: 72px 24px !important; }
+  }
+  @media (max-width: 640px) {
+    .lp-features-grid { grid-template-columns: 1fr !important; }
+    .lp-how-grid { grid-template-columns: 1fr !important; }
+    .lp-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .lp-h1 { font-size: 34px !important; }
+    .lp-h2 { font-size: 26px !important; }
+    .lp-section-pad { padding: 56px 20px !important; }
+    .lp-nav-links { display: none !important; }
+  }
 `
 
 /* ─────────── Page ─────────── */
 
 export default function LandingPage() {
   const [billing, setBilling] = useState('monthly')
-
   return (
-    <div style={{
-      ...F.body, color: C.textBody, background: C.bg,
-      WebkitFontSmoothing: 'antialiased',
-      MozOsxFontSmoothing: 'grayscale',
-    }}>
+    <div style={{ ...F.sans, color: C.text, background: C.bg, WebkitFontSmoothing: 'antialiased' }}>
       <style>{PAGE_CSS}</style>
       <Nav />
       <Hero />
-      <StatsRow />
       <LogoStrip />
-      <BeforeAfter />
+      <Features />
       <HowItWorks />
-      <Outputs />
+      <PredictedQuestions />
       <CompetitorContrast />
-      <Testimonial />
+      <SocialProof />
       <Pricing billing={billing} setBilling={setBilling} />
       <FAQ />
       <FinalCTA />
@@ -142,28 +117,27 @@ export default function LandingPage() {
 /* ─────────── Nav ─────────── */
 
 function Nav() {
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const handler = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', handler)
+    return () => window.removeEventListener('scroll', handler)
+  }, [])
   return (
-    <nav style={{
-      position: 'sticky', top: 0, zIndex: 50,
-      background: 'rgba(250,250,250,0.85)',
-      backdropFilter: 'saturate(140%) blur(12px)',
-      WebkitBackdropFilter: 'saturate(140%) blur(12px)',
-      borderBottom: `1px solid ${C.border}`,
-    }}>
-      <div style={{
-        maxWidth: MAX, margin: '0 auto', padding: '18px 32px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        <a href="/" style={{
-          ...F.heading, fontSize: 19, fontWeight: 600,
-          color: C.text, letterSpacing: '-0.01em', textDecoration: 'none',
-        }}>retainr</a>
-        <div className="lp-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-          <a href="#how" className="lp-link" style={navLink}>How it works</a>
-          <a href="#pricing" className="lp-link" style={navLink}>Pricing</a>
-          <Link to="/sample-report" className="lp-link" style={navLink}>Sample reports</Link>
-          <Link to="/login" className="lp-link" style={navLink}>Sign in</Link>
-          <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={btnPrimarySmall}>
+    <nav className={`lp-nav${scrolled ? ' scrolled' : ''}`} style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100 }}>
+      <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+          <Link to="/" style={{ ...F.sans, fontSize: 18, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', textDecoration: 'none' }}>retainr</Link>
+          <div className="lp-nav-links" style={{ display: 'flex', gap: 4 }}>
+            {[['#how', 'How it works'], ['#features', 'Features'], ['#pricing', 'Pricing']].map(([href, label]) => (
+              <a key={href} href={href} className="lp-nav-link" style={F.sans}>{label}</a>
+            ))}
+            <Link to="/sample-report" className="lp-nav-link" style={F.sans}>Sample reports</Link>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Link to="/login" style={{ ...F.sans, fontSize: 14, fontWeight: 500, color: C.textMuted, padding: '8px 16px', textDecoration: 'none' }}>Sign in</Link>
+          <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={{ ...F.sans, fontSize: 14, fontWeight: 700, padding: '9px 20px', borderRadius: 8, boxShadow: '0 4px 12px rgba(4,37,108,0.30)' }}>
             Start Free Trial
           </Link>
         </div>
@@ -172,361 +146,202 @@ function Nav() {
   )
 }
 
-const navLink = {
-  ...F.body, fontSize: 14, fontWeight: 500,
-  color: C.textMuted, textDecoration: 'none',
-  transition: 'color 0.15s',
-}
-const btnPrimarySmall = {
-  ...F.body, fontSize: 14, fontWeight: 500,
-  color: '#FFFFFF', background: C.accent,
-  padding: '9px 18px', borderRadius: 8,
-  textDecoration: 'none', border: 'none', cursor: 'pointer',
-  transition: 'background 0.15s',
-}
-
-/* ─────────── Hero (centered, dominant report, gradient backdrop, floating cards) ─────────── */
+/* ─────────── Hero ─────────── */
 
 function Hero() {
   return (
-    <section className="lp-hero-backdrop" style={{ padding: '88px 32px 60px' }}>
-      <div style={{ maxWidth: MAX, margin: '0 auto', textAlign: 'center' }}>
-        <div style={{
-          ...F.body, fontSize: 13, fontWeight: 500,
-          color: C.textMuted, marginBottom: 20,
-          display: 'inline-flex', alignItems: 'center', gap: 8,
-          background: C.surface, padding: '6px 14px',
-          border: `1px solid ${C.border}`, borderRadius: 100,
-        }}>
-          <span style={{
-            width: 6, height: 6, borderRadius: '50%',
-            background: C.positive, flexShrink: 0,
-          }} />
-          Built for Google Ads agencies and performance marketing teams
-        </div>
+    <section style={{ paddingTop: 120, paddingBottom: 80, background: 'linear-gradient(180deg, #F0F4FF 0%, #fff 65%)' }}>
+      <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
+        <div className="lp-hero-grid">
+          {/* Left: Copy */}
+          <div>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: C.accentBg, border: `1px solid ${C.accentBorder}`,
+              borderRadius: 20, padding: '5px 14px 5px 8px', marginBottom: 24,
+            }}>
+              <span style={{
+                width: 18, height: 18, borderRadius: '50%', background: C.accent,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M2 5h6M5 2v6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </span>
+              <span style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: C.accent }}>Built for Google Ads agencies</span>
+            </div>
 
-        <h1 className="lp-h1" style={{
-          ...F.heading, fontWeight: 700, color: C.text,
-          margin: 0, marginBottom: 22, maxWidth: 880,
-          marginLeft: 'auto', marginRight: 'auto',
-        }}>
-          Every Account Manager becomes an{' '}
-          <span className="lp-headline-accent">excellent</span>
-          {' '}client communicator.
-        </h1>
+            <h1 className="lp-h1" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 20 }}>
+              Make every AM your{' '}
+              <span style={{ color: C.accent }}>best AM.</span>
+            </h1>
 
-        <p style={{
-          ...F.body, fontSize: 20, fontWeight: 400,
-          lineHeight: 1.55, color: C.textMuted,
-          margin: '0 auto 14px', maxWidth: 680,
-        }}>
-          Generate client-ready Google Ads updates, explanations, and
-          talking points in seconds.
-        </p>
-        <p style={{
-          ...F.body, fontSize: 15, fontWeight: 400,
-          lineHeight: 1.6, color: C.textFaint,
-          margin: '0 auto 36px', maxWidth: 540,
-        }}>
-          Replace the writing your account managers do manually every month.
-        </p>
+            <p style={{ ...F.sans, fontSize: 18, color: C.textMuted, lineHeight: 1.65, marginBottom: 14, maxWidth: 480 }}>
+              Retainr prepares every account manager for every client call — with the data, narrative, and predicted client questions they need to communicate confidently.
+            </p>
+            <p style={{ ...F.sans, fontSize: 15, color: C.textSubtle, lineHeight: 1.6, marginBottom: 36, maxWidth: 460 }}>
+              The agencies that retain clients longest don't have the best dashboards. They have the best communicators.
+            </p>
 
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          gap: 14, flexWrap: 'wrap', marginBottom: 16,
-        }}>
-          <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={btnPrimary}>
-            Start Free Trial
-          </Link>
-          <Link to="/sample-report" className="lp-cta-ghost" style={btnGhost}>
-            See Sample Report
-          </Link>
-        </div>
-        <p style={{ ...F.body, fontSize: 13, color: C.textFaint, margin: 0, marginBottom: 64 }}>
-          14-day free trial · No credit card required
-        </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
+              <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={F.sans}>
+                Start Free Trial
+              </Link>
+              <Link to="/sample-report" className="lp-cta-ghost" style={F.sans}>
+                See Sample Reports →
+              </Link>
+            </div>
 
-        {/* The product — large report doc, dominant */}
-        <div style={{ maxWidth: 880, margin: '0 auto' }}>
-          <ReportDocument />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+              {['14-day free trial', 'No credit card', 'Set up in 5 min'].map(t => (
+                <span key={t} style={{ ...F.sans, fontSize: 13, color: C.textSubtle, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                    <circle cx="6.5" cy="6.5" r="5.5" fill={C.accentBg}/>
+                    <path d="M4 6.5l1.8 1.8L9 4.5" stroke={C.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Browser mockup */}
+          <div className="lp-hero-mockup" style={{ display: 'flex', justifyContent: 'center' }}>
+            <HeroBrowserMockup />
+          </div>
         </div>
       </div>
     </section>
   )
 }
 
-const btnPrimary = {
-  ...F.body, fontSize: 15, fontWeight: 500,
-  color: '#FFFFFF', background: C.accent,
-  padding: '14px 26px', borderRadius: 8,
-  textDecoration: 'none',
-  display: 'inline-flex', alignItems: 'center', gap: 8,
-  border: 'none', cursor: 'pointer',
-  transition: 'background 0.15s',
-  boxShadow: '0 8px 16px -8px rgba(15,30,64,0.40)',
-}
-const btnGhost = {
-  ...F.body, fontSize: 15, fontWeight: 500,
-  color: C.text, background: C.surface,
-  padding: '13px 24px', borderRadius: 8,
-  textDecoration: 'none',
-  display: 'inline-flex', alignItems: 'center', gap: 8,
-  border: `1px solid ${C.borderStrong}`, cursor: 'pointer',
-  transition: 'border-color 0.15s, color 0.15s',
-}
+/* ─────────── Hero browser mockup ─────────── */
 
-
-/* ─────────── Report (paper-style, the product) ─────────── */
-
-function ReportDocument() {
+function HeroBrowserMockup() {
   return (
-    <article style={{
-      background: C.surface,
-      border: `1px solid ${C.border}`,
-      borderRadius: 2,
-      boxShadow: [
-        '0 1px 0 rgba(255,255,255,0.7) inset',
-        '0 1px 0 rgba(17,17,17,0.04)',
-        '0 8px 16px -8px rgba(17,17,17,0.10)',
-        '0 36px 80px -20px rgba(17,17,17,0.25)',
-      ].join(', '),
-      overflow: 'hidden',
-      textAlign: 'left',
+    <div style={{
+      background: '#F8FAFC', borderRadius: 16,
+      border: `1px solid ${C.border}`, overflow: 'hidden',
+      boxShadow: '0 24px 60px rgba(15,31,61,0.12), 0 4px 16px rgba(15,31,61,0.06)',
+      width: '100%', maxWidth: 560,
     }}>
-      <div style={{ height: 4, background: C.accent }} />
-
-      <header style={{ padding: '40px 48px 24px', borderBottom: `1px solid ${C.border}` }}>
-        <div style={{
-          ...F.body, fontSize: 11, fontWeight: 600,
-          letterSpacing: '0.10em', textTransform: 'uppercase',
-          color: C.textFaint, marginBottom: 10,
-        }}>
-          Monthly Performance Report · April 2025
+      {/* Browser chrome */}
+      <div style={{ background: '#fff', borderBottom: `1px solid ${C.border}`, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 5 }}>
+          {['#FF5F57','#FFBD2E','#28C840'].map(c => (
+            <div key={c} style={{ width: 10, height: 10, borderRadius: '50%', background: c }} />
+          ))}
         </div>
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap' }}>
-          <h3 style={{
-            ...F.heading, fontSize: 30, fontWeight: 700,
-            lineHeight: 1.15, color: C.text,
-            margin: 0,
-          }}>
-            Apex Digital
-          </h3>
-          <div style={{
-            ...F.body, fontSize: 12, color: C.textFaint,
-            display: 'flex', alignItems: 'center', gap: 8,
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.positive }} />
-            Generated by retainr · 47 sec
+        <div style={{ flex: 1, background: '#F1F5F9', borderRadius: 6, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ ...F.sans, fontSize: 10, color: C.textSubtle }}>retainr.io — Apex Digital · April 2025</span>
+        </div>
+      </div>
+
+      <div style={{ padding: '16px 18px 18px' }}>
+        {/* Report header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
+          <div>
+            <div style={{ ...F.sans, fontSize: 10, color: C.textSubtle, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 3 }}>Monthly Performance Report</div>
+            <div style={{ ...F.sans, fontSize: 16, fontWeight: 700, color: C.text }}>Apex Digital Co.</div>
+            <div style={{ ...F.sans, fontSize: 11, color: C.textMuted }}>April 1 – April 30, 2025</div>
+          </div>
+          <div style={{ background: C.accentBg, borderRadius: 8, padding: '5px 10px', ...F.sans, fontSize: 11, fontWeight: 600, color: C.accent }}>
+            Generated by AI
           </div>
         </div>
-      </header>
 
-      {/* Performance metrics — communicates that real data is being pulled */}
-      <div style={{ padding: '20px 48px 24px', borderBottom: `1px solid ${C.border}`, background: C.bg }}>
-        <div style={{
-          ...F.body, fontSize: 10, fontWeight: 600,
-          letterSpacing: '0.10em', textTransform: 'uppercase',
-          color: C.textFaint, marginBottom: 12,
-        }}>
-          Performance Summary · April vs March 2025
-        </div>
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px',
-        }}>
+        {/* Metric badges */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 12 }}>
           {[
-            { label: 'Impressions',  value: '284,512', delta: '+3%',   up: true  },
-            { label: 'Clicks',       value: '8,204',   delta: '+7%',   up: true  },
-            { label: 'CTR',          value: '2.88%',   delta: '+4%',   up: true  },
-            { label: 'Conversions',  value: '1,284',   delta: '+18%',  up: true  },
-            { label: 'Cost / Conv.', value: '$41.32',  delta: '+11%',  up: true  },
-            { label: 'Spend',        value: '$53,056', delta: '+5%',   up: null  },
+            { label: 'Impressions', value: '284K', delta: '+3%', color: C.positive },
+            { label: 'Clicks', value: '8.2K', delta: '+7%', color: C.positive },
+            { label: 'Conversions', value: '1,284', delta: '+18%', color: C.positive },
+            { label: 'CPA', value: '$41', delta: '+11%', color: C.positive },
           ].map(m => (
-            <div key={m.label} style={{
-              padding: '10px 12px',
-              background: C.surface, borderRadius: 6,
-              border: `1px solid ${C.border}`,
-            }}>
-              <div style={{
-                ...F.body, fontSize: 10, fontWeight: 500,
-                color: C.textFaint, marginBottom: 4,
-              }}>{m.label}</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
-                <span style={{
-                  ...F.heading, fontSize: 15, fontWeight: 600, color: C.text,
-                }}>{m.value}</span>
-                <span style={{
-                  ...F.body, fontSize: 10, fontWeight: 600,
-                  color: m.up === null ? C.textFaint : m.delta.startsWith('+') ? C.positive : '#DC2626',
-                }}>{m.delta}</span>
-              </div>
+            <div key={m.label} style={{ background: '#fff', border: `1px solid #E8ECF2`, borderRadius: 8, padding: '8px 10px', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+              <div style={{ ...F.sans, fontSize: 9, color: C.textSubtle, fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 2 }}>{m.label}</div>
+              <div style={{ ...F.sans, fontSize: 15, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>{m.value}</div>
+              <div style={{ ...F.sans, fontSize: 10, color: m.color, fontWeight: 600 }}>{m.delta}</div>
             </div>
           ))}
         </div>
-      </div>
 
-      <div style={{ padding: '32px 48px 36px', display: 'flex', flexDirection: 'column', gap: 30 }}>
-        <DocSection label="Monthly Performance Narrative">
-          <p style={{ ...docProse, margin: 0 }}>
-            Performance improved this month, driven by stronger efficiency in
-            high-intent campaigns and improved allocation of spend toward
-            converting traffic.
-          </p>
-          <ul style={docList}>
-            <li style={docLi}>Conversions increased <strong style={docStrong}>18%</strong></li>
-            <li style={docLi}>CPA decreased <strong style={docStrong}>11%</strong></li>
-            <li style={docLi}>Brand campaigns outperformed non-brand traffic</li>
-          </ul>
-        </DocSection>
+        {/* Sparkline */}
+        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px 8px', marginBottom: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ ...F.sans, fontSize: 11, fontWeight: 600, color: C.text }}>Conversion Trend</span>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {['7d','30d','90d'].map((t, i) => (
+                <span key={t} style={{ ...F.sans, fontSize: 9, padding: '2px 6px', borderRadius: 4, background: i === 1 ? C.accent : '#F1F5F9', color: i === 1 ? '#fff' : C.textMuted, fontWeight: 600, cursor: 'pointer' }}>{t}</span>
+              ))}
+            </div>
+          </div>
+          <svg width="100%" height="38" viewBox="0 0 400 38" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={C.accent} stopOpacity="0.15"/>
+                <stop offset="100%" stopColor={C.accent} stopOpacity="0"/>
+              </linearGradient>
+            </defs>
+            <polygon points="0,38 0,30 50,26 100,22 150,24 200,16 250,13 300,9 350,6 400,3 400,38" fill="url(#sg)"/>
+            <polyline points="0,30 50,26 100,22 150,24 200,16 250,13 300,9 350,6 400,3" fill="none" stroke={C.accent} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+            {['Apr 1','Apr 8','Apr 15','Apr 22','Apr 30'].map(d => (
+              <span key={d} style={{ ...F.sans, fontSize: 8, color: '#CBD5E1' }}>{d}</span>
+            ))}
+          </div>
+        </div>
 
-        <DocSection label="Key Takeaway">
-          <p style={{
-            ...docProse, margin: 0,
-            paddingLeft: 16, borderLeft: `2px solid ${C.accent}`,
-            background: C.accentTint, padding: '14px 16px',
-            borderRadius: '0 4px 4px 0',
-          }}>
-            Performance gains were driven by efficiency improvements rather
-            than increased spend.
+        {/* AI narrative snippet */}
+        <div style={{ background: C.accentBg, border: `1px solid ${C.accentBorder}`, borderRadius: 8, padding: '10px 12px', marginBottom: 10 }}>
+          <div style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: C.accent, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6 }}>
+            AI Executive Summary
+          </div>
+          <p style={{ ...F.sans, fontSize: 11, color: '#334155', lineHeight: 1.6, margin: 0 }}>
+            <strong>April was a strong month.</strong> Conversions jumped 18% while CPA dropped — the account is doing more with the same budget. Shopping campaigns drove the lift...
           </p>
-        </DocSection>
+        </div>
 
         {/* Internal divider */}
-        <InternalDivider />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '10px 0' }}>
+          <div style={{ flex: 1, borderTop: `1px dashed ${C.borderMid}` }} />
+          <span style={{ ...F.sans, fontSize: 9, fontWeight: 600, color: C.textSubtle, letterSpacing: '0.08em', textTransform: 'uppercase', background: '#fff', padding: '2px 8px', borderRadius: 10, border: `1px solid ${C.border}` }}>
+            For your team · not sent to client
+          </span>
+          <div style={{ flex: 1, borderTop: `1px dashed ${C.borderMid}` }} />
+        </div>
 
-        <DocSection label="How to Explain This to the Client">
-          <ul style={{ ...docList, gap: 10 }}>
-            <li style={docLi}>"We improved efficiency this month without increasing your budget."</li>
-            <li style={docLi}>"We're seeing stronger performance from higher-intent search traffic."</li>
-            <li style={docLi}>"The account is becoming more efficient as we refine spend allocation."</li>
-          </ul>
-        </DocSection>
-
-        <DocSection label="Talking Points">
-          <ul style={{ ...docList, gap: 10 }}>
-            <li style={docLi}>This month is about efficiency gains, not just volume.</li>
-            <li style={docLi}>We're improving how budget is allocated across intent levels.</li>
-            <li style={docLi}>The account is trending toward higher-quality traffic overall.</li>
-          </ul>
-        </DocSection>
+        {/* Predicted question preview */}
+        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px' }}>
+          <div style={{ ...F.sans, fontSize: 9, fontWeight: 700, color: C.accent, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 6 }}>
+            Client will likely ask
+          </div>
+          <div style={{ ...F.sans, fontSize: 11, fontWeight: 600, color: C.text, marginBottom: 4 }}>
+            "Why did our impressions drop while conversions went up?"
+          </div>
+          <div style={{ ...F.sans, fontSize: 11, color: C.textMuted, lineHeight: 1.55 }}>
+            → "We shifted budget toward higher-intent keywords. Fewer impressions, better conversions — that's efficiency improving, not volume falling."
+          </div>
+        </div>
       </div>
-
-      <footer style={{
-        padding: '14px 48px',
-        borderTop: `1px solid ${C.border}`,
-        display: 'flex', justifyContent: 'space-between',
-        ...F.body, fontSize: 11, color: C.textFaint,
-      }}>
-        <span>retainr.io/r/apex-digital</span>
-        <span>1 / 1</span>
-      </footer>
-    </article>
-  )
-}
-
-function DocSection({ label, children }) {
-  return (
-    <section>
-      <div style={{
-        ...F.body, fontSize: 11, fontWeight: 600,
-        letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: C.textFaint, marginBottom: 12,
-      }}>
-        {label}
-      </div>
-      {children}
-    </section>
-  )
-}
-
-function InternalDivider() {
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: 12,
-      margin: '4px 0',
-    }}>
-      <div style={{ flex: 1, borderTop: `1px dashed ${C.border}` }} />
-      <div style={{
-        ...F.body, fontSize: 10, fontWeight: 600,
-        letterSpacing: '0.10em', textTransform: 'uppercase',
-        color: C.textFaint,
-        background: C.accentTint,
-        padding: '3px 10px', borderRadius: 20,
-        whiteSpace: 'nowrap',
-      }}>
-        For your team · not sent to client
-      </div>
-      <div style={{ flex: 1, borderTop: `1px dashed ${C.border}` }} />
     </div>
   )
 }
 
-const docProse = { ...F.body, fontSize: 15, lineHeight: 1.65, color: C.textBody }
-const docList = {
-  listStyle: 'none', padding: 0, margin: '14px 0 0 0',
-  display: 'flex', flexDirection: 'column', gap: 6,
-}
-const docLi = { ...F.body, fontSize: 14, lineHeight: 1.6, color: C.textBody }
-const docStrong = { fontWeight: 600, color: C.text }
-
-/* ─────────── Stats row ─────────── */
-
-function StatsRow() {
-  const stats = [
-    { num: '6h → 20m', label: 'Time per client report' },
-    { num: '<60 sec',  label: 'First report after connecting' },
-    { num: '100%',     label: 'AMs with consistent talking points' },
-  ]
-  return (
-    <section style={{ padding: '32px', background: C.bg, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}` }}>
-      <div className="lp-section-grid-3" style={{ maxWidth: MAX, margin: '0 auto' }}>
-        {stats.map((s, i) => (
-          <div key={s.label} style={{
-            textAlign: 'center', padding: '12px 16px',
-            borderRight: i < stats.length - 1 ? `1px solid ${C.border}` : 'none',
-          }}>
-            <div style={{
-              ...F.heading, fontSize: 32, fontWeight: 700,
-              color: C.text, lineHeight: 1.1, marginBottom: 6,
-              letterSpacing: '-0.02em',
-            }}>
-              {s.num}
-            </div>
-            <div style={{
-              ...F.body, fontSize: 13, color: C.textMuted,
-            }}>
-              {s.label}
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-/* ─────────── Logo strip (placeholder agency-types) ─────────── */
+/* ─────────── Logo strip ─────────── */
 
 function LogoStrip() {
-  const logos = ['NORTHSTAR', 'APEX DIGITAL', 'MERIDIAN ADS', 'BLUE PARTNERS', 'TIDEWATER GROWTH', 'COVALENT']
+  const logos = ['Apex Digital', 'Growth Labs', 'Northstar Media', 'Blue Partners', 'ClickWise', 'Thrive Agency']
   return (
-    <section style={{ padding: '52px 32px', background: C.bg }}>
+    <section style={{ borderTop: `1px solid #F1F5F9`, borderBottom: `1px solid #F1F5F9`, padding: '28px 24px', background: '#fff' }}>
       <div style={{ maxWidth: MAX, margin: '0 auto' }}>
-        <div style={{
-          ...F.body, fontSize: 12, fontWeight: 600,
-          letterSpacing: '0.16em', textTransform: 'uppercase',
-          color: C.textFaint, textAlign: 'center', marginBottom: 28,
-        }}>
-          Used by performance agencies on $500K–$50M in client spend
+        <div style={{ ...F.sans, textAlign: 'center', fontSize: 12, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.textSubtle, marginBottom: 20 }}>
+          Trusted by performance agencies managing $500K–$50M in client spend
         </div>
-        <div className="lp-logo-strip" style={{
-          display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center',
-          gap: '20px 56px',
-        }}>
-          {logos.map((l) => (
-            <span key={l} style={{
-              ...F.heading, fontSize: 15,
-            }}>
-              {l}
-            </span>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px 48px', flexWrap: 'wrap' }}>
+          {logos.map(name => (
+            <span key={name} style={{ ...F.sans, fontSize: 14, fontWeight: 700, color: '#CBD5E1', letterSpacing: '-0.01em' }}>{name}</span>
           ))}
         </div>
       </div>
@@ -534,105 +349,76 @@ function LogoStrip() {
   )
 }
 
-/* ─────────── Before / After transformation ─────────── */
+/* ─────────── Features ─────────── */
 
-function BeforeAfter() {
+function Features() {
+  const features = [
+    {
+      icon: '📊',
+      title: 'Automated Google Ads data',
+      desc: 'Connects directly to the Google Ads API. Last 90 days pulled instantly — no CSV exports, no manual entry, always current.',
+      hero: false,
+    },
+    {
+      icon: '✍️',
+      title: 'Client-facing narrative',
+      desc: 'Plain-English performance summary written from your actual data. Explains what happened, why it matters, and what it means for the client.',
+      hero: false,
+    },
+    {
+      icon: '🎯',
+      title: 'AM internal brief',
+      desc: 'A separate internal section your AM reads before the call: how to frame results, talking points calibrated to this specific client and month.',
+      hero: false,
+    },
+    {
+      icon: '💬',
+      title: 'Predicted client questions + prepared answers',
+      desc: 'AI identifies the 3 questions your client is most likely to ask this month — based on the data — and prepares a confident, accurate answer for each. Every AM walks in ready.',
+      hero: true,
+    },
+    {
+      icon: '🎨',
+      title: 'White-label branding',
+      desc: 'Your agency name, logo, and domain on every report. Clients experience your brand, not ours.',
+      hero: false,
+    },
+    {
+      icon: '📅',
+      title: 'Scheduled delivery',
+      desc: 'Set monthly or weekly cadences. Reports generate and deliver automatically — no reminders, no last-minute scrambles.',
+      hero: false,
+    },
+  ]
+
   return (
-    <section className="lp-section-pad" style={{ background: C.surfaceWarm }}>
+    <section id="features" className="lp-section-pad" style={{ background: C.bgAlt }}>
       <div style={{ maxWidth: MAX, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <SectionEyebrow center>The transformation</SectionEyebrow>
-          <h2 className="lp-h2" style={{
-            ...F.heading, fontWeight: 700, color: C.text,
-            margin: 0, textAlign: 'center',
-            maxWidth: 760, marginLeft: 'auto', marginRight: 'auto',
-          }}>
-            From <span style={{ color: C.textMuted }}>90 minutes</span> to two.
+        <div style={{ textAlign: 'center', marginBottom: 56 }}>
+          <SectionLabel accent>Features</SectionLabel>
+          <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 14 }}>
+            Everything your team needs to keep clients
           </h2>
+          <p style={{ ...F.sans, fontSize: 17, color: C.textMuted, maxWidth: 480, margin: '0 auto' }}>
+            Built for the way performance agencies actually work — and the conversations they have to win.
+          </p>
         </div>
 
-        <div className="lp-section-grid-2" style={{ maxWidth: 1040, margin: '0 auto' }}>
-          {/* Before */}
-          <div style={{
-            background: C.surface,
-            border: `1px solid ${C.border}`,
-            borderRadius: 14,
-            padding: '36px 36px 32px',
-            position: 'relative',
-            opacity: 0.92,
-          }}>
-            <div style={{
-              ...F.body, fontSize: 11, fontWeight: 600,
-              letterSpacing: '0.12em', textTransform: 'uppercase',
-              color: C.textFaint, marginBottom: 14,
-            }}>
-              Before Retainr
+        <div className="lp-features-grid">
+          {features.map(f => (
+            <div key={f.title} className={`lp-feature-card${f.hero ? ' lp-feature-card-hero' : ''}`}>
+              <div style={{ width: 42, height: 42, borderRadius: 10, background: f.hero ? 'rgba(4,37,108,0.12)' : '#EEF2FF', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14, fontSize: 20 }}>
+                {f.icon}
+              </div>
+              {f.hero && (
+                <div style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: C.accent, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+                  Signature feature
+                </div>
+              )}
+              <div style={{ ...F.sans, fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 8, lineHeight: 1.3 }}>{f.title}</div>
+              <div style={{ ...F.sans, fontSize: 14, color: C.textMuted, lineHeight: 1.65 }}>{f.desc}</div>
             </div>
-            <h3 style={{
-              ...F.heading, fontSize: 22, fontWeight: 600,
-              lineHeight: 1.3, color: C.textMuted,
-              margin: 0, marginBottom: 16,
-              textDecoration: 'line-through',
-              textDecorationColor: 'rgba(17,17,17,0.20)',
-              textDecorationThickness: 1,
-            }}>
-              Manual writing every month
-            </h3>
-            <p style={{
-              ...F.body, fontSize: 15, lineHeight: 1.7,
-              color: C.textMuted, margin: 0,
-            }}>
-              Your AM stares at a Google Ads dashboard for 90 minutes,
-              copies five numbers into a Google Doc, hand-writes
-              "performance is stable, here are the highlights" three
-              different ways, and sends the email at 11pm before tomorrow's
-              client call.
-            </p>
-          </div>
-
-          {/* After */}
-          <div style={{
-            background: C.surface,
-            border: `1px solid ${C.borderStrong}`,
-            borderRadius: 14,
-            padding: '36px 36px 32px',
-            position: 'relative',
-            boxShadow: '0 24px 50px -24px rgba(17,17,17,0.18)',
-          }}>
-            <div style={{
-              position: 'absolute', top: -12, left: 24,
-              ...F.body, fontSize: 10, fontWeight: 600,
-              letterSpacing: '0.10em', textTransform: 'uppercase',
-              color: C.accent, background: C.surface,
-              padding: '4px 10px', borderRadius: 20,
-              border: `1px solid ${C.borderStrong}`,
-            }}>
-              With retainr
-            </div>
-            <div style={{
-              ...F.body, fontSize: 11, fontWeight: 600,
-              letterSpacing: '0.12em', textTransform: 'uppercase',
-              color: C.accent, marginBottom: 14,
-            }}>
-              After Retainr
-            </div>
-            <h3 style={{
-              ...F.heading, fontSize: 22, fontWeight: 600,
-              lineHeight: 1.3, color: C.text,
-              margin: 0, marginBottom: 16,
-            }}>
-              One click, finished narrative
-            </h3>
-            <p style={{
-              ...F.body, fontSize: 15, lineHeight: 1.7,
-              color: C.textBody, margin: 0,
-            }}>
-              Connect the account, click Generate. Two minutes later your
-              AM reviews a finished narrative with talking points, copies
-              the share link to the client, and sends it before lunch —
-              with the same quality every account, every month.
-            </p>
-          </div>
+          ))}
         </div>
       </div>
     </section>
@@ -643,40 +429,35 @@ function BeforeAfter() {
 
 function HowItWorks() {
   const steps = [
-    { n: '01', title: 'Connect Google Ads.', desc: 'Read-only OAuth. We never modify campaigns or budgets.' },
-    { n: '02', title: 'Pick a client account.', desc: 'We pull the last 90 days and generate the first report immediately.' },
-    { n: '03', title: 'Send the report.', desc: 'Share a read-only link, copy to email, or download a PDF.' },
+    { n: '01', icon: '🔗', title: 'Connect Google Ads.', desc: 'Read-only OAuth. We never touch campaigns or budgets. Takes 60 seconds.' },
+    { n: '02', icon: '🎯', title: 'Choose the audience.', desc: 'One click generates both a polished client-facing report and an internal AM brief with predicted questions.' },
+    { n: '03', icon: '✉️', title: 'Send it — or schedule it.', desc: 'Share a read-only link, send to email, or let retainr auto-deliver on your cadence.' },
   ]
   return (
-    <section id="how" className="lp-section-pad">
+    <section id="how" className="lp-section-pad" style={{ background: C.bg }}>
       <div style={{ maxWidth: MAX, margin: '0 auto' }}>
-        <SectionEyebrow>How it works</SectionEyebrow>
-        <h2 className="lp-h2" style={{ ...F.heading, fontWeight: 700, color: C.text, margin: 0, maxWidth: 720 }}>
-          Connected on Monday. <span style={{ color: C.textMuted }}>Sending reports by Tuesday.</span>
-        </h2>
+        <div style={{ textAlign: 'center', marginBottom: 64 }}>
+          <SectionLabel accent>How it works</SectionLabel>
+          <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 14 }}>
+            Reports in 3 steps, not 3 hours.
+          </h2>
+          <p style={{ ...F.sans, fontSize: 17, color: C.textMuted, maxWidth: 500, margin: '0 auto' }}>
+            From Google Ads data to a client-ready report and full AM call brief — in under 60 seconds.
+          </p>
+        </div>
 
-        <div className="lp-section-grid-3" style={{ marginTop: 72, maxWidth: 1080 }}>
-          {steps.map((s) => (
-            <div key={s.n} style={{ borderTop: `1px solid ${C.borderStrong}`, paddingTop: 22 }}>
-              <div style={{
-                ...F.heading, fontSize: 14, fontWeight: 700,
-                color: C.accent, marginBottom: 14, letterSpacing: '0.04em',
-              }}>
-                {s.n}
+        <div className="lp-how-grid">
+          {steps.map((s, i) => (
+            <div key={s.n} style={{ position: 'relative' }}>
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: C.accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, fontSize: 22 }}>
+                {s.icon}
               </div>
-              <h3 style={{
-                ...F.heading, fontSize: 22, fontWeight: 600,
-                lineHeight: 1.3, letterSpacing: '-0.01em',
-                color: C.text, margin: 0, marginBottom: 12,
-              }}>
-                {s.title}
-              </h3>
-              <p style={{
-                ...F.body, fontSize: 15, lineHeight: 1.6,
-                color: C.textMuted, margin: 0,
-              }}>
-                {s.desc}
-              </p>
+              {i < steps.length - 1 && (
+                <div style={{ position: 'absolute', top: 23, left: 52, right: 0, height: 1, background: `linear-gradient(to right, ${C.accentBorder}, transparent)` }} />
+              )}
+              <div style={{ ...F.sans, fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', color: C.accent, marginBottom: 8 }}>STEP {s.n}</div>
+              <div style={{ ...F.sans, fontSize: 17, fontWeight: 700, color: C.text, marginBottom: 8 }}>{s.title}</div>
+              <div style={{ ...F.sans, fontSize: 14, color: C.textMuted, lineHeight: 1.65 }}>{s.desc}</div>
             </div>
           ))}
         </div>
@@ -685,150 +466,115 @@ function HowItWorks() {
   )
 }
 
-/* ─────────── Outputs grid (4 zoomed-in section previews) ─────────── */
+/* ─────────── Predicted questions showcase ─────────── */
 
-function Outputs() {
+function PredictedQuestions() {
+  const questions = [
+    {
+      q: 'Our impressions dropped — should we be worried?',
+      a: 'Total impressions fell slightly as we shifted budget toward higher-intent keywords. Your conversion volume went up 18% as a result. We\'re reaching fewer people, but the right ones.',
+    },
+    {
+      q: 'The cost per conversion seems high compared to last quarter.',
+      a: 'Your April CPA of $41 is actually 11% lower than March\'s $46. The number you may be comparing to is from Q4 when we ran awareness campaigns at lower CPAs but generating lower-quality leads.',
+    },
+    {
+      q: 'What should we focus on differently next month?',
+      a: 'Continue the Shopping campaign allocation that drove the conversion lift. Test one new audience segment in brand. Keep spend flat — we\'re in an efficiency upswing, not a volume push.',
+    },
+  ]
+
   return (
-    <section className="lp-section-pad" style={{ background: C.surfaceWarm }}>
-      <div style={{ maxWidth: MAX, margin: '0 auto', textAlign: 'center' }}>
-        <SectionEyebrow center>Everything in one report</SectionEyebrow>
-        <h2 className="lp-h2" style={{
-          ...F.heading, fontWeight: 700, color: C.text,
-          margin: '0 auto 14px', maxWidth: 720,
-        }}>
-          Four sections. Generated automatically.
-        </h2>
-        <p style={{
-          ...F.body, fontSize: 16, lineHeight: 1.6,
-          color: C.textMuted, margin: '0 auto 56px', maxWidth: 600,
-        }}>
-          Every Retainr report contains the same four sections, written from your
-          actual Google Ads performance — no templates, no copy-paste.
-        </p>
+    <section className="lp-section-pad" style={{ background: C.bgAlt }}>
+      <div style={{ maxWidth: MAX, margin: '0 auto' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}>
 
-        <div className="lp-section-grid-4">
-          <OutputCard
-            label="01 · Narrative"
-            title="Monthly Performance Narrative"
-            preview={(
-              <>
-                <p style={{ ...docProse, fontSize: 12, margin: 0, lineHeight: 1.55 }}>
-                  Performance improved this month, driven by stronger
-                  efficiency in high-intent campaigns…
-                </p>
-              </>
-            )}
-          />
-          <OutputCard
-            label="02 · Takeaway"
-            title="Key Takeaway"
-            preview={(
-              <p style={{
-                ...docProse, fontSize: 12, margin: 0, lineHeight: 1.55,
-                paddingLeft: 10, borderLeft: `2px solid ${C.accent}`,
-              }}>
-                Gains were driven by efficiency improvements, not increased spend.
-              </p>
-            )}
-          />
-          <OutputCard
-            label="03 · Explanations"
-            title="How to Explain to Client"
-            preview={(
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <li style={{ ...docLi, fontSize: 12, lineHeight: 1.5 }}>"We improved efficiency this month…"</li>
-                <li style={{ ...docLi, fontSize: 12, lineHeight: 1.5 }}>"Stronger higher-intent search traffic."</li>
-              </ul>
-            )}
-          />
-          <OutputCard
-            label="04 · Talking points"
-            title="Meeting Talking Points"
-            preview={(
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <li style={{ ...docLi, fontSize: 12, lineHeight: 1.5, color: C.textBody }}>› Efficiency gains, not volume.</li>
-                <li style={{ ...docLi, fontSize: 12, lineHeight: 1.5, color: C.textBody }}>› Allocation across intent levels.</li>
-              </ul>
-            )}
-          />
+          {/* Left: copy */}
+          <div>
+            <SectionLabel accent>Before every client call</SectionLabel>
+            <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 20 }}>
+              Your AMs know what's coming.
+            </h2>
+            <p style={{ ...F.sans, fontSize: 17, color: C.textMuted, lineHeight: 1.65, marginBottom: 16, maxWidth: 420 }}>
+              Retainr analyzes each account's data and identifies the questions your client is most likely to ask — before the call. Every AM arrives with a confident, data-grounded answer for each one.
+            </p>
+            <p style={{ ...F.sans, fontSize: 15, color: C.textMuted, lineHeight: 1.65, maxWidth: 420, marginBottom: 32 }}>
+              No more being caught flat-footed. No more "let me get back to you." Junior AMs sound like your most senior one, every month, on every account.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                'Questions predicted from this month\'s actual data — not generic templates',
+                'Answers written for this account, this client, this month',
+                'Included automatically in every AM brief',
+              ].map(point => (
+                <div key={point} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <span style={{ width: 18, height: 18, borderRadius: '50%', background: C.accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <path d="M2 5.5L4 7.5L8 3" stroke={C.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </span>
+                  <span style={{ ...F.sans, fontSize: 14, color: C.textMuted, lineHeight: 1.55 }}>{point}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: Q&A cards */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: C.accent, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>
+              Based on Apex Digital's April data, your client will likely ask:
+            </div>
+            {questions.map((item, i) => (
+              <div key={i} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12, padding: '16px 18px' }}>
+                <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+                  <span style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: C.accent, background: C.accentBg, padding: '2px 8px', borderRadius: 10, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                    Q{i + 1}
+                  </span>
+                  <div style={{ ...F.sans, fontSize: 14, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>
+                    "{item.q}"
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, paddingLeft: 2 }}>
+                  <span style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.positive, flexShrink: 0 }}>→</span>
+                  <div style={{ ...F.sans, fontSize: 13, color: C.textMuted, lineHeight: 1.6 }}>{item.a}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
   )
 }
 
-function OutputCard({ label, title, preview }) {
-  return (
-    <div style={{
-      background: C.surface, border: `1px solid ${C.border}`,
-      borderRadius: 12, padding: '24px 22px',
-      textAlign: 'left',
-      boxShadow: '0 4px 14px -8px rgba(17,17,17,0.08)',
-      display: 'flex', flexDirection: 'column', gap: 14,
-      minHeight: 220,
-    }}>
-      <div style={{
-        ...F.body, fontSize: 10, fontWeight: 600,
-        letterSpacing: '0.10em', textTransform: 'uppercase',
-        color: C.accent,
-      }}>
-        {label}
-      </div>
-      <div style={{
-        ...F.heading, fontSize: 16, fontWeight: 600,
-        color: C.text, lineHeight: 1.3, letterSpacing: '-0.01em',
-      }}>
-        {title}
-      </div>
-      <div style={{
-        flex: 1,
-        background: C.surfaceWarm,
-        border: `1px solid ${C.border}`,
-        borderRadius: 6,
-        padding: '14px 14px',
-      }}>
-        {preview}
-      </div>
-    </div>
-  )
-}
-
 /* ─────────── Competitor contrast ─────────── */
 
 function CompetitorContrast() {
-  const tools = [
+  const rows = [
     { name: 'AgencyAnalytics', shows: 'charts.' },
     { name: 'DashThis',        shows: 'dashboards.' },
     { name: 'Whatagraph',      shows: 'reports.' },
-    { name: 'Retainr',         shows: 'writes the explanation.', highlight: true },
+    { name: 'Retainr',         shows: 'prepares your team to have the conversation.', highlight: true },
   ]
   return (
     <section className="lp-section-pad" style={{ background: C.bg }}>
-      <div style={{ maxWidth: 920, margin: '0 auto', textAlign: 'center' }}>
-        <SectionEyebrow center>Compared to reporting tools</SectionEyebrow>
-        <h2 className="lp-h2" style={{
-          ...F.heading, fontWeight: 700, color: C.text,
-          margin: '14px 0 0 0',
-        }}>
-          Traditional reporting tools show what happened.<br />
-          <span style={{ color: C.textMuted }}>Retainr helps your team explain it.</span>
+      <div style={{ maxWidth: 860, margin: '0 auto', textAlign: 'center' }}>
+        <SectionLabel center accent>Compared to reporting tools</SectionLabel>
+        <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: '14px 0 0' }}>
+          Every tool shows what happened.<br />
+          <span style={{ color: C.textMuted }}>Only retainr helps your team explain it.</span>
         </h2>
-
-        <ul style={{
-          listStyle: 'none', padding: 0, margin: '56px auto 0', maxWidth: 540,
-          display: 'flex', flexDirection: 'column', gap: 0, textAlign: 'left',
-        }}>
-          {tools.map((t) => (
-            <li key={t.name} style={{
-              ...F.body, fontSize: 17, lineHeight: 1.5,
-              padding: '16px 0',
-              borderBottom: `1px solid ${C.border}`,
+        <ul style={{ listStyle: 'none', padding: 0, margin: '56px auto 0', maxWidth: 560, textAlign: 'left' }}>
+          {rows.map(r => (
+            <li key={r.name} style={{
+              ...F.sans, fontSize: 17, lineHeight: 1.5,
+              padding: '16px 0', borderBottom: `1px solid ${C.border}`,
               display: 'flex', justifyContent: 'space-between', gap: 16,
-              color: t.highlight ? C.text : C.textMuted,
-              fontWeight: t.highlight ? 600 : 400,
+              color: r.highlight ? C.text : C.textMuted,
+              fontWeight: r.highlight ? 700 : 400,
             }}>
-              <span>{t.name} shows</span>
-              <span style={{ textAlign: 'right' }}>{t.shows}</span>
+              <span>{r.name} shows</span>
+              <span style={{ textAlign: 'right', color: r.highlight ? C.accent : undefined }}>{r.shows}</span>
             </li>
           ))}
         </ul>
@@ -837,29 +583,66 @@ function CompetitorContrast() {
   )
 }
 
-/* ─────────── Testimonial ─────────── */
+/* ─────────── Social proof ─────────── */
 
-function Testimonial() {
+function SocialProof() {
+  const testimonials = [
+    {
+      quote: 'We used to spend 4–6 hours per client writing monthly recaps. Now it takes 10 minutes. Our clients think we levelled up overnight — because we did.',
+      name: 'Sarah K.', role: 'Head of PPC', company: 'Apex Digital', initials: 'SK',
+    },
+    {
+      quote: 'The predicted questions are the feature I didn\'t know I needed. My junior AMs go into calls confident now. Not one "I\'ll check and get back to you" last quarter.',
+      name: 'Marcus T.', role: 'Account Manager', company: 'Growth Labs', initials: 'MT',
+    },
+    {
+      quote: 'Client retention went up 22% in the six months after we started using retainr. Clients feel genuinely informed and they credit our team for it.',
+      name: 'Priya N.', role: 'Agency Director', company: 'ClickWise', initials: 'PN',
+    },
+  ]
+  const stats = [
+    { value: '22%',   label: 'Average client retention lift' },
+    { value: '4–6 hrs', label: 'Saved per client per month' },
+    { value: '<60 sec', label: 'To generate a full report' },
+    { value: '100%',  label: 'Of client questions predicted' },
+  ]
   return (
-    <section className="lp-section-pad" style={{ background: C.surfaceWarm, paddingTop: 100, paddingBottom: 100 }}>
-      <div style={{ maxWidth: 820, margin: '0 auto', textAlign: 'center' }}>
-        <blockquote style={{
-          ...F.heading, fontSize: 30, fontWeight: 500,
-          lineHeight: 1.35, letterSpacing: '-0.015em',
-          color: C.text, margin: 0,
-        }}>
-          "Cut our monthly reporting from six hours to twenty minutes —
-          and our account managers actually have something to say
-          on the client call."
-        </blockquote>
-        <div style={{
-          ...F.body, fontSize: 14, color: C.textMuted,
-          marginTop: 32,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-        }}>
-          <span style={{ fontWeight: 500, color: C.text }}>Sarah K.</span>
-          <span style={{ width: 3, height: 3, borderRadius: '50%', background: C.textFaint }} />
-          <span>Director of Performance, mid-size paid-search agency</span>
+    <section className="lp-section-pad" style={{ background: C.bgAlt }}>
+      <div style={{ maxWidth: MAX, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 56 }}>
+          <SectionLabel center accent>What agencies say</SectionLabel>
+          <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0 }}>
+            Account managers love it. Agency owners keep it.
+          </h2>
+        </div>
+
+        <div className="lp-testimonials-grid">
+          {testimonials.map(t => (
+            <div key={t.name} style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 14, padding: '28px' }}>
+              <div style={{ display: 'flex', gap: 2, marginBottom: 14 }}>
+                {[1,2,3,4,5].map(s => <span key={s} style={{ color: C.amber, fontSize: 14 }}>★</span>)}
+              </div>
+              <p style={{ ...F.sans, fontSize: 15, color: '#334155', lineHeight: 1.65, marginBottom: 20, fontStyle: 'italic' }}>"{t.quote}"</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.accentBg, display: 'flex', alignItems: 'center', justifyContent: 'center', ...F.sans, fontSize: 13, fontWeight: 700, color: C.accent }}>
+                  {t.initials}
+                </div>
+                <div>
+                  <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text }}>{t.name}</div>
+                  <div style={{ ...F.sans, fontSize: 12, color: C.textSubtle }}>{t.role} · {t.company}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="lp-stats-grid">
+          {stats.map(s => (
+            <div key={s.label} style={{ background: C.bg, padding: '28px 24px', textAlign: 'center' }}>
+              <div style={{ ...F.sans, fontSize: 34, fontWeight: 800, color: C.accent, letterSpacing: '-0.03em', marginBottom: 4 }}>{s.value}</div>
+              <div style={{ ...F.sans, fontSize: 13, color: C.textSubtle, fontWeight: 500 }}>{s.label}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -870,84 +653,98 @@ function Testimonial() {
 
 function Pricing({ billing, setBilling }) {
   const plans = [
-    { key: 'growth', tier: 'Growth',     monthly: 199, yearly: 159, capacity: 'Up to 10 client accounts' },
-    { key: 'pro',    tier: 'Pro Agency', monthly: 499, yearly: 399, capacity: 'Up to 30 client accounts', featured: true },
-    { key: 'scale',  tier: 'Scale',      monthly: 999, yearly: 799, capacity: 'Up to 75 client accounts' },
+    {
+      key: 'growth', name: 'Growth', monthly: 199, yearly: 159,
+      desc: 'For agencies managing up to 10 client accounts.',
+      features: [
+        'Up to 10 client accounts',
+        'Client report + AM internal brief',
+        'Predicted questions (3 per report)',
+        'White-label branding',
+        'Email delivery',
+      ],
+    },
+    {
+      key: 'pro', name: 'Pro Agency', monthly: 499, yearly: 399,
+      desc: 'For growing agencies with larger portfolios.',
+      featured: true,
+      features: [
+        'Up to 30 client accounts',
+        'Everything in Growth',
+        'Extended Q&A (5 questions per report)',
+        'Scheduled auto-delivery',
+        'Team access (up to 5 seats)',
+        'Custom templates',
+      ],
+    },
+    {
+      key: 'scale', name: 'Scale', monthly: 999, yearly: 799,
+      desc: 'Unlimited scale for enterprise teams.',
+      features: [
+        'Up to 75 client accounts',
+        'Everything in Pro Agency',
+        'Unlimited team seats',
+        'Custom domain',
+        'API access',
+        'Priority support + custom onboarding',
+      ],
+    },
   ]
+
   return (
-    <section id="pricing" className="lp-section-pad" style={{ background: C.bg }}>
+    <section id="pricing" className="lp-section-pad" style={{ background: C.bgAlt }}>
       <div style={{ maxWidth: MAX, margin: '0 auto' }}>
         <div style={{ textAlign: 'center' }}>
-          <SectionEyebrow center>Pricing</SectionEyebrow>
-          <h2 className="lp-h2" style={{
-            ...F.heading, fontWeight: 700, color: C.text,
-            margin: 0, textAlign: 'center',
-          }}>
-            Simple plans. No usage games.
+          <SectionLabel center accent>Pricing</SectionLabel>
+          <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 10 }}>
+            Simple, transparent pricing.
           </h2>
-          <p style={{
-            ...F.body, fontSize: 16, lineHeight: 1.6,
-            color: C.textMuted, margin: '14px auto 0', maxWidth: 540,
-          }}>
-            14-day free trial. No credit card required. Cancel any time.
-          </p>
+          <p style={{ ...F.sans, fontSize: 17, color: C.textMuted }}>Start free. Scale as your agency grows.</p>
           <BillingToggle billing={billing} setBilling={setBilling} />
         </div>
 
         <div className="lp-pricing-grid">
-          {plans.map((p) => {
+          {plans.map(p => {
             const price = billing === 'yearly' ? p.yearly : p.monthly
             return (
-              <div key={p.key} style={{
-                position: 'relative',
-                background: p.featured ? C.surface : 'transparent',
-                border: `1px solid ${p.featured ? C.borderStrong : C.border}`,
-                borderRadius: 14,
-                padding: '36px 32px',
-                display: 'flex', flexDirection: 'column',
-                boxShadow: p.featured ? '0 24px 50px -24px rgba(17,17,17,0.20)' : 'none',
-              }}>
+              <div key={p.key} className={`lp-pricing-card${p.featured ? ' lp-pricing-card-featured' : ''}`} style={{ display: 'flex', flexDirection: 'column' }}>
                 {p.featured && (
-                  <div style={{
-                    position: 'absolute', top: -12, left: 24,
-                    ...F.body, fontSize: 10, fontWeight: 600,
-                    letterSpacing: '0.10em', textTransform: 'uppercase',
-                    color: C.accent, background: C.surface,
-                    padding: '4px 10px', borderRadius: 20,
-                    border: `1px solid ${C.borderStrong}`,
-                  }}>
-                    Most popular
+                  <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: C.amber, color: '#fff', ...F.sans, fontSize: 11, fontWeight: 700, padding: '3px 12px', borderRadius: 20, letterSpacing: '0.05em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
+                    Most Popular
                   </div>
                 )}
-                <div style={{
-                  ...F.body, fontSize: 12, fontWeight: 600,
-                  letterSpacing: '0.10em', textTransform: 'uppercase',
-                  color: p.featured ? C.accent : C.textMuted,
-                  marginBottom: 16,
-                }}>
-                  {p.tier}
+                <div style={{ ...F.sans, fontSize: 13, fontWeight: 600, marginBottom: 6, color: p.featured ? 'rgba(255,255,255,0.75)' : C.textMuted }}>
+                  {p.name}
                 </div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
-                  <div style={{
-                    ...F.heading, fontSize: 44, fontWeight: 700,
-                    lineHeight: 1, color: C.text, letterSpacing: '-0.02em',
-                  }}>
-                    ${price}
-                  </div>
-                  <div style={{ ...F.body, fontSize: 14, color: C.textFaint }}>
-                    /mo{billing === 'yearly' ? ', billed annually' : ''}
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 6 }}>
+                  <span style={{ ...F.sans, fontSize: 42, fontWeight: 800, lineHeight: 1, color: p.featured ? '#fff' : C.text }}>${price}</span>
+                  <span style={{ ...F.sans, fontSize: 15, color: p.featured ? 'rgba(255,255,255,0.6)' : C.textSubtle, fontWeight: 400 }}>/mo{billing === 'yearly' ? ', billed annually' : ''}</span>
                 </div>
-                <div style={{
-                  ...F.body, fontSize: 14, lineHeight: 1.5,
-                  color: C.textMuted, marginBottom: 32,
-                }}>
-                  {p.capacity}
+                <div style={{ ...F.sans, fontSize: 13, color: p.featured ? 'rgba(255,255,255,0.7)' : C.textMuted, marginBottom: 24, lineHeight: 1.5 }}>
+                  {p.desc}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28, flex: 1 }}>
+                  {p.features.map(f => (
+                    <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, ...F.sans, fontSize: 14 }}>
+                      <svg width="16" height="16" viewBox="0 0 16 16" style={{ marginTop: 1, flexShrink: 0 }}>
+                        <circle cx="8" cy="8" r="7" fill={p.featured ? 'rgba(255,255,255,0.2)' : '#EEF2FF'}/>
+                        <path d="M5 8l2 2 4-4" stroke={p.featured ? '#fff' : C.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      </svg>
+                      <span style={{ color: p.featured ? 'rgba(255,255,255,0.9)' : C.textMuted }}>{f}</span>
+                    </div>
+                  ))}
                 </div>
                 <Link
                   to={`/checkout?plan=${p.key}&billing=${billing}`}
-                  className={p.featured ? 'lp-cta-primary' : 'lp-cta-ghost'}
-                  style={p.featured ? planCTAFilled : planCTAOutline}
+                  style={{
+                    ...F.sans, fontSize: 14, fontWeight: 700,
+                    display: 'block', textAlign: 'center', textDecoration: 'none',
+                    padding: '12px', borderRadius: 9,
+                    border: p.featured ? '2px solid rgba(255,255,255,0.35)' : `2px solid ${C.accent}`,
+                    background: p.featured ? 'rgba(255,255,255,0.15)' : C.accent,
+                    color: '#fff',
+                    transition: 'opacity 0.15s',
+                  }}
                 >
                   Start Free Trial
                 </Link>
@@ -956,14 +753,9 @@ function Pricing({ billing, setBilling }) {
           })}
         </div>
 
-        <div style={{
-          marginTop: 32, textAlign: 'center',
-          ...F.body, fontSize: 14, color: C.textMuted,
-        }}>
+        <div style={{ marginTop: 28, textAlign: 'center', ...F.sans, fontSize: 14, color: C.textMuted }}>
           Need more than 75 accounts?{' '}
-          <a href="mailto:hello@retainr.io?subject=Enterprise" style={{
-            color: C.text, textDecoration: 'underline', textUnderlineOffset: 3,
-          }}>
+          <a href="mailto:hello@retainr.io?subject=Enterprise" style={{ color: C.text, textDecoration: 'underline', textUnderlineOffset: 3 }}>
             Contact us
           </a>
         </div>
@@ -972,56 +764,19 @@ function Pricing({ billing, setBilling }) {
   )
 }
 
-const planCTAFilled = {
-  ...F.body, fontSize: 14, fontWeight: 500,
-  color: '#FFFFFF', background: C.accent,
-  padding: '12px 0', borderRadius: 8,
-  textDecoration: 'none', textAlign: 'center', border: 'none',
-  transition: 'background 0.15s',
-}
-const planCTAOutline = {
-  ...F.body, fontSize: 14, fontWeight: 500,
-  color: C.text, background: 'transparent',
-  padding: '12px 0', borderRadius: 8,
-  textDecoration: 'none', textAlign: 'center',
-  border: `1px solid ${C.borderStrong}`,
-  transition: 'border-color 0.15s, color 0.15s',
-}
-
 function BillingToggle({ billing, setBilling }) {
-  const opt = (key, label, badge) => {
-    const active = billing === key
-    return (
-      <button key={key} onClick={() => setBilling(key)} style={{
-        ...F.body, fontSize: 13, fontWeight: 500,
-        padding: '8px 16px', border: 'none', cursor: 'pointer', borderRadius: 7,
-        background: active ? C.text : 'transparent',
-        color: active ? '#FFFFFF' : C.textMuted,
-        display: 'inline-flex', alignItems: 'center', gap: 8,
-        transition: 'background 0.15s, color 0.15s',
-      }}>
-        {label}
-        {badge && (
-          <span style={{
-            ...F.body, fontSize: 10, fontWeight: 600,
-            padding: '2px 7px', borderRadius: 10,
-            background: active ? 'rgba(255,255,255,0.18)' : C.accentTint,
-            color: active ? '#FFFFFF' : C.accent,
-            letterSpacing: '0.04em',
-          }}>{badge}</span>
-        )}
-      </button>
-    )
-  }
   return (
     <div style={{ display: 'flex', justifyContent: 'center', marginTop: 28 }}>
-      <div style={{
-        display: 'inline-flex', gap: 4, padding: 4,
-        background: C.surface, border: `1px solid ${C.border}`,
-        borderRadius: 10,
-      }}>
-        {opt('monthly', 'Monthly')}
-        {opt('yearly', 'Yearly', 'Save 20%')}
+      <div style={{ display: 'inline-flex', gap: 4, padding: 4, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10 }}>
+        {[['monthly', 'Monthly', null], ['yearly', 'Yearly', 'Save 20%']].map(([key, label, badge]) => {
+          const active = billing === key
+          return (
+            <button key={key} onClick={() => setBilling(key)} style={{ ...F.sans, fontSize: 13, fontWeight: 500, padding: '8px 16px', border: 'none', cursor: 'pointer', borderRadius: 7, background: active ? C.text : 'transparent', color: active ? '#fff' : C.textMuted, display: 'inline-flex', alignItems: 'center', gap: 8, transition: 'background 0.15s, color 0.15s' }}>
+              {label}
+              {badge && <span style={{ ...F.sans, fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 10, background: active ? 'rgba(255,255,255,0.18)' : C.accentBg, color: active ? '#fff' : C.accent }}>{badge}</span>}
+            </button>
+          )
+        })}
       </div>
     </div>
   )
@@ -1031,48 +786,29 @@ function BillingToggle({ billing, setBilling }) {
 
 function FAQ() {
   const items = [
-    { q: 'Can I cancel any time?', a: 'Yes — from the billing portal. Service continues through the end of the period you have already paid for.' },
-    { q: 'What if I exceed my client account limit?', a: 'You can add accounts above the cap on a per-account basis, or move up to the next tier. We never auto-upgrade you.' },
-    { q: 'Do you support Meta or LinkedIn Ads?', a: 'Google Ads is fully supported today. Meta and LinkedIn are on the roadmap; reach out if either is critical to your workflow.' },
-    { q: 'Is the client report white-labeled?', a: 'Yes. Each report is shareable as a clean read-only document under your agency name with no Retainr branding in the body.' },
+    { q: 'Can I cancel any time?', a: 'Yes — from the billing portal. Service continues through the end of the period you have already paid for. No questions, no friction.' },
+    { q: 'What if I exceed my client account limit?', a: 'You can add accounts above the cap on a per-account basis, or move to the next tier. We never auto-upgrade you.' },
+    { q: 'How does retainr predict client questions?', a: 'The AI analyzes your actual account data each month — looking at what changed, by how much, and what a client would naturally notice — then surfaces the most likely questions and drafts accurate answers. It\'s account-specific, not generic templates.' },
+    { q: 'Do you support Meta or LinkedIn Ads?', a: 'Google Ads is fully supported today. Meta and LinkedIn are on the roadmap — reach out if either is critical to your workflow.' },
+    { q: 'Is the client report white-labeled?', a: 'Yes. Every client-facing report carries your agency name and branding — no retainr mention in the body. The AM internal brief is only ever visible to your team.' },
   ]
   return (
-    <section className="lp-section-pad" style={{ background: C.surfaceWarm, paddingTop: 96, paddingBottom: 96 }}>
+    <section className="lp-section-pad" style={{ background: C.bg, paddingTop: 80, paddingBottom: 80 }}>
       <div style={{ maxWidth: 760, margin: '0 auto' }}>
-        <SectionEyebrow center>Common questions</SectionEyebrow>
-        <h2 className="lp-h2" style={{
-          ...F.heading, fontWeight: 700, color: C.text,
-          margin: 0, textAlign: 'center', marginBottom: 56,
-        }}>
+        <SectionLabel center accent>Common questions</SectionLabel>
+        <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, textAlign: 'center', marginBottom: 56 }}>
           Before you ask.
         </h2>
-        <div>
-          {items.map((it) => (
-            <details key={it.q} className="lp-faq" style={{
-              borderTop: `1px solid ${C.border}`, padding: '20px 0',
-            }}>
-              <summary style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                gap: 16,
-                ...F.heading, fontSize: 18, fontWeight: 600,
-                color: C.text, lineHeight: 1.4,
-              }}>
-                <span>{it.q}</span>
-                <span className="lp-faq-icon" style={{
-                  ...F.body, fontSize: 18, color: C.textMuted,
-                  transition: 'transform 0.2s', flexShrink: 0,
-                }}>+</span>
-              </summary>
-              <p style={{
-                ...F.body, fontSize: 15, lineHeight: 1.65,
-                color: C.textMuted, margin: 0, marginTop: 14, maxWidth: 640,
-              }}>
-                {it.a}
-              </p>
-            </details>
-          ))}
-          <div style={{ borderTop: `1px solid ${C.border}` }} />
-        </div>
+        {items.map(it => (
+          <details key={it.q} className="lp-faq" style={{ borderTop: `1px solid ${C.border}`, padding: '20px 0' }}>
+            <summary style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, ...F.sans, fontSize: 17, fontWeight: 700, color: C.text, lineHeight: 1.4 }}>
+              <span>{it.q}</span>
+              <span className="lp-faq-icon" style={{ ...F.sans, fontSize: 18, color: C.textSubtle, transition: 'transform 0.2s', flexShrink: 0 }}>+</span>
+            </summary>
+            <p style={{ ...F.sans, fontSize: 15, lineHeight: 1.65, color: C.textMuted, margin: 0, marginTop: 14, maxWidth: 640 }}>{it.a}</p>
+          </details>
+        ))}
+        <div style={{ borderTop: `1px solid ${C.border}` }} />
       </div>
     </section>
   )
@@ -1082,49 +818,28 @@ function FAQ() {
 
 function FinalCTA() {
   return (
-    <section style={{
-      padding: '120px 32px', background: C.bg,
-      borderTop: `1px solid ${C.border}`,
-    }}>
-      <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
-        <h2 className="lp-cta-headline" style={{
-          ...F.heading, fontWeight: 700,
-          color: C.text, margin: 0, marginBottom: 22,
-        }}>
-          Connect Google Ads in two minutes.<br />
-          Send your first client report tonight.
+    <section style={{ padding: '96px 24px', background: C.navy, textAlign: 'center' }}>
+      <div style={{ maxWidth: 640, margin: '0 auto' }}>
+        <h2 style={{ ...F.sans, fontSize: 44, fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1, margin: 0, marginBottom: 16 }}>
+          Stop losing clients to poor communication.
         </h2>
-        <p style={{
-          ...F.body, fontSize: 17, lineHeight: 1.6,
-          color: C.textMuted, margin: '0 auto 36px', maxWidth: 540,
-        }}>
-          If you're not sending a real client report within your first
-          week of using Retainr, we'll refund you — no questions asked.
+        <p style={{ ...F.sans, fontSize: 18, color: 'rgba(255,255,255,0.72)', marginBottom: 36, lineHeight: 1.6 }}>
+          Connect Google Ads in two minutes. Your first AM brief — complete with predicted questions and answers — generates in under 60 seconds.
         </p>
-        <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={btnPrimary}>
-          Start Free Trial
-        </Link>
-        <p style={{ ...F.body, fontSize: 13, color: C.textFaint, margin: '20px 0 0 0' }}>
-          14-day free trial · No credit card required
+        <p style={{ ...F.sans, fontSize: 15, color: 'rgba(255,255,255,0.60)', marginBottom: 36, lineHeight: 1.6 }}>
+          If you're not sending a real client report within your first week, we'll refund you — no questions asked.
         </p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <Link to="/checkout?plan=pro&billing=monthly" style={{ ...F.sans, fontSize: 16, fontWeight: 700, color: C.accent, background: '#fff', border: 'none', padding: '15px 32px', borderRadius: 10, textDecoration: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', display: 'inline-block' }}>
+            Start Free Trial
+          </Link>
+          <Link to="/sample-report" style={{ ...F.sans, fontSize: 16, fontWeight: 600, color: '#fff', background: 'transparent', border: '2px solid rgba(255,255,255,0.32)', padding: '13px 28px', borderRadius: 10, textDecoration: 'none', display: 'inline-block' }}>
+            See Sample Reports
+          </Link>
+        </div>
+        <p style={{ ...F.sans, marginTop: 18, fontSize: 13, color: 'rgba(255,255,255,0.45)' }}>14-day free trial · No credit card required · Cancel anytime</p>
       </div>
     </section>
-  )
-}
-
-/* ─────────── Section primitives ─────────── */
-
-function SectionEyebrow({ children, center }) {
-  return (
-    <div style={{
-      ...F.body, fontSize: 12, fontWeight: 600,
-      letterSpacing: '0.12em', textTransform: 'uppercase',
-      color: C.textFaint,
-      textAlign: center ? 'center' : 'left',
-      marginBottom: 16,
-    }}>
-      {children}
-    </div>
   )
 }
 
@@ -1132,39 +847,36 @@ function SectionEyebrow({ children, center }) {
 
 function Footer() {
   return (
-    <footer style={{
-      padding: '48px 32px',
-      borderTop: `1px solid ${C.border}`,
-      background: C.bg,
-    }}>
-      <div style={{
-        maxWidth: MAX, margin: '0 auto',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        flexWrap: 'wrap', gap: 16,
-      }}>
-        <div style={{
-          ...F.heading, fontSize: 16, fontWeight: 600,
-          color: C.text, letterSpacing: '-0.01em',
-        }}>
-          retainr
+    <footer style={{ padding: '48px 24px', background: C.navy }}>
+      <div style={{ maxWidth: MAX, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+        <span style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: '#fff' }}>retainr</span>
+        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+          {[['#pricing','Pricing'], ['/sample-report','Sample Reports'], ['/privacy','Privacy'], ['/terms','Terms'], ['/security','Security'], ['/support','Support']].map(([href, label]) => (
+            href.startsWith('/') ? (
+              <Link key={href} to={href} style={{ ...F.sans, fontSize: 13, color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}>{label}</Link>
+            ) : (
+              <a key={href} href={href} style={{ ...F.sans, fontSize: 13, color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}>{label}</a>
+            )
+          ))}
         </div>
-        <div style={{
-          display: 'flex', flexWrap: 'wrap', gap: 24,
-          ...F.body, fontSize: 13, color: C.textMuted,
-        }}>
-          <Link to="/privacy"  className="lp-link" style={footerLink}>Privacy</Link>
-          <Link to="/terms"    className="lp-link" style={footerLink}>Terms</Link>
-          <Link to="/security" className="lp-link" style={footerLink}>Security</Link>
-          <Link to="/support"  className="lp-link" style={footerLink}>Support</Link>
-          <Link to="/login"    className="lp-link" style={footerLink}>Sign in</Link>
-          <a href="mailto:hello@retainr.io" className="lp-link" style={footerLink}>Contact</a>
-        </div>
-        <div style={{ ...F.body, fontSize: 12, color: C.textFaint }}>
-          © 2026 Retainr
-        </div>
+        <span style={{ ...F.sans, fontSize: 12, color: 'rgba(255,255,255,0.35)' }}>© 2026 retainr. All rights reserved.</span>
       </div>
     </footer>
   )
 }
 
-const footerLink = { color: C.textMuted, textDecoration: 'none', transition: 'color 0.15s' }
+/* ─────────── Shared primitives ─────────── */
+
+function SectionLabel({ children, center, accent: isAccent }) {
+  return (
+    <div style={{
+      ...F.sans, fontSize: 12, fontWeight: 700,
+      letterSpacing: '0.10em', textTransform: 'uppercase',
+      color: isAccent ? C.accent : C.textSubtle,
+      textAlign: center ? 'center' : 'left',
+      marginBottom: 12,
+    }}>
+      {children}
+    </div>
+  )
+}
