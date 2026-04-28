@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import Logo from '../components/Logo'
 
 /* ─────────── Design tokens ─────────── */
 
@@ -253,7 +254,7 @@ export default function PricingPage() {
       <nav className={`pp-nav${scrolled ? ' scrolled' : ''}`} style={{ position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 32px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-            <Link to="/" style={{ ...F.sans, fontSize: 18, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', textDecoration: 'none' }}>retainr</Link>
+            <Logo />
             <div style={{ display: 'flex', gap: 4 }}>
               {[['/', 'Home'], ['/sample-reports', 'Sample reports'], ['/#features', 'Features']].map(([href, label]) => (
                 href.startsWith('/') && !href.startsWith('/#') ? (
@@ -397,7 +398,7 @@ export default function PricingPage() {
       {/* Footer */}
       <footer style={{ padding: '40px 32px', background: C.navy, color: 'rgba(255,255,255,0.5)' }}>
         <div style={{ maxWidth: MAX, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <span style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>retainr</span>
+          <Logo dark />
           <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
             {[['/', 'Product'], ['/pricing', 'Pricing'], ['/sample-reports', 'Sample Reports'], ['/privacy', 'Privacy'], ['/terms', 'Terms']].map(([href, label]) => (
               <Link key={href} to={href} style={{ ...F.sans, fontSize: 13, color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}>{label}</Link>

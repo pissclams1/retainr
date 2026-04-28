@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import Logo from '../components/Logo'
 
 /* ─────────── Design tokens ─────────── */
 
@@ -127,7 +128,7 @@ function Nav() {
     <nav className={`lp-nav${scrolled ? ' scrolled' : ''}`} style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100 }}>
       <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-          <Link to="/" style={{ ...F.sans, fontSize: 18, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', textDecoration: 'none' }}>retainr</Link>
+          <Logo />
           <div className="lp-nav-links" style={{ display: 'flex', gap: 4 }}>
             {[['#how', 'How it works'], ['#features', 'Features']].map(([href, label]) => (
               <a key={href} href={href} className="lp-nav-link" style={F.sans}>{label}</a>
@@ -850,7 +851,7 @@ function Footer() {
   return (
     <footer style={{ padding: '48px 24px', background: C.navy }}>
       <div style={{ maxWidth: MAX, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-        <span style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: '#fff' }}>retainr</span>
+        <Logo dark />
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
           {[['/pricing','Pricing'], ['/sample-reports','Sample Reports'], ['/privacy','Privacy'], ['/terms','Terms'], ['/security','Security'], ['/support','Support']].map(([href, label]) => (
             href.startsWith('/') ? (

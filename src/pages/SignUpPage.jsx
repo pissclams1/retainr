@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import Logo from '../components/Logo'
 
 const F = { sans: { fontFamily: "'DM Sans', system-ui, -apple-system, sans-serif" } }
 const C = {
@@ -288,7 +289,7 @@ export default function SignUpPage() {
 
       {/* Nav */}
       <nav style={{ padding: '0 32px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${C.border}`, background: '#fff', flexShrink: 0 }}>
-        <Link to="/" style={{ ...F.sans, fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em', color: C.dark, textDecoration: 'none' }}>retainr</Link>
+        <Logo />
         <span style={{ ...F.sans, fontSize: 14, color: C.muted }}>
           Already have an account?{' '}
           <Link to="/sign-in" style={{ color: C.navy, fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
