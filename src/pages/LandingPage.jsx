@@ -179,7 +179,7 @@ function Hero() {
             </h1>
 
             <p style={{ ...F.sans, fontSize: 18, color: C.textMuted, lineHeight: 1.65, marginBottom: 14, maxWidth: 480 }}>
-              Retainr prepares every account manager for every client call — with the data, narrative, and predicted client questions they need to communicate confidently.
+              Retainr prepares account managers for every client call — with the data, narrative, and predicted client questions they need to communicate confidently.
             </p>
             <p style={{ ...F.sans, fontSize: 15, color: C.textSubtle, lineHeight: 1.6, marginBottom: 36, maxWidth: 460 }}>
               The agencies that retain clients longest don't have the best dashboards. They have the best communicators.
