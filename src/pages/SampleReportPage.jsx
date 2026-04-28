@@ -196,123 +196,213 @@ function ExecutiveSummaryPreview() {
   )
 }
 
-/* ─────────── Full report modal ─────────── */
+/* ─────────── Modals ─────────── */
 
-function FullReportModal({ onClose }) {
+function ModalShell({ onClose, children, maxWidth = 680 }) {
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,31,61,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}
+      style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,31,61,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}
       onClick={onClose}
     >
       <div
-        style={{ background: '#fff', borderRadius: 16, maxWidth: 680, width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 32px 80px rgba(15,31,61,0.25)' }}
+        style={{ background: '#fff', borderRadius: 16, maxWidth, width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 32px 80px rgba(15,31,61,0.28)' }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Modal header */}
-        <div style={{ background: C.accent, padding: '20px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1 }}>
-          <div>
-            <div style={{ ...F.sans, fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Client Performance Report</div>
-            <div style={{ ...F.sans, fontSize: 20, fontWeight: 800, color: '#fff', marginTop: 2 }}>Apex Digital Co. · April 2025</div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+/* What the CLIENT receives — clean, polished, no internal content */
+function ClientReportModal({ onClose }) {
+  return (
+    <ModalShell onClose={onClose}>
+      {/* Header */}
+      <div style={{ background: C.accent, padding: '20px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1 }}>
+        <div>
+          <div style={{ ...F.sans, fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
+            Monthly Performance Report · Sent to client
+          </div>
+          <div style={{ ...F.sans, fontSize: 20, fontWeight: 800, color: '#fff' }}>Apex Digital Co. · April 2025</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ background: '#10B98125', border: '1px solid #10B98140', borderRadius: 20, padding: '4px 12px', ...F.sans, fontSize: 11, fontWeight: 700, color: '#6EE7B7' }}>
+            Delivered to client inbox
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>×</button>
         </div>
+      </div>
 
-        <div style={{ padding: '28px' }}>
-          {/* Metrics */}
-          <div className="sr-modal-metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 24 }}>
-            {[
-              { label: 'Impressions', value: '284K', delta: '↑ 12.4%', color: C.positive },
-              { label: 'Clicks', value: '18.2K', delta: '↑ 8.1%', color: C.positive },
-              { label: 'Conversions', value: '412', delta: '↑ 23.7%', color: C.positive },
-              { label: 'Avg. CPC', value: '$1.84', delta: '↓ 6.2%', color: C.amber },
-            ].map(m => (
-              <div key={m.label} style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px' }}>
-                <div style={{ ...F.sans, fontSize: 11, color: C.muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>{m.label}</div>
-                <div style={{ ...F.sans, fontSize: 24, fontWeight: 800, color: C.text, lineHeight: 1 }}>{m.value}</div>
-                <div style={{ ...F.sans, fontSize: 12, color: m.color, fontWeight: 600, marginTop: 3 }}>{m.delta}</div>
-              </div>
-            ))}
-          </div>
+      <div style={{ padding: '28px' }}>
+        {/* "This is what the client sees" banner */}
+        <div style={{ background: '#10B98110', border: '1px solid #10B98130', borderRadius: 10, padding: '10px 16px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3C4.5 3 1.5 8 1.5 8s3 5 6.5 5 6.5-5 6.5-5S11.5 3 8 3z" stroke="#10B981" strokeWidth="1.5"/><circle cx="8" cy="8" r="2" stroke="#10B981" strokeWidth="1.5"/></svg>
+          <span style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: '#065F46' }}>This is exactly what your client receives — no internal notes, no agency prep.</span>
+        </div>
 
-          {/* AI Executive Summary */}
-          <div style={{ background: `${C.accent}08`, border: `1px solid ${C.accent}22`, borderRadius: 12, padding: '18px 20px', marginBottom: 24 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-              <div style={{ width: 20, height: 20, borderRadius: 5, background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5h6M5 2v6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" /></svg>
-              </div>
-              <span style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Executive Summary</span>
+        {/* Metrics */}
+        <div className="sr-modal-metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 24 }}>
+          {[
+            { label: 'Impressions', value: '284K', delta: '↑ 12.4%', color: C.positive },
+            { label: 'Clicks', value: '18.2K', delta: '↑ 8.1%', color: C.positive },
+            { label: 'Conversions', value: '412', delta: '↑ 23.7%', color: C.positive },
+            { label: 'Avg. CPC', value: '$1.84', delta: '↓ 6.2%', color: C.amber },
+          ].map(m => (
+            <div key={m.label} style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px' }}>
+              <div style={{ ...F.sans, fontSize: 11, color: C.muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>{m.label}</div>
+              <div style={{ ...F.sans, fontSize: 24, fontWeight: 800, color: C.text, lineHeight: 1 }}>{m.value}</div>
+              <div style={{ ...F.sans, fontSize: 12, color: m.color, fontWeight: 600, marginTop: 3 }}>{m.delta}</div>
             </div>
-            <p style={{ ...F.sans, fontSize: 14, color: '#334155', lineHeight: 1.7, marginBottom: 12 }}>
-              <strong>April was your strongest month in 2025.</strong> Conversions jumped 23.7% while your cost-per-click fell 6.2%, meaning you're acquiring more customers at lower cost — a rare and impressive combination.
-            </p>
-            <p style={{ ...F.sans, fontSize: 14, color: '#334155', lineHeight: 1.7, marginBottom: 12 }}>
-              The new branded keyword campaign launched March 28th was the clear standout, contributing <strong>38% of all conversions</strong> at a ROAS of 6.4× — well above your 4× target.
-            </p>
-            <p style={{ ...F.sans, fontSize: 14, color: '#334155', lineHeight: 1.7 }}>
-              One area to watch: display CPM rose 18% vs. March, slightly inflating overall spend. We recommend reviewing placement exclusions before the next billing cycle.
-            </p>
-          </div>
+          ))}
+        </div>
 
-          {/* Talking points */}
-          <div style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 12, padding: '18px 20px', marginBottom: 24 }}>
-            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 12 }}>💬 Suggested talking points for your client call</div>
-            {[
-              "Lead with the conversion win — 23.7% growth is a headline number clients remember.",
-              "Explain the CPC improvement: same budget, more results. Frame it as better targeting, not luck.",
-              "Introduce the branded campaign as a new growth lever — propose a 20% budget increase.",
-              "Acknowledge the display CPM uptick proactively — shows you're on top of the details.",
-            ].map((point, i) => (
-              <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 10, padding: '10px 12px', background: '#fff', borderRadius: 8, border: `1px solid ${C.border}` }}>
-                <span style={{ ...F.sans, fontSize: 13, color: C.accent, fontWeight: 800, minWidth: 20 }}>{i + 1}.</span>
-                <span style={{ ...F.sans, fontSize: 13, color: '#334155', lineHeight: 1.55 }}>{point}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Internal divider */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-            <div style={{ flex: 1, borderTop: '1px dashed #CBD5E1' }} />
-            <div style={{ ...F.sans, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, background: `${C.accent}10`, padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>
-              For your team · not sent to client
+        {/* AI narrative */}
+        <div style={{ background: `${C.accent}08`, border: `1px solid ${C.accent}22`, borderRadius: 12, padding: '18px 20px', marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <div style={{ width: 20, height: 20, borderRadius: 5, background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5h6M5 2v6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" /></svg>
             </div>
-            <div style={{ flex: 1, borderTop: '1px dashed #CBD5E1' }} />
+            <span style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Executive Summary</span>
           </div>
+          <p style={{ ...F.sans, fontSize: 14, color: '#334155', lineHeight: 1.7, marginBottom: 12 }}>
+            <strong>April was your strongest month in 2025.</strong> Conversions jumped 23.7% while your cost-per-click fell 6.2% — meaning you're acquiring more customers at lower cost. That's a rare and impressive combination.
+          </p>
+          <p style={{ ...F.sans, fontSize: 14, color: '#334155', lineHeight: 1.7, marginBottom: 12 }}>
+            The new branded keyword campaign launched March 28th was the clear standout, contributing <strong>38% of all conversions</strong> at a ROAS of 6.4× — well above your 4× target.
+          </p>
+          <p style={{ ...F.sans, fontSize: 14, color: '#334155', lineHeight: 1.7 }}>
+            One area to watch: display CPM rose 18% vs. March. We're reviewing placement exclusions before the next cycle to keep overall efficiency on track.
+          </p>
+        </div>
 
-          {/* Predicted questions */}
+        {/* What we're focused on next */}
+        <div style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 12, padding: '18px 20px', marginBottom: 20 }}>
+          <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 14 }}>What we're focused on next</div>
+          {[
+            { icon: '→', text: 'Scale the branded keyword campaign — propose a 20% budget increase based on 6.4× ROAS.' },
+            { icon: '→', text: 'Audit display placement exclusions to bring CPM back in line before the May cycle.' },
+            { icon: '→', text: 'Maintain Shopping campaign allocation, which drove the majority of conversion growth.' },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: i < 2 ? 10 : 0 }}>
+              <span style={{ ...F.sans, fontSize: 14, color: C.accent, fontWeight: 700, marginTop: 1 }}>{item.icon}</span>
+              <span style={{ ...F.sans, fontSize: 14, color: '#334155', lineHeight: 1.55 }}>{item.text}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Sent via email note */}
+        <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 18 }}>📧</span>
           <div>
-            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 6 }}>🔮 Predicted client questions — with prepared answers</div>
-            <p style={{ ...F.sans, fontSize: 12, color: C.muted, marginBottom: 16, lineHeight: 1.5 }}>
-              Based on this month's data, AI has predicted the questions your client is most likely to ask. Prepared answers below.
-            </p>
-            {[
-              { q: 'Our impressions dropped slightly — should we be concerned?', a: 'Total impressions fell 3% as we reallocated budget toward higher-intent keywords and product categories. Your conversions went up 23.7% as a result. We\'re reaching fewer people, but the right ones.' },
-              { q: 'Why did spend go up if the account is being more efficient?', a: 'Spend increased only modestly while conversions rose 23.7% — that\'s the definition of improving efficiency. The incremental spend went entirely toward Shopping campaigns where your conversion rate is strongest.' },
-              { q: 'What should we expect in May?', a: 'We\'ll maintain the current allocation and monitor for CPA creep. If performance holds through the first two weeks, we\'d recommend a 10–15% budget increase to capture continued demand.' },
-            ].map((pq, i) => (
-              <div key={i} style={{ background: `${C.accent}07`, border: `1px solid ${C.accent}18`, borderRadius: 10, padding: '14px 16px', marginBottom: 10 }}>
-                <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-                  <span style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: C.accent, background: `${C.accent}15`, padding: '2px 8px', borderRadius: 10, whiteSpace: 'nowrap', flexShrink: 0 }}>Q{i + 1}</span>
-                  <div style={{ ...F.sans, fontSize: 14, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>"{pq.q}"</div>
-                </div>
-                <div style={{ display: 'flex', gap: 10, paddingLeft: 2 }}>
-                  <span style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.positive, flexShrink: 0 }}>→</span>
-                  <div style={{ ...F.sans, fontSize: 13, color: '#334155', lineHeight: 1.6 }}>{pq.a}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Email delivery note */}
-          <div style={{ marginTop: 24, background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 20 }}>📧</span>
-            <div>
-              <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text }}>Auto-emailed to your client</div>
-              <div style={{ ...F.sans, fontSize: 12, color: C.muted }}>The client-facing version (above the divider) is sent directly to your client's inbox. No login required for them. A shareable link is also available for your records.</div>
-            </div>
+            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: '#065F46' }}>This report lands in your client's inbox</div>
+            <div style={{ ...F.sans, fontSize: 12, color: '#16A34A', marginTop: 2 }}>No login required. No internal notes included. A shareable link is also generated for your records.</div>
           </div>
         </div>
       </div>
-    </div>
+    </ModalShell>
+  )
+}
+
+/* What YOUR TEAM sees — strictly internal, never sent to client */
+function InternalBriefingModal({ onClose }) {
+  return (
+    <ModalShell onClose={onClose} maxWidth={700}>
+      {/* Header — dark, confidential feel */}
+      <div style={{ background: C.navy, padding: '20px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1 }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <div style={{ background: '#EF444420', border: '1px solid #EF444440', borderRadius: 4, padding: '2px 8px', ...F.sans, fontSize: 10, fontWeight: 700, color: '#FCA5A5', letterSpacing: '0.06em' }}>
+              INTERNAL ONLY — NOT SENT TO CLIENT
+            </div>
+          </div>
+          <div style={{ ...F.sans, fontSize: 20, fontWeight: 800, color: '#fff' }}>AM Briefing · Apex Digital · April 2025</div>
+        </div>
+        <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>×</button>
+      </div>
+
+      <div style={{ padding: '28px' }}>
+        {/* "This is what your team sees" banner */}
+        <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: 10, padding: '10px 16px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L1 14h14L8 1z" stroke="#D97706" strokeWidth="1.5" strokeLinejoin="round"/><path d="M8 6v4M8 11.5v.5" stroke="#D97706" strokeWidth="1.5" strokeLinecap="round"/></svg>
+          <span style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: '#92400E' }}>For your account managers only. Your client never sees this document.</span>
+        </div>
+
+        {/* Metrics */}
+        <div className="sr-modal-metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}>
+          {[
+            { label: 'Impressions', value: '284K', delta: '↑ 12.4%', color: C.positive },
+            { label: 'CTR', value: '6.4%', delta: '↑ 0.5pp', color: C.positive },
+            { label: 'Conv. Rate', value: '2.3%', delta: '↑ 0.4pp', color: C.positive },
+            { label: 'ROAS', value: '4.2×', delta: '↑ 0.6×', color: C.positive },
+          ].map(m => (
+            <div key={m.label} style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px' }}>
+              <div style={{ ...F.sans, fontSize: 11, color: C.muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>{m.label}</div>
+              <div style={{ ...F.sans, fontSize: 24, fontWeight: 800, color: C.text, lineHeight: 1 }}>{m.value}</div>
+              <div style={{ ...F.sans, fontSize: 12, color: m.color, fontWeight: 600, marginTop: 3 }}>{m.delta}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Anomaly flag */}
+        <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: 10, padding: '14px 16px', marginBottom: 20, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+          <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+          <div>
+            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: '#92400E', marginBottom: 4 }}>Flag for team review</div>
+            <div style={{ ...F.sans, fontSize: 13, color: '#92400E', lineHeight: 1.55 }}>Display CPM rose 18% vs. March — review placement exclusions before the next billing cycle. Don't surface this as a problem to the client; frame it as proactive housekeeping.</div>
+          </div>
+        </div>
+
+        {/* Talking points */}
+        <div style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 12, padding: '18px 20px', marginBottom: 20 }}>
+          <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 4 }}>💬 Talking points for the client call</div>
+          <p style={{ ...F.sans, fontSize: 12, color: C.muted, marginBottom: 14, lineHeight: 1.5 }}>How to frame this month's results. Use these in your own words — don't read them verbatim.</p>
+          {[
+            "Lead with the conversion win — 23.7% growth is a headline number clients remember and repeat.",
+            "Explain the CPC improvement plainly: same budget, more customers. Frame it as smarter targeting, not luck.",
+            "Introduce the branded campaign as a new growth lever. Propose a 20% budget increase — the data supports it.",
+            "Acknowledge the display CPM rise yourself before they ask. It shows you're on top of the details.",
+          ].map((point, i) => (
+            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: i < 3 ? 10 : 0, padding: '10px 12px', background: '#fff', borderRadius: 8, border: `1px solid ${C.border}` }}>
+              <span style={{ ...F.sans, fontSize: 13, color: C.accent, fontWeight: 800, minWidth: 20 }}>{i + 1}.</span>
+              <span style={{ ...F.sans, fontSize: 13, color: '#334155', lineHeight: 1.55 }}>{point}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Predicted Q&A */}
+        <div>
+          <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 4 }}>🔮 Questions your client will likely ask — with prepared answers</div>
+          <p style={{ ...F.sans, fontSize: 12, color: C.muted, marginBottom: 16, lineHeight: 1.5 }}>
+            AI predicted these based on this month's data. Review before the call so nothing catches you off guard.
+          </p>
+          {[
+            { q: 'Our impressions dropped slightly — should we be worried?', a: 'Total impressions fell 3% as we shifted budget toward higher-intent keywords. Conversions went up 23.7% as a result. We\'re reaching fewer people, but the right ones.' },
+            { q: 'Why did spend go up if efficiency improved?', a: 'Spend increased modestly while conversions rose 23.7% — that\'s the definition of improved efficiency. Every extra dollar went to Shopping campaigns where your conversion rate is highest.' },
+            { q: 'What should we expect next month?', a: 'We\'ll hold the current allocation and watch for CPA creep. If the first two weeks of May hold, we\'d recommend a 10–15% budget increase to capture the demand that\'s clearly there.' },
+          ].map((pq, i) => (
+            <div key={i} style={{ background: `${C.navy}07`, border: `1px solid ${C.navy}18`, borderRadius: 10, padding: '14px 16px', marginBottom: 10 }}>
+              <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
+                <span style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: C.navy, background: `${C.navy}15`, padding: '2px 8px', borderRadius: 10, whiteSpace: 'nowrap', flexShrink: 0 }}>Q{i + 1}</span>
+                <div style={{ ...F.sans, fontSize: 14, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>"{pq.q}"</div>
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <span style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.positive, flexShrink: 0 }}>→</span>
+                <div style={{ ...F.sans, fontSize: 13, color: '#334155', lineHeight: 1.6 }}>{pq.a}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer note */}
+        <div style={{ marginTop: 24, background: `${C.navy}08`, border: `1px solid ${C.navy}18`, borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 18 }}>🔒</span>
+          <div style={{ ...F.sans, fontSize: 12, color: C.muted, lineHeight: 1.5 }}>
+            This briefing is <strong>never shared with clients.</strong> Your client receives only the polished client report — separate document, separate delivery.
+          </div>
+        </div>
+      </div>
+    </ModalShell>
   )
 }
 
@@ -338,20 +428,20 @@ const REPORT_TYPES = [
   },
   {
     id: 'internal',
-    badge: 'Internal',
+    badge: 'Internal only',
     badgeColor: C.navy,
     title: 'Internal AM Briefing',
-    desc: 'The full technical deep-dive for your team. Campaign-level breakdowns, anomaly flags, talking points, and everything your AMs need to sound like experts on every call.',
+    desc: 'Strictly for your team — never sent to clients. Talking points, anomaly flags, predicted client questions, and prepared answers so every AM walks into the call ready.',
     highlights: [
-      'Campaign-level performance breakdown',
-      'Anomaly detection & team flags',
-      'Meeting preparation: talking points + explanations',
-      'Predicted client questions with answer playbook',
-      'Confidential — never sent to client',
+      'Talking points — how to frame every result in plain English',
+      'Predicted client questions + word-for-word prepared answers',
+      'Anomaly detection & team flags before the client spots them',
+      'Campaign-level technical breakdown',
+      'Confidential — your client never sees this document',
     ],
     Preview: InternalReportPreview,
     cta: 'View internal briefing',
-    canOpen: false,
+    canOpen: true,
   },
   {
     id: 'executive',
@@ -526,8 +616,9 @@ export default function SampleReportPage() {
         </div>
       </footer>
 
-      {/* Modal */}
-      {openModal === 'client' && <FullReportModal onClose={() => setOpenModal(null)} />}
+      {/* Modals */}
+      {openModal === 'client'   && <ClientReportModal     onClose={() => setOpenModal(null)} />}
+      {openModal === 'internal' && <InternalBriefingModal onClose={() => setOpenModal(null)} />}
     </div>
   )
 }
