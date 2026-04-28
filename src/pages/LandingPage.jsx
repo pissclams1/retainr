@@ -161,7 +161,7 @@ function Nav() {
         <div className="lp-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
           <a href="#how" className="lp-link" style={navLink}>How it works</a>
           <a href="#pricing" className="lp-link" style={navLink}>Pricing</a>
-          <a href="#sample" className="lp-link" style={navLink}>Sample report</a>
+          <Link to="/sample-report" className="lp-link" style={navLink}>Sample report</Link>
           <Link to="/login" className="lp-link" style={navLink}>Sign in</Link>
           <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={btnPrimarySmall}>
             Start Free Trial
@@ -238,34 +238,17 @@ function Hero() {
           <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={btnPrimary}>
             Start Free Trial
           </Link>
-          <a href="#sample" className="lp-cta-ghost" style={btnGhost}>
+          <Link to="/sample-report" className="lp-cta-ghost" style={btnGhost}>
             See Sample Report
-          </a>
+          </Link>
         </div>
         <p style={{ ...F.body, fontSize: 13, color: C.textFaint, margin: 0, marginBottom: 64 }}>
           14-day free trial · No credit card required
         </p>
 
         {/* The product — large report doc, dominant */}
-        <div id="sample" style={{
-          position: 'relative',
-          maxWidth: 880, margin: '0 auto',
-        }}>
+        <div style={{ maxWidth: 880, margin: '0 auto' }}>
           <ReportDocument />
-
-          {/* Floating accent cards — visual richness without dashboard weight */}
-          <div className="lp-floating-card" style={{
-            position: 'absolute', top: 32, left: -64,
-            transform: 'rotate(-3deg)',
-          }}>
-            <SparklineCard />
-          </div>
-          <div className="lp-floating-card" style={{
-            position: 'absolute', bottom: 60, right: -54,
-            transform: 'rotate(2.5deg)',
-          }}>
-            <ShareLinkCard />
-          </div>
         </div>
       </div>
     </section>
@@ -292,97 +275,6 @@ const btnGhost = {
   transition: 'border-color 0.15s, color 0.15s',
 }
 
-/* ─────────── Floating accent cards (visual seasoning) ─────────── */
-
-function SparklineCard() {
-  return (
-    <div style={{
-      background: C.surface,
-      border: `1px solid ${C.border}`,
-      borderRadius: 12,
-      padding: '14px 18px',
-      width: 200,
-      boxShadow: '0 18px 40px -16px rgba(17,17,17,0.20), 0 2px 6px rgba(17,17,17,0.06)',
-    }}>
-      <div style={{
-        ...F.body, fontSize: 11, fontWeight: 600,
-        textTransform: 'uppercase', letterSpacing: '0.10em',
-        color: C.textFaint, marginBottom: 6,
-      }}>
-        Conversions
-      </div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
-        <span style={{
-          ...F.heading, fontSize: 24, fontWeight: 600,
-          color: C.text, letterSpacing: '-0.02em',
-        }}>
-          1,284
-        </span>
-        <span style={{
-          ...F.body, fontSize: 12, fontWeight: 600,
-          color: C.positive,
-        }}>
-          ↑ 18%
-        </span>
-      </div>
-      {/* Inline SVG sparkline */}
-      <svg viewBox="0 0 160 36" width="100%" height="36" preserveAspectRatio="none" style={{ display: 'block' }}>
-        <polyline
-          points="0,28 16,26 32,22 48,24 64,18 80,16 96,12 112,14 128,8 144,6 160,4"
-          fill="none"
-          stroke={C.accent}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <polyline
-          points="0,28 16,26 32,22 48,24 64,18 80,16 96,12 112,14 128,8 144,6 160,4 160,36 0,36"
-          fill={C.accentTint}
-          stroke="none"
-        />
-      </svg>
-    </div>
-  )
-}
-
-function ShareLinkCard() {
-  return (
-    <div style={{
-      background: C.surface,
-      border: `1px solid ${C.border}`,
-      borderRadius: 12,
-      padding: '12px 16px',
-      width: 240,
-      boxShadow: '0 18px 40px -16px rgba(17,17,17,0.20), 0 2px 6px rgba(17,17,17,0.06)',
-      display: 'flex', alignItems: 'center', gap: 12,
-    }}>
-      <div style={{
-        width: 32, height: 32, borderRadius: 8,
-        background: C.accentTint,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: C.accent, fontSize: 14, fontWeight: 700,
-        flexShrink: 0,
-      }}>
-        ↗
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          ...F.body, fontSize: 11, fontWeight: 600,
-          color: C.textFaint, marginBottom: 2,
-        }}>
-          Share with client
-        </div>
-        <div style={{
-          ...F.body, fontSize: 12, fontWeight: 500,
-          color: C.text,
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>
-          retainr.io/r/apex-digital
-        </div>
-      </div>
-    </div>
-  )
-}
 
 /* ─────────── Report (paper-style, the product) ─────────── */
 
@@ -428,6 +320,49 @@ function ReportDocument() {
           </div>
         </div>
       </header>
+
+      {/* Performance metrics — communicates that real data is being pulled */}
+      <div style={{ padding: '20px 48px 24px', borderBottom: `1px solid ${C.border}`, background: C.bg }}>
+        <div style={{
+          ...F.body, fontSize: 10, fontWeight: 600,
+          letterSpacing: '0.10em', textTransform: 'uppercase',
+          color: C.textFaint, marginBottom: 12,
+        }}>
+          Performance Summary · April vs March 2025
+        </div>
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px',
+        }}>
+          {[
+            { label: 'Impressions',  value: '284,512', delta: '+3%',    up: true  },
+            { label: 'Clicks',       value: '8,204',   delta: '+7%',    up: true  },
+            { label: 'CTR',          value: '2.88%',   delta: '+0.1pt', up: true  },
+            { label: 'Conversions',  value: '1,284',   delta: '+18%',   up: true  },
+            { label: 'Cost / Conv.', value: '$41.32',  delta: '−11%',   up: true  },
+            { label: 'Spend',        value: '$53,056', delta: '+5%',    up: null  },
+          ].map(m => (
+            <div key={m.label} style={{
+              padding: '10px 12px',
+              background: C.surface, borderRadius: 6,
+              border: `1px solid ${C.border}`,
+            }}>
+              <div style={{
+                ...F.body, fontSize: 10, fontWeight: 500,
+                color: C.textFaint, marginBottom: 4,
+              }}>{m.label}</div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+                <span style={{
+                  ...F.heading, fontSize: 15, fontWeight: 600, color: C.text,
+                }}>{m.value}</span>
+                <span style={{
+                  ...F.body, fontSize: 10, fontWeight: 600,
+                  color: m.up === true ? C.positive : m.up === false ? '#DC2626' : C.textFaint,
+                }}>{m.delta}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div style={{ padding: '32px 48px 36px', display: 'flex', flexDirection: 'column', gap: 30 }}>
         <DocSection label="Monthly Performance Narrative">
