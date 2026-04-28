@@ -175,7 +175,7 @@ function Hero() {
             </div>
 
             <h1 className="lp-h1" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 20 }}>
-              Make every AM your{' '}
+              Make every Account Manager your{' '}
               <span style={{ color: C.accent }}>best AM.</span>
             </h1>
 
@@ -623,6 +623,17 @@ function CompetitorContrast() {
             </li>
           ))}
         </ul>
+
+        {/* Objection handling */}
+        <div style={{ maxWidth: 560, margin: '40px auto 0', background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 14, padding: '24px 28px' }}>
+          <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.textSubtle, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 10 }}>A common objection</div>
+          <p style={{ ...F.sans, fontSize: 16, fontWeight: 600, color: C.text, lineHeight: 1.5, marginBottom: 12 }}>
+            "My account managers are good. They don't need AI to write their reports."
+          </p>
+          <p style={{ ...F.sans, fontSize: 15, color: C.textMuted, lineHeight: 1.65, margin: 0 }}>
+            They are. That's not the point. The question is whether a skilled AM should spend 4–6 hours per client every month compiling data, writing narratives, and anticipating questions — or 10 minutes reviewing what AI already prepared, then spending the rest of their time on the work that actually grows accounts.
+          </p>
+        </div>
       </div>
     </section>
   )
