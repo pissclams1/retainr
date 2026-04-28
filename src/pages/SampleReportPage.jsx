@@ -222,13 +222,13 @@ function ClientReportModal({ onClose }) {
       <div style={{ background: C.accent, padding: '20px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1 }}>
         <div>
           <div style={{ ...F.sans, fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>
-            Monthly Performance Report · Sent to client
+            Monthly Performance Report · Client-facing
           </div>
           <div style={{ ...F.sans, fontSize: 20, fontWeight: 800, color: '#fff' }}>Apex Digital Co. · April 2025</div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ background: '#10B98125', border: '1px solid #10B98140', borderRadius: 20, padding: '4px 12px', ...F.sans, fontSize: 11, fontWeight: 700, color: '#6EE7B7' }}>
-            Delivered to client inbox
+          <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 20, padding: '4px 12px', ...F.sans, fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>
+            Ready to share
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>×</button>
         </div>
@@ -238,7 +238,7 @@ function ClientReportModal({ onClose }) {
         {/* "This is what the client sees" banner */}
         <div style={{ background: '#10B98110', border: '1px solid #10B98130', borderRadius: 10, padding: '10px 16px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3C4.5 3 1.5 8 1.5 8s3 5 6.5 5 6.5-5 6.5-5S11.5 3 8 3z" stroke="#10B981" strokeWidth="1.5"/><circle cx="8" cy="8" r="2" stroke="#10B981" strokeWidth="1.5"/></svg>
-          <span style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: '#065F46' }}>This is exactly what your client receives — no internal notes, no agency prep.</span>
+          <span style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: '#065F46' }}>This is exactly what your client sees — no internal notes, no agency prep included.</span>
         </div>
 
         {/* Metrics */}
@@ -291,12 +291,12 @@ function ClientReportModal({ onClose }) {
           ))}
         </div>
 
-        {/* Sent via email note */}
-        <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 18 }}>📧</span>
+        {/* AM delivery control note */}
+        <div style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontSize: 18 }}>🔗</span>
           <div>
-            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: '#065F46' }}>This report lands in your client's inbox</div>
-            <div style={{ ...F.sans, fontSize: 12, color: '#16A34A', marginTop: 2 }}>No login required. No internal notes included. A shareable link is also generated for your records.</div>
+            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text }}>You decide when and how it's shared</div>
+            <div style={{ ...F.sans, fontSize: 12, color: C.muted, marginTop: 2 }}>Send via email, copy a shareable link, or download as PDF — on your terms, when you're ready. Your client never sees it until you choose to share it.</div>
           </div>
         </div>
       </div>
@@ -419,7 +419,7 @@ const REPORT_TYPES = [
       'Plain-English AI narrative — generated live in under 60 seconds',
       'Top-line metric highlights from your Google Ads data',
       'AI-predicted client questions + prepared answers',
-      'Emailed to clients automatically — no login required',
+      'Share via link, email, or PDF — you control when the client sees it',
       'White-labeled with your agency branding',
     ],
     Preview: ClientReportPreview,
