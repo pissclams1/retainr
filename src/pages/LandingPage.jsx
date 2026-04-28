@@ -210,9 +210,9 @@ function Hero() {
           margin: 0, marginBottom: 22, maxWidth: 880,
           marginLeft: 'auto', marginRight: 'auto',
         }}>
-          Turn every AM into a{' '}
-          <span className="lp-headline-accent">high-performing</span>
-          {' '}communicator.
+          Every Account Manager becomes an{' '}
+          <span className="lp-headline-accent">excellent</span>
+          {' '}client communicator.
         </h1>
 
         <p style={{
