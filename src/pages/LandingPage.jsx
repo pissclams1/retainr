@@ -102,6 +102,7 @@ export default function LandingPage() {
       <Nav />
       <Hero />
       <LogoStrip />
+      <AIEngineBanner />
       <Features />
       <HowItWorks />
       <PredictedQuestions />
@@ -170,7 +171,7 @@ function Hero() {
                   <path d="M2 5h6M5 2v6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </span>
-              <span style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: C.accent }}>Built for Google Ads agencies</span>
+              <span style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: C.accent }}>AI-powered reporting for Google Ads agencies</span>
             </div>
 
             <h1 className="lp-h1" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 20 }}>
@@ -179,10 +180,10 @@ function Hero() {
             </h1>
 
             <p style={{ ...F.sans, fontSize: 18, color: C.textMuted, lineHeight: 1.65, marginBottom: 14, maxWidth: 480 }}>
-              Retainr prepares account managers for every client call — with the data, narrative, and predicted client questions they need to communicate confidently.
+              AI reads your Google Ads data and writes three documents in under 60 seconds: a polished client report, an internal AM brief, and the exact questions your client is about to ask — with prepared answers.
             </p>
             <p style={{ ...F.sans, fontSize: 15, color: C.textSubtle, lineHeight: 1.6, marginBottom: 36, maxWidth: 460 }}>
-              The agencies that retain clients longest don't have the best dashboards. They have the best communicators.
+              The agencies that retain clients longest don't have better dashboards. They have account managers who can explain what happened — and what it means.
             </p>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
@@ -351,6 +352,48 @@ function LogoStrip() {
   )
 }
 
+/* ─────────── AI engine banner ─────────── */
+
+function AIEngineBanner() {
+  const outputs = [
+    { label: 'Client Report', desc: 'Plain-English narrative your client reads', icon: '📄' },
+    { label: 'AM Briefing', desc: 'Talking points + how to frame every result', icon: '🎯' },
+    { label: 'Predicted Q&A', desc: '3 questions your client will ask — answered', icon: '💬' },
+  ]
+  return (
+    <section style={{ background: C.accent, padding: '48px 24px' }}>
+      <div style={{ maxWidth: MAX, margin: '0 auto' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 48, flexWrap: 'wrap', justifyContent: 'center' }}>
+          {/* Input */}
+          <div style={{ textAlign: 'center', flexShrink: 0 }}>
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24, margin: '0 auto 8px' }}>📊</div>
+            <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Your Google Ads data</div>
+          </div>
+
+          {/* Arrow + AI label */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+            <div style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '6px 16px', ...F.sans, fontSize: 13, fontWeight: 700, color: '#fff' }}>
+              AI · &lt; 60 seconds
+            </div>
+            <div style={{ ...F.sans, fontSize: 20, color: 'rgba(255,255,255,0.35)' }}>→</div>
+          </div>
+
+          {/* Outputs */}
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {outputs.map(o => (
+              <div key={o.label} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, padding: '14px 18px', minWidth: 170 }}>
+                <div style={{ ...F.sans, fontSize: 18, marginBottom: 6 }}>{o.icon}</div>
+                <div style={{ ...F.sans, fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 3 }}>{o.label}</div>
+                <div style={{ ...F.sans, fontSize: 12, color: 'rgba(255,255,255,0.55)', lineHeight: 1.45 }}>{o.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 /* ─────────── Features ─────────── */
 
 function Features() {
@@ -363,14 +406,14 @@ function Features() {
     },
     {
       icon: '✍️',
-      title: 'Client-facing narrative',
-      desc: 'Plain-English performance summary written from your actual data. Explains what happened, why it matters, and what it means for the client.',
+      title: 'AI-written client narrative',
+      desc: 'Plain-English performance summary written by AI from your actual account data. Explains what happened, why it matters, and what it means — in your client\'s language.',
       hero: false,
     },
     {
       icon: '🎯',
-      title: 'AM internal brief',
-      desc: 'A separate internal section your AM reads before the call: how to frame results, talking points calibrated to this specific client and month.',
+      title: 'AI-generated AM brief',
+      desc: 'A separate internal document your AM reads before the call. AI calibrates the talking points to this specific client, account, and month — not a generic template.',
       hero: false,
     },
     {
@@ -387,8 +430,8 @@ function Features() {
     },
     {
       icon: '📅',
-      title: 'Scheduled delivery',
-      desc: 'Set monthly or weekly cadences. Reports generate and deliver automatically — no reminders, no last-minute scrambles.',
+      title: 'Scheduled AI generation',
+      desc: 'Set monthly or weekly cadences. AI runs the reports automatically — no reminders, no last-minute scrambles. You review and share when ready.',
       hero: false,
     },
   ]
@@ -397,7 +440,7 @@ function Features() {
     <section id="features" className="lp-section-pad" style={{ background: C.bgAlt }}>
       <div style={{ maxWidth: MAX, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <SectionLabel accent>Features</SectionLabel>
+          <SectionLabel accent>Powered by AI</SectionLabel>
           <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 14 }}>
             Everything your team needs to keep clients
           </h2>
@@ -432,8 +475,8 @@ function Features() {
 function HowItWorks() {
   const steps = [
     { n: '01', icon: '🔗', title: 'Connect Google Ads.', desc: 'Read-only OAuth. We never touch campaigns or budgets. Takes 60 seconds.' },
-    { n: '02', icon: '🎯', title: 'Choose the audience.', desc: 'One click generates both a polished client-facing report and an internal AM brief with predicted questions.' },
-    { n: '03', icon: '✉️', title: 'Send it — or schedule it.', desc: 'Share a read-only link, send to email, or let retainr auto-deliver on your cadence.' },
+    { n: '02', icon: '🤖', title: 'AI writes three reports.', desc: 'In under 60 seconds: a polished client narrative, an internal AM briefing with talking points, and predicted Q&A for the call. All from your live account data.' },
+    { n: '03', icon: '✉️', title: 'Share when you\'re ready.', desc: 'Copy a link, send via email, or download as PDF. You control when the client sees it.' },
   ]
   return (
     <section id="how" className="lp-section-pad" style={{ background: C.bg }}>
@@ -493,12 +536,12 @@ function PredictedQuestions() {
 
           {/* Left: copy */}
           <div>
-            <SectionLabel accent>Before every client call</SectionLabel>
+            <SectionLabel accent>AI · Before every client call</SectionLabel>
             <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 20 }}>
               Your AMs know what's coming.
             </h2>
             <p style={{ ...F.sans, fontSize: 17, color: C.textMuted, lineHeight: 1.65, marginBottom: 16, maxWidth: 420 }}>
-              Retainr analyzes each account's data and identifies the questions your client is most likely to ask — before the call. Every AM arrives with a confident, data-grounded answer for each one.
+              AI analyzes each account's data and identifies the 3 questions your client is most likely to ask — before the call. Every AM arrives with a confident, data-grounded answer already written.
             </p>
             <p style={{ ...F.sans, fontSize: 15, color: C.textMuted, lineHeight: 1.65, maxWidth: 420, marginBottom: 32 }}>
               No more being caught flat-footed. No more "let me get back to you." Junior AMs sound like your most senior one, every month, on every account.
@@ -556,7 +599,7 @@ function CompetitorContrast() {
     { name: 'AgencyAnalytics', shows: 'charts.' },
     { name: 'DashThis',        shows: 'dashboards.' },
     { name: 'Whatagraph',      shows: 'reports.' },
-    { name: 'Retainr',         shows: 'prepares your team to have the conversation.', highlight: true },
+    { name: 'Retainr',         shows: 'uses AI to prepare your team for every conversation.', highlight: true },
   ]
   return (
     <section className="lp-section-pad" style={{ background: C.bg }}>
