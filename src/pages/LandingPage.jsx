@@ -180,7 +180,7 @@ function Hero() {
             </h1>
 
             <p style={{ ...F.sans, fontSize: 18, color: C.textMuted, lineHeight: 1.65, marginBottom: 14, maxWidth: 480 }}>
-              AI reads your Google Ads data and writes three documents in under 60 seconds: a polished client report, an internal AM brief, and the exact questions your client is about to ask — with prepared answers.
+              AI reads your Google Ads data and writes three documents in under 60 seconds: a polished client report, an internal AM brief, and questions your client is likely to ask — with prepared answers.
             </p>
             <p style={{ ...F.sans, fontSize: 15, color: C.textSubtle, lineHeight: 1.6, marginBottom: 36, maxWidth: 460 }}>
               The agencies that retain clients longest don't have better dashboards. They have account managers who can explain what happened — and what it means.
