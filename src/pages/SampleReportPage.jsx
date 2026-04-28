@@ -65,12 +65,12 @@ const REPORTS = [
     generatedIn: '52 sec',
     shareUrl: 'retainr.io/r/apex-digital',
     metrics: [
-      { label: 'Impressions',  value: '284,512', delta: '+3%',    up: true  },
-      { label: 'Clicks',       value: '8,204',   delta: '+7%',    up: true  },
-      { label: 'CTR',          value: '2.88%',   delta: '+0.1pt', up: true  },
-      { label: 'Conversions',  value: '1,284',   delta: '+18%',   up: true  },
-      { label: 'Cost / Conv.', value: '$41.32',  delta: '−11%',   up: true  },
-      { label: 'Spend',        value: '$53,056', delta: '+5%',    up: null  },
+      { label: 'Impressions',  value: '284,512', delta: '+3%',   up: true  },
+      { label: 'Clicks',       value: '8,204',   delta: '+7%',   up: true  },
+      { label: 'CTR',          value: '2.88%',   delta: '+4%',   up: true  },
+      { label: 'Conversions',  value: '1,284',   delta: '+18%',  up: true  },
+      { label: 'Cost / Conv.', value: '$41.32',  delta: '+11%',  up: true  },
+      { label: 'Spend',        value: '$53,056', delta: '+5%',   up: null  },
     ],
     narrative: `April was a strong month for Apex Digital. Conversion volume increased 18% over March while cost-per-conversion dropped 11%, indicating the campaign is converting more efficiently rather than simply spending more. Shopping campaigns drove the majority of the improvement, with brand search continuing to outperform non-brand on both CTR and conversion rate. Total spend increased only 5% against an 18% lift in conversions — a meaningful efficiency gain heading into the summer season.`,
     takeaway: `Performance gains this month are driven by efficiency improvements — the account is doing more with roughly the same budget.`,
@@ -94,12 +94,12 @@ const REPORTS = [
     generatedIn: '44 sec',
     shareUrl: 'retainr.io/r/northstar-mktg',
     metrics: [
-      { label: 'Impressions',  value: '142,840', delta: '−4%',    up: false },
-      { label: 'Clicks',       value: '3,891',   delta: '+2%',    up: true  },
-      { label: 'CTR',          value: '2.73%',   delta: '+0.16pt',up: true  },
-      { label: 'Conversions',  value: '94',      delta: '−6%',    up: false },
-      { label: 'Cost / Conv.', value: '$312.40', delta: '+8%',    up: false },
-      { label: 'Spend',        value: '$29,366', delta: '+2%',    up: null  },
+      { label: 'Impressions',  value: '142,840', delta: '−4%',   up: false },
+      { label: 'Clicks',       value: '3,891',   delta: '+2%',   up: true  },
+      { label: 'CTR',          value: '2.73%',   delta: '+6%',   up: true  },
+      { label: 'Conversions',  value: '94',      delta: '−6%',   up: false },
+      { label: 'Cost / Conv.', value: '$312.40', delta: '−8%',   up: false },
+      { label: 'Spend',        value: '$29,366', delta: '+2%',   up: null  },
     ],
     narrative: `March shows the typical Q1-end softness expected in B2B SaaS — decision-makers are finalising budget cycles and conversion latency increases. Conversion volume dipped 6% and cost-per-lead rose 8%, both within the expected seasonal range for this vertical. Crucially, CTR improved 0.16 percentage points despite lower impression volume, indicating the audience targeting refinements made in February are holding. Pipeline velocity from paid leads — tracked via the CRM integration — remained consistent with February, suggesting lead quality has not deteriorated.`,
     takeaway: `The CPL increase reflects seasonal B2B buying patterns in March, not a structural problem. Lead quality metrics remain strong.`,
@@ -123,12 +123,12 @@ const REPORTS = [
     generatedIn: '38 sec',
     shareUrl: 'retainr.io/r/meridian-hvac',
     metrics: [
-      { label: 'Impressions',  value: '98,220',  delta: '+12%',   up: true  },
-      { label: 'Clicks',       value: '4,108',   delta: '+19%',   up: true  },
-      { label: 'CTR',          value: '4.18%',   delta: '+0.28pt',up: true  },
-      { label: 'Conversions',  value: '187',     delta: '+24%',   up: true  },
-      { label: 'Cost / Conv.', value: '$68.40',  delta: '−9%',    up: true  },
-      { label: 'Spend',        value: '$12,791', delta: '+13%',   up: null  },
+      { label: 'Impressions',  value: '98,220',  delta: '+12%',  up: true  },
+      { label: 'Clicks',       value: '4,108',   delta: '+19%',  up: true  },
+      { label: 'CTR',          value: '4.18%',   delta: '+7%',   up: true  },
+      { label: 'Conversions',  value: '187',     delta: '+24%',  up: true  },
+      { label: 'Cost / Conv.', value: '$68.40',  delta: '+9%',   up: true  },
+      { label: 'Spend',        value: '$12,791', delta: '+13%',  up: null  },
     ],
     narrative: `April marks the start of peak season for Meridian Home Services, and the account responded strongly. Conversion volume jumped 24% — driven by the seasonal demand surge for AC tune-ups and maintenance — while cost-per-conversion fell 9% as click quality improved. The service-area targeting refinements implemented in late March (tightening the radius around high-value zip codes and excluding low-conversion rural zones) contributed meaningfully to the CTR lift and conversion efficiency. Call volume is tracking 28% ahead of the same period last year.`,
     takeaway: `Peak season is delivering: conversions up 24%, cost per job down 9%, and call volume ahead of last year's Q2.`,
@@ -402,7 +402,7 @@ function FullReport({ report }) {
                 </span>
                 <span style={{
                   ...F.body, fontSize: 11, fontWeight: 600,
-                  color: m.up === true ? C.positive : m.up === false ? C.negative : C.textFaint,
+                  color: m.up === null ? C.textFaint : m.delta.startsWith('+') ? C.positive : C.negative,
                 }}>
                   {m.delta}
                 </span>
@@ -432,6 +432,22 @@ function FullReport({ report }) {
             {report.takeaway}
           </p>
         </Section>
+
+        {/* Internal section divider */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
+          <div style={{ flex: 1, borderTop: `1px dashed ${C.border}` }} />
+          <div style={{
+            ...F.body, fontSize: 10, fontWeight: 600,
+            letterSpacing: '0.10em', textTransform: 'uppercase',
+            color: C.textFaint,
+            background: C.accentTint,
+            padding: '3px 10px', borderRadius: 20,
+            whiteSpace: 'nowrap',
+          }}>
+            For your team · not sent to client
+          </div>
+          <div style={{ flex: 1, borderTop: `1px dashed ${C.border}` }} />
+        </div>
 
         <Section label="How to Explain This to the Client">
           <ul style={list}>

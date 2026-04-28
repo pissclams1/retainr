@@ -161,7 +161,7 @@ function Nav() {
         <div className="lp-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
           <a href="#how" className="lp-link" style={navLink}>How it works</a>
           <a href="#pricing" className="lp-link" style={navLink}>Pricing</a>
-          <Link to="/sample-report" className="lp-link" style={navLink}>Sample report</Link>
+          <Link to="/sample-report" className="lp-link" style={navLink}>Sample reports</Link>
           <Link to="/login" className="lp-link" style={navLink}>Sign in</Link>
           <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={btnPrimarySmall}>
             Start Free Trial
@@ -334,12 +334,12 @@ function ReportDocument() {
           display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px',
         }}>
           {[
-            { label: 'Impressions',  value: '284,512', delta: '+3%',    up: true  },
-            { label: 'Clicks',       value: '8,204',   delta: '+7%',    up: true  },
-            { label: 'CTR',          value: '2.88%',   delta: '+0.1pt', up: true  },
-            { label: 'Conversions',  value: '1,284',   delta: '+18%',   up: true  },
-            { label: 'Cost / Conv.', value: '$41.32',  delta: '−11%',   up: true  },
-            { label: 'Spend',        value: '$53,056', delta: '+5%',    up: null  },
+            { label: 'Impressions',  value: '284,512', delta: '+3%',   up: true  },
+            { label: 'Clicks',       value: '8,204',   delta: '+7%',   up: true  },
+            { label: 'CTR',          value: '2.88%',   delta: '+4%',   up: true  },
+            { label: 'Conversions',  value: '1,284',   delta: '+18%',  up: true  },
+            { label: 'Cost / Conv.', value: '$41.32',  delta: '+11%',  up: true  },
+            { label: 'Spend',        value: '$53,056', delta: '+5%',   up: null  },
           ].map(m => (
             <div key={m.label} style={{
               padding: '10px 12px',
@@ -356,7 +356,7 @@ function ReportDocument() {
                 }}>{m.value}</span>
                 <span style={{
                   ...F.body, fontSize: 10, fontWeight: 600,
-                  color: m.up === true ? C.positive : m.up === false ? '#DC2626' : C.textFaint,
+                  color: m.up === null ? C.textFaint : m.delta.startsWith('+') ? C.positive : '#DC2626',
                 }}>{m.delta}</span>
               </div>
             </div>
@@ -389,6 +389,9 @@ function ReportDocument() {
             than increased spend.
           </p>
         </DocSection>
+
+        {/* Internal divider */}
+        <InternalDivider />
 
         <DocSection label="How to Explain This to the Client">
           <ul style={{ ...docList, gap: 10 }}>
@@ -432,6 +435,28 @@ function DocSection({ label, children }) {
       </div>
       {children}
     </section>
+  )
+}
+
+function InternalDivider() {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 12,
+      margin: '4px 0',
+    }}>
+      <div style={{ flex: 1, borderTop: `1px dashed ${C.border}` }} />
+      <div style={{
+        ...F.body, fontSize: 10, fontWeight: 600,
+        letterSpacing: '0.10em', textTransform: 'uppercase',
+        color: C.textFaint,
+        background: C.accentTint,
+        padding: '3px 10px', borderRadius: 20,
+        whiteSpace: 'nowrap',
+      }}>
+        For your team · not sent to client
+      </div>
+      <div style={{ flex: 1, borderTop: `1px dashed ${C.border}` }} />
+    </div>
   )
 }
 
