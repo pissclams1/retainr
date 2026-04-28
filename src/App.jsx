@@ -13,6 +13,9 @@ import OnboardingPage from './pages/OnboardingPage'
 import CheckoutPage from './pages/CheckoutPage'
 import { PrivacyPage, TermsPage, SecurityPage, SupportPage } from './pages/LegalPages'
 import SampleReportPage from './pages/SampleReportPage'
+import PricingPage from './pages/PricingPage'
+import SignInPage from './pages/SignInPage'
+import SignUpPage from './pages/SignUpPage'
 
 function Placeholder({ label }) {
   return (
@@ -43,6 +46,10 @@ export default function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/sample-report" element={<SampleReportPage />} />
+        <Route path="/sample-reports" element={<SampleReportPage />} />
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/sign-in" element={<SignInPage />} />
+        <Route path="/sign-up" element={<SignUpPage />} />
         <Route path="/privacy"  element={<PrivacyPage />} />
         <Route path="/terms"    element={<TermsPage />} />
         <Route path="/security" element={<SecurityPage />} />

@@ -129,15 +129,16 @@ function Nav() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
           <Link to="/" style={{ ...F.sans, fontSize: 18, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', textDecoration: 'none' }}>retainr</Link>
           <div className="lp-nav-links" style={{ display: 'flex', gap: 4 }}>
-            {[['#how', 'How it works'], ['#features', 'Features'], ['#pricing', 'Pricing']].map(([href, label]) => (
+            {[['#how', 'How it works'], ['#features', 'Features']].map(([href, label]) => (
               <a key={href} href={href} className="lp-nav-link" style={F.sans}>{label}</a>
             ))}
-            <Link to="/sample-report" className="lp-nav-link" style={F.sans}>Sample reports</Link>
+            <Link to="/pricing" className="lp-nav-link" style={F.sans}>Pricing</Link>
+            <Link to="/sample-reports" className="lp-nav-link" style={F.sans}>Sample reports</Link>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Link to="/login" style={{ ...F.sans, fontSize: 14, fontWeight: 500, color: C.textMuted, padding: '8px 16px', textDecoration: 'none' }}>Sign in</Link>
-          <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={{ ...F.sans, fontSize: 14, fontWeight: 700, padding: '9px 20px', borderRadius: 8, boxShadow: '0 4px 12px rgba(4,37,108,0.30)' }}>
+          <Link to="/sign-in" style={{ ...F.sans, fontSize: 14, fontWeight: 500, color: C.textMuted, padding: '8px 16px', textDecoration: 'none' }}>Sign in</Link>
+          <Link to="/sign-up" className="lp-cta-primary" style={{ ...F.sans, fontSize: 14, fontWeight: 700, padding: '9px 20px', borderRadius: 8, boxShadow: '0 4px 12px rgba(4,37,108,0.30)' }}>
             Start Free Trial
           </Link>
         </div>
@@ -184,10 +185,10 @@ function Hero() {
             </p>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
-              <Link to="/checkout?plan=pro&billing=monthly" className="lp-cta-primary" style={F.sans}>
+              <Link to="/sign-up" className="lp-cta-primary" style={F.sans}>
                 Start Free Trial
               </Link>
-              <Link to="/sample-report" className="lp-cta-ghost" style={F.sans}>
+              <Link to="/sample-reports" className="lp-cta-ghost" style={F.sans}>
                 See Sample Reports →
               </Link>
             </div>
@@ -735,7 +736,7 @@ function Pricing({ billing, setBilling }) {
                   ))}
                 </div>
                 <Link
-                  to={`/checkout?plan=${p.key}&billing=${billing}`}
+                  to={`/sign-up?plan=${p.key}&billing=${billing}`}
                   style={{
                     ...F.sans, fontSize: 14, fontWeight: 700,
                     display: 'block', textAlign: 'center', textDecoration: 'none',
@@ -830,10 +831,10 @@ function FinalCTA() {
           If you're not sending a real client report within your first week, we'll refund you — no questions asked.
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-          <Link to="/checkout?plan=pro&billing=monthly" style={{ ...F.sans, fontSize: 16, fontWeight: 700, color: C.accent, background: '#fff', border: 'none', padding: '15px 32px', borderRadius: 10, textDecoration: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', display: 'inline-block' }}>
+          <Link to="/sign-up" style={{ ...F.sans, fontSize: 16, fontWeight: 700, color: C.accent, background: '#fff', border: 'none', padding: '15px 32px', borderRadius: 10, textDecoration: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.15)', display: 'inline-block' }}>
             Start Free Trial
           </Link>
-          <Link to="/sample-report" style={{ ...F.sans, fontSize: 16, fontWeight: 600, color: '#fff', background: 'transparent', border: '2px solid rgba(255,255,255,0.32)', padding: '13px 28px', borderRadius: 10, textDecoration: 'none', display: 'inline-block' }}>
+          <Link to="/sample-reports" style={{ ...F.sans, fontSize: 16, fontWeight: 600, color: '#fff', background: 'transparent', border: '2px solid rgba(255,255,255,0.32)', padding: '13px 28px', borderRadius: 10, textDecoration: 'none', display: 'inline-block' }}>
             See Sample Reports
           </Link>
         </div>
@@ -851,7 +852,7 @@ function Footer() {
       <div style={{ maxWidth: MAX, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <span style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: '#fff' }}>retainr</span>
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-          {[['#pricing','Pricing'], ['/sample-report','Sample Reports'], ['/privacy','Privacy'], ['/terms','Terms'], ['/security','Security'], ['/support','Support']].map(([href, label]) => (
+          {[['/pricing','Pricing'], ['/sample-reports','Sample Reports'], ['/privacy','Privacy'], ['/terms','Terms'], ['/security','Security'], ['/support','Support']].map(([href, label]) => (
             href.startsWith('/') ? (
               <Link key={href} to={href} style={{ ...F.sans, fontSize: 13, color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}>{label}</Link>
             ) : (

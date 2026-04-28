@@ -1,338 +1,131 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-/* ─────────── Design tokens (mirrored from LandingPage) ─────────── */
+/* ─────────── Design tokens ─────────── */
 
-const F = {
-  heading: { fontFamily: "'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" },
-  body:    { fontFamily: "'Inter', system-ui, -apple-system, sans-serif" },
-}
+const F = { sans: { fontFamily: "'DM Sans', system-ui, -apple-system, sans-serif" } }
 
 const C = {
-  bg:           '#FAFAFA',
-  surface:      '#FFFFFF',
-  surfaceWarm:  '#F5F4F0',
-  text:         '#111111',
-  textBody:     '#1F1F1F',
-  textMuted:    '#5A5A5A',
-  textFaint:    '#8A8A8A',
-  border:       'rgba(17,17,17,0.08)',
-  borderStrong: 'rgba(17,17,17,0.14)',
-  accent:       '#0F1E40',
-  accentTint:   'rgba(15,30,64,0.08)',
-  positive:     '#15803D',
-  negative:     '#DC2626',
+  bg:      '#FFFFFF',
+  bgAlt:   '#F8FAFC',
+  text:    '#0F1F3D',
+  muted:   '#64748B',
+  subtle:  '#94A3B8',
+  border:  '#E2E8F0',
+  accent:  '#04256c',
+  positive: '#10B981',
+  amber:   '#F59E0B',
+  navy:    '#0F1F3D',
 }
 
 const PAGE_CSS = `
-  html, body { background: ${C.bg}; }
+  html, body { background: ${C.bgAlt}; }
   * { box-sizing: border-box; }
 
-  .sr-tab-btn {
-    background: transparent;
-    border: 1px solid ${C.border};
-    border-radius: 8px;
-    padding: 10px 20px;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
-    color: ${C.textMuted};
-  }
-  .sr-tab-btn:hover { border-color: ${C.borderStrong}; color: ${C.text}; }
-  .sr-tab-btn.active {
-    background: ${C.accent};
-    border-color: ${C.accent};
-    color: #FFFFFF;
-  }
+  .sr-nav { background: rgba(255,255,255,0.8); border-bottom: 1px solid transparent; transition: background 0.2s, border-color 0.2s; }
+  .sr-nav.scrolled { background: rgba(255,255,255,0.94); border-bottom-color: ${C.border}; backdrop-filter: blur(12px); }
 
+  .sr-nav-link { padding: 6px 12px; border-radius: 7px; color: ${C.muted}; text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.15s, color 0.15s; }
+  .sr-nav-link:hover { background: ${C.bgAlt}; color: ${C.text}; }
+
+  .sr-report-card { background: ${C.bg}; border-radius: 16px; border: 1px solid ${C.border}; overflow: hidden; box-shadow: 0 2px 12px rgba(15,31,61,0.05); }
+  .sr-view-btn { padding: 11px 22px; border-radius: 9px; border: 1.5px solid ${C.accent}; background: ${C.bg}; color: ${C.accent}; font-size: 14px; font-weight: 700; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .sr-view-btn:hover { background: ${C.accent}; color: #fff; }
+
+  .sr-metric-card { background: #fff; border: 1px solid #E8ECF2; border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+  @media (max-width: 900px) {
+    .sr-card-grid { grid-template-columns: 1fr !important; }
+    .sr-preview-col { display: none !important; }
+  }
   @media (max-width: 640px) {
-    .sr-metrics-grid { grid-template-columns: repeat(2, 1fr) !important; }
-    .sr-report-pad { padding: 24px 20px !important; }
-    .sr-report-header { padding: 28px 20px 20px !important; }
-    .sr-report-footer { padding: 12px 20px !important; }
-    .sr-tabs { flex-direction: column !important; align-items: stretch !important; }
-    .sr-tab-btn { text-align: left; }
+    .sr-modal-metrics { grid-template-columns: repeat(2, 1fr) !important; }
   }
 `
 
-/* ─────────── Sample data ─────────── */
+/* ─────────── Preview components ─────────── */
 
-const REPORTS = [
-  {
-    id: 'apex',
-    client: 'Apex Digital',
-    industry: 'E-commerce',
-    period: 'April 2025 vs March 2025',
-    generatedIn: '52 sec',
-    shareUrl: 'retainr.io/r/apex-digital',
-    metrics: [
-      { label: 'Impressions',  value: '284,512', delta: '+3%',   up: true  },
-      { label: 'Clicks',       value: '8,204',   delta: '+7%',   up: true  },
-      { label: 'CTR',          value: '2.88%',   delta: '+4%',   up: true  },
-      { label: 'Conversions',  value: '1,284',   delta: '+18%',  up: true  },
-      { label: 'Cost / Conv.', value: '$41.32',  delta: '+11%',  up: true  },
-      { label: 'Spend',        value: '$53,056', delta: '+5%',   up: null  },
-    ],
-    narrative: `April was a strong month for Apex Digital. Conversion volume increased 18% over March while cost-per-conversion dropped 11%, indicating the campaign is converting more efficiently rather than simply spending more. Shopping campaigns drove the majority of the improvement, with brand search continuing to outperform non-brand on both CTR and conversion rate. Total spend increased only 5% against an 18% lift in conversions — a meaningful efficiency gain heading into the summer season.`,
-    takeaway: `Performance gains this month are driven by efficiency improvements — the account is doing more with roughly the same budget.`,
-    explanations: [
-      `"We got 18% more conversions this month without meaningfully increasing your budget — your cost per sale dropped to $41."`,
-      `"Your Shopping campaigns are outperforming the market average right now. We've been reallocating budget toward the highest-converting product categories."`,
-      `"Brand search is pulling a higher share of your conversions, which typically signals strong customer intent and healthy repeat purchase behavior."`,
-    ],
-    talkingPoints: [
-      'Conversions up 18%, CPA down 11% — the account is getting more efficient, not just bigger.',
-      'Shopping campaigns are the key driver; we\'ve shifted more budget there over the past 4 weeks.',
-      'Brand search is healthy — up in volume and converting at a premium rate.',
-      'Heading into Q2 with strong momentum. Recommend maintaining current budget through May.',
-    ],
-    predictedQuestions: [
-      {
-        q: 'Our impressions dropped slightly — should we be concerned?',
-        a: 'Total impressions fell 3% as we reallocated budget toward higher-intent keywords and product categories. Your conversions went up 18% as a result. We\'re reaching fewer people, but the right ones.',
-      },
-      {
-        q: 'Why did spend go up if the account is being more efficient?',
-        a: 'Spend increased only 5% while conversions rose 18% — that\'s the definition of efficiency improving. The incremental spend went entirely toward Shopping campaigns where your conversion rate is strongest.',
-      },
-      {
-        q: 'What should we expect in May?',
-        a: 'Summer is a strong period for e-commerce. We\'ll maintain the current allocation and monitor for any CPA creep. If performance holds through the first two weeks, we\'d recommend a 10–15% budget increase to capture the seasonal lift.',
-      },
-    ],
-  },
-  {
-    id: 'northstar',
-    client: 'Northstar Marketing',
-    industry: 'B2B SaaS — lead gen',
-    period: 'March 2025 vs February 2025',
-    generatedIn: '44 sec',
-    shareUrl: 'retainr.io/r/northstar-mktg',
-    metrics: [
-      { label: 'Impressions',  value: '142,840', delta: '−4%',   up: false },
-      { label: 'Clicks',       value: '3,891',   delta: '+2%',   up: true  },
-      { label: 'CTR',          value: '2.73%',   delta: '+6%',   up: true  },
-      { label: 'Conversions',  value: '94',      delta: '−6%',   up: false },
-      { label: 'Cost / Conv.', value: '$312.40', delta: '−8%',   up: false },
-      { label: 'Spend',        value: '$29,366', delta: '+2%',   up: null  },
-    ],
-    narrative: `March shows the typical Q1-end softness expected in B2B SaaS — decision-makers are finalising budget cycles and conversion latency increases. Conversion volume dipped 6% and cost-per-lead rose 8%, both within the expected seasonal range for this vertical. Crucially, CTR improved 0.16 percentage points despite lower impression volume, indicating the audience targeting refinements made in February are holding. Pipeline velocity from paid leads — tracked via the CRM integration — remained consistent with February, suggesting lead quality has not deteriorated.`,
-    takeaway: `The CPL increase reflects seasonal B2B buying patterns in March, not a structural problem. Lead quality metrics remain strong.`,
-    explanations: [
-      `"March is historically soft in B2B SaaS — decision cycles slow at quarter-end. We expected this and the account performed in line with that pattern."`,
-      `"Even with slightly fewer conversions, the leads that did convert are going through the pipeline at the same rate as February — quality is holding."`,
-      `"We kept spend nearly flat and used the lower-volume period to refine audience targeting. Those refinements are showing up in a higher CTR heading into Q2."`,
-    ],
-    talkingPoints: [
-      'CPL increase is seasonal — March is consistently the softest month in B2B SaaS lead gen.',
-      'Lead quality is stable; pipeline velocity from paid is unchanged vs. February.',
-      'CTR improved despite fewer impressions — the targeting work is paying off.',
-      'April and May are typically the strongest months in this vertical. We\'re well-positioned.',
-    ],
-    predictedQuestions: [
-      {
-        q: 'Our cost per lead went up — is the campaign underperforming?',
-        a: 'CPL increased 8% in March, which is consistent with Q1-end seasonality in B2B SaaS. Decision-makers are in budget finalisation mode. March 2024 saw the same pattern — CPL was up 11% that month before recovering strongly in April. This year is tracking better than last year.',
-      },
-      {
-        q: 'We got fewer conversions. Should we increase the budget to compensate?',
-        a: 'Not yet. Lead volume dipped 6% but quality metrics are holding — pipeline velocity from paid is unchanged. Increasing budget into a seasonal soft period typically raises CPL without lifting volume. April is historically when B2B SaaS bounces back; we\'d recommend holding spend and reviewing in two weeks.',
-      },
-      {
-        q: 'What\'s actually working right now?',
-        a: 'Your CTR improved 6% even with lower impression volume — that means the February targeting refinements are performing. The audience quality is up. We\'re in a position to capitalise on Q2 with a tighter, better-performing account than we had at the start of Q1.',
-      },
-    ],
-  },
-  {
-    id: 'meridian',
-    client: 'Meridian Home Services',
-    industry: 'Local services — HVAC',
-    period: 'April 2025 vs March 2025',
-    generatedIn: '38 sec',
-    shareUrl: 'retainr.io/r/meridian-hvac',
-    metrics: [
-      { label: 'Impressions',  value: '98,220',  delta: '+12%',  up: true  },
-      { label: 'Clicks',       value: '4,108',   delta: '+19%',  up: true  },
-      { label: 'CTR',          value: '4.18%',   delta: '+7%',   up: true  },
-      { label: 'Conversions',  value: '187',     delta: '+24%',  up: true  },
-      { label: 'Cost / Conv.', value: '$68.40',  delta: '+9%',   up: true  },
-      { label: 'Spend',        value: '$12,791', delta: '+13%',  up: null  },
-    ],
-    narrative: `April marks the start of peak season for Meridian Home Services, and the account responded strongly. Conversion volume jumped 24% — driven by the seasonal demand surge for AC tune-ups and maintenance — while cost-per-conversion fell 9% as click quality improved. The service-area targeting refinements implemented in late March (tightening the radius around high-value zip codes and excluding low-conversion rural zones) contributed meaningfully to the CTR lift and conversion efficiency. Call volume is tracking 28% ahead of the same period last year.`,
-    takeaway: `Peak season is delivering: conversions up 24%, cost per job down 9%, and call volume ahead of last year's Q2.`,
-    explanations: [
-      `"April is your busiest season — people turn on AC units and call immediately when they don't work. We planned for this volume and the account is delivering."`,
-      `"We tightened your service-area targeting in late March to focus on zip codes with the best close rates. That's showing up as lower cost per job this month."`,
-      `"Call volume is 28% ahead of April last year. The combination of seasonal demand and better targeting is driving that."`,
-    ],
-    talkingPoints: [
-      'Conversions up 24%, cost per job down 9% — peak season is performing above expectations.',
-      'Service-area targeting refinements from March are measurably improving conversion efficiency.',
-      'Call volume tracking 28% ahead of same period last year.',
-      'Recommend increasing budget 15–20% in May to capture continued seasonal demand.',
-    ],
-    predictedQuestions: [
-      {
-        q: 'We\'re getting more calls than we can handle — should we pause the ads?',
-        a: 'This is the best problem to have in April. Rather than pausing, consider setting a daily budget cap to control lead volume, or activating call scheduling to route overflow to on-call staff. Pausing now would let competitors capture demand you\'d have to re-earn later.',
-      },
-      {
-        q: 'Spend went up 13% — did we approve that?',
-        a: 'The budget increase was within the 15% flex range we discussed for peak season. Spend rose $1,500 over March while conversions increased by 36 jobs at $68 each. The incremental spend generated roughly $3,800 in additional revenue at your average job value — a 2.5× return on the extra spend.',
-      },
-      {
-        q: 'How long does peak season last?',
-        a: 'For HVAC in your region, high conversion volume typically runs through mid-June before softening. We\'d recommend maintaining the current setup — or modestly increasing budget — through May, then reviewing in early June. July and August tend to be strong again for AC units.',
-      },
-    ],
-  },
-]
-
-/* ─────────── Page ─────────── */
-
-export default function SampleReportPage() {
-  const [active, setActive] = useState('apex')
-  const report = REPORTS.find(r => r.id === active)
-
+function SparkLine({ color = C.accent, up = true }) {
+  const pts = up
+    ? '0,40 15,35 30,28 45,32 60,20 75,15 90,10 105,5'
+    : '0,10 15,15 30,20 45,14 60,25 75,30 90,22 105,35'
+  const gId = `sg_${color.replace('#', '')}_${up}`
   return (
-    <div style={{
-      ...F.body, color: C.textBody, background: C.bg,
-      WebkitFontSmoothing: 'antialiased',
-      MozOsxFontSmoothing: 'grayscale',
-      minHeight: '100vh',
-    }}>
-      <style>{PAGE_CSS}</style>
+    <svg width={106} height={44} style={{ display: 'block' }}>
+      <defs>
+        <linearGradient id={gId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.18" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon points={`0,44 ${pts} 105,44`} fill={`url(#${gId})`} />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
 
-      {/* Nav */}
-      <nav style={{
-        position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(250,250,250,0.85)',
-        backdropFilter: 'saturate(140%) blur(12px)',
-        WebkitBackdropFilter: 'saturate(140%) blur(12px)',
-        borderBottom: `1px solid ${C.border}`,
-      }}>
-        <div style={{
-          maxWidth: 1080, margin: '0 auto', padding: '18px 32px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
-          <Link to="/" style={{
-            ...F.heading, fontSize: 19, fontWeight: 600,
-            color: C.text, letterSpacing: '-0.01em', textDecoration: 'none',
-          }}>retainr</Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <Link to="/" style={{
-              ...F.body, fontSize: 14, fontWeight: 500,
-              color: C.textMuted, textDecoration: 'none',
-            }}>← Back to home</Link>
-            <Link to="/checkout?plan=pro&billing=monthly" style={{
-              ...F.body, fontSize: 14, fontWeight: 500,
-              color: '#FFFFFF', background: C.accent,
-              padding: '9px 18px', borderRadius: 8,
-              textDecoration: 'none',
-            }}>
-              Start Free Trial
-            </Link>
+function MetricPill({ label, value, delta, color = C.positive }) {
+  return (
+    <div className="sr-metric-card">
+      <span style={{ ...F.sans, fontSize: 11, color: C.subtle, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase' }}>{label}</span>
+      <span style={{ ...F.sans, fontSize: 20, fontWeight: 700, color: C.text, lineHeight: 1.2 }}>{value}</span>
+      {delta && <span style={{ ...F.sans, fontSize: 11, color, fontWeight: 600 }}>{delta}</span>}
+    </div>
+  )
+}
+
+function ClientReportPreview() {
+  return (
+    <div style={{ background: C.bgAlt, borderRadius: 12, border: `1px solid ${C.border}`, overflow: 'hidden', boxShadow: '0 4px 16px rgba(15,31,61,0.08)' }}>
+      {/* Browser chrome */}
+      <div style={{ background: '#fff', borderBottom: `1px solid ${C.border}`, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 5 }}>
+          {['#FF5F57', '#FFBD2E', '#28C840'].map(c => <div key={c} style={{ width: 9, height: 9, borderRadius: '50%', background: c }} />)}
+        </div>
+        <div style={{ flex: 1, background: '#F1F5F9', borderRadius: 5, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{ ...F.sans, fontSize: 9, color: C.subtle }}>retainr.io — Client Report · Apex Digital · April 2025</span>
+        </div>
+      </div>
+      <div style={{ padding: '14px 14px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+          <div>
+            <div style={{ ...F.sans, fontSize: 10, color: C.subtle, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 2 }}>Monthly Performance Report</div>
+            <div style={{ ...F.sans, fontSize: 14, fontWeight: 700, color: C.text }}>Apex Digital Co.</div>
+            <div style={{ ...F.sans, fontSize: 11, color: C.muted }}>April 1 – April 30, 2025</div>
+          </div>
+          <div style={{ background: `${C.accent}15`, borderRadius: 7, padding: '4px 10px', ...F.sans, fontSize: 10, fontWeight: 600, color: C.accent }}>Generated by AI</div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 12 }}>
+          <MetricPill label="Impr." value="284K" delta="↑ 12.4%" color={C.positive} />
+          <MetricPill label="Clicks" value="18.2K" delta="↑ 8.1%" color={C.positive} />
+          <MetricPill label="Conv." value="412" delta="↑ 23.7%" color={C.positive} />
+          <MetricPill label="CPC" value="$1.84" delta="↓ 6.2%" color={C.amber} />
+        </div>
+        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px 8px', marginBottom: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <span style={{ ...F.sans, fontSize: 11, fontWeight: 600, color: C.text }}>Conversion Trend</span>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {['7d', '30d', '90d'].map((t, i) => (
+                <span key={t} style={{ ...F.sans, fontSize: 9, padding: '2px 6px', borderRadius: 3, background: i === 1 ? C.accent : '#F1F5F9', color: i === 1 ? '#fff' : C.muted, fontWeight: 600 }}>{t}</span>
+              ))}
+            </div>
+          </div>
+          <SparkLine color={C.accent} up={true} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 3 }}>
+            {['Apr 1', 'Apr 8', 'Apr 15', 'Apr 22', 'Apr 30'].map(d => (
+              <span key={d} style={{ ...F.sans, fontSize: 8, color: '#CBD5E1' }}>{d}</span>
+            ))}
           </div>
         </div>
-      </nav>
-
-      {/* Header */}
-      <div style={{
-        maxWidth: 1080, margin: '0 auto',
-        padding: '72px 32px 48px',
-        textAlign: 'center',
-      }}>
-        <div style={{
-          ...F.body, fontSize: 12, fontWeight: 600,
-          letterSpacing: '0.12em', textTransform: 'uppercase',
-          color: C.textFaint, marginBottom: 16,
-        }}>
-          Sample reports
-        </div>
-        <h1 style={{
-          ...F.heading, fontSize: 44, fontWeight: 700,
-          lineHeight: 1.1, letterSpacing: '-0.02em',
-          color: C.text, margin: 0, marginBottom: 16,
-        }}>
-          What your clients receive.
-        </h1>
-        <p style={{
-          ...F.body, fontSize: 18, lineHeight: 1.6,
-          color: C.textMuted, margin: '0 auto',
-          maxWidth: 560,
-        }}>
-          Three real-scenario reports across different agency types.
-          Every section is written by AI from live Google Ads data — no templates.
-        </p>
-      </div>
-
-      {/* Tab switcher */}
-      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '0 32px 48px' }}>
-        <div className="sr-tabs" style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          justifyContent: 'center', flexWrap: 'wrap',
-        }}>
-          {REPORTS.map(r => (
-            <button
-              key={r.id}
-              onClick={() => setActive(r.id)}
-              className={`sr-tab-btn ${active === r.id ? 'active' : ''}`}
-              style={{
-                ...F.body, fontSize: 14, fontWeight: 500,
-              }}
-            >
-              <span style={{ fontWeight: 600 }}>{r.client}</span>
-              <span style={{
-                marginLeft: 8, fontSize: 12, opacity: active === r.id ? 0.75 : 0.6,
-              }}>
-                {r.industry}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Report */}
-      <div style={{ maxWidth: 860, margin: '0 auto', padding: '0 32px 120px' }}>
-        <FullReport report={report} />
-
-        {/* CTA */}
-        <div style={{
-          marginTop: 64, padding: '48px', textAlign: 'center',
-          background: C.surface, border: `1px solid ${C.border}`,
-          borderRadius: 16,
-        }}>
-          <h2 style={{
-            ...F.heading, fontSize: 28, fontWeight: 700,
-            lineHeight: 1.2, color: C.text,
-            margin: 0, marginBottom: 12, letterSpacing: '-0.015em',
-          }}>
-            Generate your first report in under a minute.
-          </h2>
-          <p style={{
-            ...F.body, fontSize: 16, lineHeight: 1.6,
-            color: C.textMuted, margin: '0 auto 32px', maxWidth: 440,
-          }}>
-            Connect Google Ads, pick a client, click Generate.
-            Your report looks exactly like this.
-          </p>
-          <Link
-            to="/checkout?plan=pro&billing=monthly"
-            style={{
-              ...F.body, fontSize: 15, fontWeight: 500,
-              color: '#FFFFFF', background: C.accent,
-              padding: '14px 28px', borderRadius: 8,
-              textDecoration: 'none', display: 'inline-block',
-              boxShadow: '0 8px 16px -8px rgba(15,30,64,0.40)',
-            }}
-          >
-            Start Free Trial — 14 days free
-          </Link>
-          <p style={{
-            ...F.body, fontSize: 13, color: C.textFaint,
-            margin: '14px 0 0 0',
-          }}>
-            No credit card required
+        <div style={{ background: `${C.accent}08`, border: `1px solid ${C.accent}22`, borderRadius: 8, padding: '10px 12px', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+            <div style={{ width: 14, height: 14, borderRadius: 3, background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="8" height="8" viewBox="0 0 10 10" fill="none"><path d="M2 5h6M5 2v6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" /></svg>
+            </div>
+            <span style={{ ...F.sans, fontSize: 9, fontWeight: 700, color: C.accent, letterSpacing: '0.05em', textTransform: 'uppercase' }}>AI Executive Summary</span>
+          </div>
+          <p style={{ ...F.sans, fontSize: 11, color: '#334155', lineHeight: 1.6, margin: 0 }}>
+            <strong>April was your strongest month.</strong> Conversions jumped 23.7% while CPC fell 6.2%. The branded keyword campaign drove 38% of all conversions…
           </p>
         </div>
       </div>
@@ -340,253 +133,400 @@ export default function SampleReportPage() {
   )
 }
 
-/* ─────────── Full report component ─────────── */
-
-function FullReport({ report }) {
+function InternalReportPreview() {
   return (
-    <article style={{
-      background: C.surface,
-      border: `1px solid ${C.border}`,
-      borderRadius: 2,
-      boxShadow: [
-        '0 1px 0 rgba(255,255,255,0.7) inset',
-        '0 1px 0 rgba(17,17,17,0.04)',
-        '0 8px 16px -8px rgba(17,17,17,0.10)',
-        '0 36px 80px -20px rgba(17,17,17,0.25)',
-      ].join(', '),
-      overflow: 'hidden',
-      textAlign: 'left',
-    }}>
-      {/* Top accent bar */}
-      <div style={{ height: 4, background: C.accent }} />
+    <div style={{ background: C.bgAlt, borderRadius: 10, border: `1px solid ${C.border}`, overflow: 'hidden' }}>
+      <div style={{ background: C.navy, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ ...F.sans, fontSize: 10, color: 'rgba(255,255,255,0.45)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Internal Analysis</div>
+          <div style={{ ...F.sans, fontSize: 14, fontWeight: 700, color: '#fff', marginTop: 1 }}>Apex Digital · April 2025</div>
+        </div>
+        <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: 6, padding: '4px 10px', ...F.sans, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>Confidential</div>
+      </div>
+      <div style={{ padding: '12px 14px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+        <MetricPill label="Impressions" value="284K" delta="↑ 12.4%" />
+        <MetricPill label="CTR" value="6.4%" delta="↑ 0.5pp" />
+        <MetricPill label="Conv. Rate" value="2.3%" delta="↑ 0.4pp" />
+        <MetricPill label="ROAS" value="4.2×" delta="↑ 0.6×" />
+      </div>
+      <div style={{ margin: '0 14px', borderRadius: 8, background: '#fff', border: `1px solid ${C.border}`, padding: '10px 12px', marginBottom: 14 }}>
+        <div style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8 }}>Conversion trend</div>
+        <SparkLine color={C.accent} up={true} />
+      </div>
+      <div style={{ margin: '0 14px 14px', background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: 8, padding: '10px 12px' }}>
+        <div style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: C.amber, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>⚠ Flag for team</div>
+        <p style={{ ...F.sans, fontSize: 11, color: '#92400E', lineHeight: 1.5, margin: 0 }}>Display CPM rose 18% vs. last month — review placement exclusions before next cycle.</p>
+      </div>
+    </div>
+  )
+}
 
-      {/* Header */}
-      <header className="sr-report-header" style={{
-        padding: '40px 48px 24px',
-        borderBottom: `1px solid ${C.border}`,
-      }}>
-        <div style={{
-          ...F.body, fontSize: 11, fontWeight: 600,
-          letterSpacing: '0.10em', textTransform: 'uppercase',
-          color: C.textFaint, marginBottom: 10,
-        }}>
-          Monthly Performance Report · {report.period.split(' vs ')[0]}
-        </div>
-        <div style={{
-          display: 'flex', alignItems: 'flex-start',
-          justifyContent: 'space-between', gap: 24, flexWrap: 'wrap',
-        }}>
-          <div>
-            <h2 style={{
-              ...F.heading, fontSize: 30, fontWeight: 700,
-              lineHeight: 1.15, color: C.text, margin: 0, marginBottom: 4,
-            }}>
-              {report.client}
-            </h2>
-            <div style={{
-              ...F.body, fontSize: 13, color: C.textFaint,
-            }}>
-              {report.industry}
-            </div>
-          </div>
-          <div style={{
-            ...F.body, fontSize: 12, color: C.textFaint,
-            display: 'flex', alignItems: 'center', gap: 8,
-            paddingTop: 4,
-          }}>
-            <span style={{
-              width: 6, height: 6, borderRadius: '50%',
-              background: C.positive, flexShrink: 0,
-            }} />
-            Generated by retainr · {report.generatedIn}
-          </div>
-        </div>
-      </header>
-
-      {/* Metrics grid */}
-      <div style={{
-        padding: '20px 48px 24px',
-        borderBottom: `1px solid ${C.border}`,
-        background: C.bg,
-      }}>
-        <div style={{
-          ...F.body, fontSize: 10, fontWeight: 600,
-          letterSpacing: '0.10em', textTransform: 'uppercase',
-          color: C.textFaint, marginBottom: 12,
-        }}>
-          Performance Summary · {report.period}
-        </div>
-        <div
-          className="sr-metrics-grid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '8px',
-          }}
-        >
-          {report.metrics.map(m => (
-            <div key={m.label} style={{
-              padding: '12px 14px',
-              background: C.surface, borderRadius: 6,
-              border: `1px solid ${C.border}`,
-            }}>
-              <div style={{
-                ...F.body, fontSize: 10, fontWeight: 500,
-                color: C.textFaint, marginBottom: 5,
-              }}>
-                {m.label}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                <span style={{
-                  ...F.heading, fontSize: 17, fontWeight: 600, color: C.text,
-                }}>
-                  {m.value}
-                </span>
-                <span style={{
-                  ...F.body, fontSize: 11, fontWeight: 600,
-                  color: m.up === null ? C.textFaint : m.delta.startsWith('+') ? C.positive : C.negative,
-                }}>
-                  {m.delta}
-                </span>
-              </div>
+function ExecutiveSummaryPreview() {
+  return (
+    <div style={{ background: C.bgAlt, borderRadius: 10, border: `1px solid ${C.border}`, overflow: 'hidden' }}>
+      <div style={{ background: `linear-gradient(135deg, ${C.accent} 0%, #0a3a8f 100%)`, padding: '16px 16px' }}>
+        <div style={{ ...F.sans, fontSize: 10, color: 'rgba(255,255,255,0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Executive Summary · Q1 2025</div>
+        <div style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: '#fff', lineHeight: 1.2 }}>Apex Digital Co.</div>
+        <div style={{ display: 'flex', gap: 16, marginTop: 12 }}>
+          {[['$41.2K', 'Total Spend'], ['1,184', 'Conversions'], ['4.1×', 'Avg ROAS']].map(([v, l]) => (
+            <div key={l}>
+              <div style={{ ...F.sans, fontSize: 18, fontWeight: 800, color: '#fff' }}>{v}</div>
+              <div style={{ ...F.sans, fontSize: 9, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{l}</div>
             </div>
           ))}
         </div>
       </div>
-
-      {/* Narrative sections */}
-      <div className="sr-report-pad" style={{
-        padding: '32px 48px 36px',
-        display: 'flex', flexDirection: 'column', gap: 32,
-      }}>
-        <Section label="Monthly Performance Narrative">
-          <p style={prose}>{report.narrative}</p>
-        </Section>
-
-        <Section label="Key Takeaway">
-          <p style={{
-            ...prose,
-            margin: 0,
-            paddingLeft: 16, borderLeft: `2px solid ${C.accent}`,
-            background: C.accentTint, padding: '14px 16px',
-            borderRadius: '0 4px 4px 0',
-          }}>
-            {report.takeaway}
-          </p>
-        </Section>
-
-        {/* Internal section divider */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
-          <div style={{ flex: 1, borderTop: `1px dashed ${C.border}` }} />
-          <div style={{
-            ...F.body, fontSize: 10, fontWeight: 600,
-            letterSpacing: '0.10em', textTransform: 'uppercase',
-            color: C.textFaint,
-            background: C.accentTint,
-            padding: '3px 10px', borderRadius: 20,
-            whiteSpace: 'nowrap',
-          }}>
-            For your team · not sent to client
+      <div style={{ padding: '12px 14px' }}>
+        <div style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 8 }}>Quarter highlights</div>
+        {[
+          'Conversions grew 31% YoY driven by new search campaigns',
+          'Branded keyword ROAS exceeded 8× for the first time',
+          'CPA decreased from $47 → $35 — 26% efficiency improvement',
+        ].map((item, i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: 8 }}>
+            <div style={{ width: 16, height: 16, borderRadius: '50%', background: `${C.positive}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+              <svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1.5 4l1.5 1.5L6.5 2" stroke={C.positive} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </div>
+            <span style={{ ...F.sans, fontSize: 11, color: '#334155', lineHeight: 1.5 }}>{item}</span>
           </div>
-          <div style={{ flex: 1, borderTop: `1px dashed ${C.border}` }} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ─────────── Full report modal ─────────── */
+
+function FullReportModal({ onClose }) {
+  return (
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(15,31,61,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}
+      onClick={onClose}
+    >
+      <div
+        style={{ background: '#fff', borderRadius: 16, maxWidth: 680, width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 32px 80px rgba(15,31,61,0.25)' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Modal header */}
+        <div style={{ background: C.accent, padding: '20px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 1 }}>
+          <div>
+            <div style={{ ...F.sans, fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Client Performance Report</div>
+            <div style={{ ...F.sans, fontSize: 20, fontWeight: 800, color: '#fff', marginTop: 2 }}>Apex Digital Co. · April 2025</div>
+          </div>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>×</button>
         </div>
 
-        <Section label="How to Explain This to the Client">
-          <ul style={list}>
-            {report.explanations.map((e, i) => (
-              <li key={i} style={li}>{e}</li>
+        <div style={{ padding: '28px' }}>
+          {/* Metrics */}
+          <div className="sr-modal-metrics" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 24 }}>
+            {[
+              { label: 'Impressions', value: '284K', delta: '↑ 12.4%', color: C.positive },
+              { label: 'Clicks', value: '18.2K', delta: '↑ 8.1%', color: C.positive },
+              { label: 'Conversions', value: '412', delta: '↑ 23.7%', color: C.positive },
+              { label: 'Avg. CPC', value: '$1.84', delta: '↓ 6.2%', color: C.amber },
+            ].map(m => (
+              <div key={m.label} style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px' }}>
+                <div style={{ ...F.sans, fontSize: 11, color: C.muted, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 }}>{m.label}</div>
+                <div style={{ ...F.sans, fontSize: 24, fontWeight: 800, color: C.text, lineHeight: 1 }}>{m.value}</div>
+                <div style={{ ...F.sans, fontSize: 12, color: m.color, fontWeight: 600, marginTop: 3 }}>{m.delta}</div>
+              </div>
             ))}
-          </ul>
-        </Section>
+          </div>
 
-        <Section label="Meeting Talking Points">
-          <ul style={list}>
-            {report.talkingPoints.map((t, i) => (
-              <li key={i} style={{ ...li, display: 'flex', gap: 8 }}>
-                <span style={{ color: C.textFaint, flexShrink: 0 }}>›</span>
-                <span>{t}</span>
-              </li>
+          {/* AI Executive Summary */}
+          <div style={{ background: `${C.accent}08`, border: `1px solid ${C.accent}22`, borderRadius: 12, padding: '18px 20px', marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <div style={{ width: 20, height: 20, borderRadius: 5, background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5h6M5 2v6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" /></svg>
+              </div>
+              <span style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em' }}>AI Executive Summary</span>
+            </div>
+            <p style={{ ...F.sans, fontSize: 14, color: '#334155', lineHeight: 1.7, marginBottom: 12 }}>
+              <strong>April was your strongest month in 2025.</strong> Conversions jumped 23.7% while your cost-per-click fell 6.2%, meaning you're acquiring more customers at lower cost — a rare and impressive combination.
+            </p>
+            <p style={{ ...F.sans, fontSize: 14, color: '#334155', lineHeight: 1.7, marginBottom: 12 }}>
+              The new branded keyword campaign launched March 28th was the clear standout, contributing <strong>38% of all conversions</strong> at a ROAS of 6.4× — well above your 4× target.
+            </p>
+            <p style={{ ...F.sans, fontSize: 14, color: '#334155', lineHeight: 1.7 }}>
+              One area to watch: display CPM rose 18% vs. March, slightly inflating overall spend. We recommend reviewing placement exclusions before the next billing cycle.
+            </p>
+          </div>
+
+          {/* Talking points */}
+          <div style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 12, padding: '18px 20px', marginBottom: 24 }}>
+            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 12 }}>💬 Suggested talking points for your client call</div>
+            {[
+              "Lead with the conversion win — 23.7% growth is a headline number clients remember.",
+              "Explain the CPC improvement: same budget, more results. Frame it as better targeting, not luck.",
+              "Introduce the branded campaign as a new growth lever — propose a 20% budget increase.",
+              "Acknowledge the display CPM uptick proactively — shows you're on top of the details.",
+            ].map((point, i) => (
+              <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 10, padding: '10px 12px', background: '#fff', borderRadius: 8, border: `1px solid ${C.border}` }}>
+                <span style={{ ...F.sans, fontSize: 13, color: C.accent, fontWeight: 800, minWidth: 20 }}>{i + 1}.</span>
+                <span style={{ ...F.sans, fontSize: 13, color: '#334155', lineHeight: 1.55 }}>{point}</span>
+              </div>
             ))}
-          </ul>
-        </Section>
+          </div>
 
-        {/* Predicted questions */}
-        <div style={{ marginTop: 8 }}>
-          <div style={{
-            ...F.body, fontSize: 11, fontWeight: 700,
-            letterSpacing: '0.10em', textTransform: 'uppercase',
-            color: C.accent, marginBottom: 4,
-          }}>
-            Predicted client questions
+          {/* Internal divider */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+            <div style={{ flex: 1, borderTop: '1px dashed #CBD5E1' }} />
+            <div style={{ ...F.sans, fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.muted, background: `${C.accent}10`, padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>
+              For your team · not sent to client
+            </div>
+            <div style={{ flex: 1, borderTop: '1px dashed #CBD5E1' }} />
           </div>
-          <div style={{
-            ...F.body, fontSize: 12, color: C.textFaint,
-            marginBottom: 16, lineHeight: 1.5,
-          }}>
-            Based on this month's data, your client is likely to ask the following. Prepared answers below.
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {report.predictedQuestions.map((pq, i) => (
-              <div key={i} style={{
-                background: C.accentTint,
-                border: `1px solid rgba(15,30,64,0.12)`,
-                borderRadius: 10, padding: '14px 16px',
-              }}>
+
+          {/* Predicted questions */}
+          <div>
+            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 6 }}>🔮 Predicted client questions — with prepared answers</div>
+            <p style={{ ...F.sans, fontSize: 12, color: C.muted, marginBottom: 16, lineHeight: 1.5 }}>
+              Based on this month's data, AI has predicted the questions your client is most likely to ask. Prepared answers below.
+            </p>
+            {[
+              { q: 'Our impressions dropped slightly — should we be concerned?', a: 'Total impressions fell 3% as we reallocated budget toward higher-intent keywords and product categories. Your conversions went up 23.7% as a result. We\'re reaching fewer people, but the right ones.' },
+              { q: 'Why did spend go up if the account is being more efficient?', a: 'Spend increased only modestly while conversions rose 23.7% — that\'s the definition of improving efficiency. The incremental spend went entirely toward Shopping campaigns where your conversion rate is strongest.' },
+              { q: 'What should we expect in May?', a: 'We\'ll maintain the current allocation and monitor for CPA creep. If performance holds through the first two weeks, we\'d recommend a 10–15% budget increase to capture continued demand.' },
+            ].map((pq, i) => (
+              <div key={i} style={{ background: `${C.accent}07`, border: `1px solid ${C.accent}18`, borderRadius: 10, padding: '14px 16px', marginBottom: 10 }}>
                 <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-                  <span style={{
-                    ...F.body, fontSize: 10, fontWeight: 700,
-                    color: C.accent, background: 'rgba(15,30,64,0.10)',
-                    padding: '2px 8px', borderRadius: 10,
-                    whiteSpace: 'nowrap', flexShrink: 0,
-                  }}>
-                    Q{i + 1}
-                  </span>
-                  <div style={{ ...F.body, fontSize: 14, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>
-                    "{pq.q}"
-                  </div>
+                  <span style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: C.accent, background: `${C.accent}15`, padding: '2px 8px', borderRadius: 10, whiteSpace: 'nowrap', flexShrink: 0 }}>Q{i + 1}</span>
+                  <div style={{ ...F.sans, fontSize: 14, fontWeight: 600, color: C.text, lineHeight: 1.4 }}>"{pq.q}"</div>
                 </div>
                 <div style={{ display: 'flex', gap: 10, paddingLeft: 2 }}>
-                  <span style={{ ...F.body, fontSize: 13, fontWeight: 700, color: '#15803D', flexShrink: 0 }}>→</span>
-                  <div style={{ ...F.body, fontSize: 13, color: C.textBody, lineHeight: 1.6 }}>{pq.a}</div>
+                  <span style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.positive, flexShrink: 0 }}>→</span>
+                  <div style={{ ...F.sans, fontSize: 13, color: '#334155', lineHeight: 1.6 }}>{pq.a}</div>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Email delivery note */}
+          <div style={{ marginTop: 24, background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 20 }}>📧</span>
+            <div>
+              <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text }}>Auto-emailed to your client</div>
+              <div style={{ ...F.sans, fontSize: 12, color: C.muted }}>The client-facing version (above the divider) is sent directly to your client's inbox. No login required for them. A shareable link is also available for your records.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ─────────── Report type cards ─────────── */
+
+const REPORT_TYPES = [
+  {
+    id: 'client',
+    badge: 'Client-facing',
+    badgeColor: C.accent,
+    title: 'Client Performance Report',
+    desc: 'A polished, jargon-free narrative designed to impress clients and build trust. Focuses on outcomes and stories — not technical data.',
+    highlights: [
+      'Plain-English AI narrative — generated live in under 60 seconds',
+      'Top-line metric highlights from your Google Ads data',
+      'AI-predicted client questions + prepared answers',
+      'Emailed to clients automatically — no login required',
+      'White-labeled with your agency branding',
+    ],
+    Preview: ClientReportPreview,
+    cta: 'View client report',
+    canOpen: true,
+  },
+  {
+    id: 'internal',
+    badge: 'Internal',
+    badgeColor: C.navy,
+    title: 'Internal AM Briefing',
+    desc: 'The full technical deep-dive for your team. Campaign-level breakdowns, anomaly flags, talking points, and everything your AMs need to sound like experts on every call.',
+    highlights: [
+      'Campaign-level performance breakdown',
+      'Anomaly detection & team flags',
+      'Meeting preparation: talking points + explanations',
+      'Predicted client questions with answer playbook',
+      'Confidential — never sent to client',
+    ],
+    Preview: InternalReportPreview,
+    cta: 'View internal briefing',
+    canOpen: false,
+  },
+  {
+    id: 'executive',
+    badge: 'Executive',
+    badgeColor: '#7C3AED',
+    title: 'Quarterly Executive Summary',
+    desc: 'A high-level roll-up across all campaigns for agency directors and client stakeholders. QoQ comparisons, strategic wins, and a one-page board-ready format.',
+    highlights: [
+      'Multi-campaign roll-up with QoQ & YoY comparisons',
+      'Key wins and strategic flags in plain English',
+      'One-page format — perfect for QBRs',
+      'Generated from the same data as monthly reports',
+      'Ideal for retainer renewal conversations',
+    ],
+    Preview: ExecutiveSummaryPreview,
+    cta: 'View executive summary',
+    canOpen: false,
+  },
+]
+
+/* ─────────── Page ─────────── */
+
+export default function SampleReportPage() {
+  const [openModal, setOpenModal] = useState(null)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', h)
+    return () => window.removeEventListener('scroll', h)
+  }, [])
+
+  return (
+    <div style={{ ...F.sans, color: C.text, background: C.bgAlt, WebkitFontSmoothing: 'antialiased', minHeight: '100vh' }}>
+      <style>{PAGE_CSS}</style>
+
+      {/* Nav */}
+      <nav className={`sr-nav${scrolled ? ' scrolled' : ''}`} style={{ position: 'sticky', top: 0, zIndex: 100 }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto', padding: '0 32px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+            <Link to="/" style={{ ...F.sans, fontSize: 18, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', textDecoration: 'none' }}>retainr</Link>
+            <div style={{ display: 'flex', gap: 4 }}>
+              <Link to="/" className="sr-nav-link" style={F.sans}>Home</Link>
+              <Link to="/pricing" className="sr-nav-link" style={F.sans}>Pricing</Link>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <Link to="/sign-in" style={{ ...F.sans, fontSize: 14, fontWeight: 500, color: C.muted, padding: '8px 14px', textDecoration: 'none' }}>Sign in</Link>
+            <Link to="/sign-up" style={{ ...F.sans, fontSize: 14, fontWeight: 700, color: '#fff', background: C.accent, textDecoration: 'none', padding: '9px 20px', borderRadius: 8 }}>Start Free Trial</Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <div style={{ background: C.bg, borderBottom: `1px solid ${C.border}`, padding: '56px 32px 48px' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: `${C.accent}12`, border: `1px solid ${C.accent}25`, borderRadius: 20, padding: '4px 14px', marginBottom: 20, ...F.sans, fontSize: 13, fontWeight: 600, color: C.accent }}>
+            Sample reports
+          </div>
+          <h1 style={{ ...F.sans, fontSize: 40, fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1.1, marginBottom: 14 }}>
+            See what your clients will receive
+          </h1>
+          <p style={{ ...F.sans, fontSize: 17, color: C.muted, lineHeight: 1.65, maxWidth: 540, margin: '0 auto' }}>
+            retainr generates three types of reports from the same Google Ads data — each written by AI in real-time, tailored to a different audience.
+          </p>
+        </div>
+      </div>
+
+      {/* Report type cards */}
+      <div style={{ maxWidth: 1180, margin: '0 auto', padding: '56px 32px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+          {REPORT_TYPES.map(({ id, badge, badgeColor, title, desc, highlights, Preview, cta, canOpen }, i) => (
+            <div key={id} className="sr-report-card" style={{ display: 'grid', gridTemplateColumns: i % 2 === 0 ? '1fr 420px' : '420px 1fr' }}>
+              {/* Info side */}
+              <div style={{
+                padding: '40px 44px', display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                order: i % 2 === 0 ? 0 : 1,
+              }}>
+                <div style={{
+                  display: 'inline-flex', alignItems: 'center', background: `${badgeColor}15`,
+                  borderRadius: 6, padding: '3px 10px', marginBottom: 16, alignSelf: 'flex-start',
+                }}>
+                  <span style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: badgeColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{badge}</span>
+                </div>
+                <h2 style={{ ...F.sans, fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 10 }}>{title}</h2>
+                <p style={{ ...F.sans, fontSize: 15, color: C.muted, lineHeight: 1.65, marginBottom: 24 }}>{desc}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 28 }}>
+                  {highlights.map(h => (
+                    <div key={h} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
+                        <circle cx="7" cy="7" r="6.5" fill={`${C.accent}15`} />
+                        <path d="M4.5 7l1.5 1.5L9.5 5" stroke={C.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <span style={{ ...F.sans, fontSize: 14, color: '#334155' }}>{h}</span>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  className="sr-view-btn"
+                  onClick={() => canOpen ? setOpenModal(id) : null}
+                  style={{ alignSelf: 'flex-start', opacity: canOpen ? 1 : 0.6, cursor: canOpen ? 'pointer' : 'default' }}
+                  title={canOpen ? undefined : 'Full report available in your account'}
+                >
+                  {canOpen ? `${cta} →` : `${cta} (in your account)`}
+                </button>
+              </div>
+
+              {/* Preview side */}
+              <div className="sr-preview-col" style={{
+                background: C.bgAlt, padding: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderLeft: i % 2 === 0 ? `1px solid ${C.border}` : 'none',
+                borderRight: i % 2 !== 0 ? `1px solid ${C.border}` : 'none',
+                order: i % 2 === 0 ? 1 : 0,
+              }}>
+                <div style={{ width: '100%', maxWidth: 340 }}>
+                  <Preview />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Real-time AI callout */}
+        <div style={{ marginTop: 48, background: `${C.accent}08`, border: `1px solid ${C.accent}18`, borderRadius: 14, padding: '28px 32px', display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 36 }}>⚡</div>
+          <div>
+            <div style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: C.text, marginBottom: 6 }}>Generated on-demand in real-time</div>
+            <p style={{ ...F.sans, fontSize: 14, color: C.muted, lineHeight: 1.6, margin: 0 }}>
+              Every report is created fresh from your live Google Ads data the moment you request it — not from templates or cached text.
+              AI reads your actual account metrics, identifies what changed and why, and writes a unique narrative in under 60 seconds.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 20, flexShrink: 0, flexWrap: 'wrap' }}>
+            {[['47 sec', 'avg generation time'], ['3 reports', 'per request (client, internal, exec)'], ['100%', 'live from your account']].map(([v, l]) => (
+              <div key={l} style={{ textAlign: 'center' }}>
+                <div style={{ ...F.sans, fontSize: 22, fontWeight: 800, color: C.accent, letterSpacing: '-0.02em' }}>{v}</div>
+                <div style={{ ...F.sans, fontSize: 11, color: C.muted, maxWidth: 80 }}>{l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div style={{ marginTop: 48, background: C.accent, borderRadius: 16, padding: '48px', textAlign: 'center' }}>
+          <h2 style={{ ...F.sans, fontSize: 32, fontWeight: 800, color: '#fff', letterSpacing: '-0.025em', marginBottom: 10 }}>
+            Ready to generate reports like these?
+          </h2>
+          <p style={{ ...F.sans, fontSize: 16, color: 'rgba(255,255,255,0.65)', marginBottom: 28, lineHeight: 1.6 }}>
+            Connect your Google Ads account and get your first real-time AI report in under 60 seconds.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <Link to="/sign-up" style={{ ...F.sans, padding: '13px 28px', borderRadius: 10, background: '#fff', color: C.accent, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
+              Start Free Trial
+            </Link>
+            <Link to="/sign-in" style={{ ...F.sans, padding: '13px 24px', borderRadius: 10, border: '2px solid rgba(255,255,255,0.3)', color: '#fff', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
+              Sign in
+            </Link>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <footer className="sr-report-footer" style={{
-        padding: '14px 48px',
-        borderTop: `1px solid ${C.border}`,
-        display: 'flex', justifyContent: 'space-between',
-        ...F.body, fontSize: 11, color: C.textFaint,
-      }}>
-        <span>{report.shareUrl}</span>
-        <span>1 / 1</span>
+      <footer style={{ padding: '40px 32px', background: C.navy, color: 'rgba(255,255,255,0.5)' }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+          <span style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>retainr</span>
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+            {[['/', 'Product'], ['/pricing', 'Pricing'], ['/sample-reports', 'Sample Reports'], ['/privacy', 'Privacy'], ['/terms', 'Terms']].map(([href, label]) => (
+              <Link key={href} to={href} style={{ ...F.sans, fontSize: 13, color: 'rgba(255,255,255,0.45)', textDecoration: 'none' }}>{label}</Link>
+            ))}
+          </div>
+          <span style={{ ...F.sans, fontSize: 12 }}>© 2025 retainr. All rights reserved.</span>
+        </div>
       </footer>
-    </article>
+
+      {/* Modal */}
+      {openModal === 'client' && <FullReportModal onClose={() => setOpenModal(null)} />}
+    </div>
   )
 }
-
-function Section({ label, children }) {
-  return (
-    <section>
-      <div style={{
-        ...F.body, fontSize: 11, fontWeight: 600,
-        letterSpacing: '0.08em', textTransform: 'uppercase',
-        color: C.textFaint, marginBottom: 12,
-      }}>
-        {label}
-      </div>
-      {children}
-    </section>
-  )
-}
-
-const prose = { ...F.body, fontSize: 15, lineHeight: 1.7, color: '#2A2A2A', margin: 0 }
-const list = {
-  listStyle: 'none', padding: 0, margin: 0,
-  display: 'flex', flexDirection: 'column', gap: 10,
-}
-const li = { ...F.body, fontSize: 15, lineHeight: 1.6, color: '#2A2A2A' }
