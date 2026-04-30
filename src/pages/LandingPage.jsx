@@ -3,6 +3,23 @@ import { Link } from 'react-router-dom'
 
 const F = { sans: { fontFamily: "'DM Sans', system-ui, -apple-system, sans-serif" } }
 
+// ── Shared logo wordmark ──────────────────────────────────────────────────────
+function Logo({ size = 17, lines = false }) {
+  return (
+    <div style={{ display: 'inline-flex', flexDirection: 'column', gap: 6 }}>
+      <span style={{ ...F.sans, fontSize: size, fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1, color: '#0F1F3D' }}>
+        Bind<span style={{ color: '#DC2626' }}>IQ</span>
+      </span>
+      {lines && (
+        <div style={{ display: 'flex', gap: 3 }}>
+          <div style={{ height: 2.5, width: 32, borderRadius: 2, background: '#0F1F3D' }} />
+          <div style={{ height: 2.5, width: 10, borderRadius: 2, background: '#DC2626' }} />
+        </div>
+      )}
+    </div>
+  )
+}
+
 const C = {
   bg:           '#FFFFFF',
   bgAlt:        '#F8FAFC',
@@ -134,7 +151,7 @@ function Nav() {
     <nav className={`lp-nav${scrolled ? ' scrolled' : ''}`} style={{ position: 'fixed', top: 40, left: 0, right: 0, zIndex: 100 }}>
       <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-          <Link to="/" style={{ ...F.sans, fontSize: 17, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', textDecoration: 'none' }}>BindIQ</Link>
+          <Link to="/" style={{ textDecoration: 'none' }}><Logo size={18} /></Link>
           <div className="lp-nav-links" style={{ display: 'flex', gap: 4 }}>
             <button onClick={() => scrollTo('how')}     className="lp-nav-link" style={{ ...F.sans, background: 'none', border: 'none', cursor: 'pointer' }}>How it works</button>
             <button onClick={() => scrollTo('flags')}   className="lp-nav-link" style={{ ...F.sans, background: 'none', border: 'none', cursor: 'pointer' }}>What gets flagged</button>
@@ -913,7 +930,9 @@ function Footer() {
 
           {/* Brand */}
           <div>
-            <div style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: '-0.01em', marginBottom: 8 }}>BindIQ</div>
+            <div style={{ marginBottom: 14 }}>
+              <Logo size={22} lines />
+            </div>
             <div style={{ ...F.sans, fontSize: 13, color: C.textMuted, lineHeight: 1.6, marginBottom: 20, maxWidth: 260 }}>
               Built for independent insurance agents.
             </div>
