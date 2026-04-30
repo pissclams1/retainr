@@ -29,9 +29,11 @@ const C = {
 const MAX = 1100
 
 const PAGE_CSS = `
+  html { scroll-behavior: smooth; }
   html, body { background: ${C.bg}; }
   * { box-sizing: border-box; }
   ::selection { background: rgba(4,37,108,0.10); }
+  section[id] { scroll-margin-top: 80px; }
 
   .lp-nav { background: rgba(255,255,255,0.8); border-bottom: 1px solid transparent; transition: background 0.2s, border-color 0.2s; }
   .lp-nav.scrolled { background: rgba(255,255,255,0.96); border-bottom-color: ${C.border}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
@@ -476,7 +478,7 @@ function BindIQScoreSection() {
   ]
 
   return (
-    <section className="lp-section-pad">
+    <section id="score" className="lp-section-pad">
       <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
 
         <div style={{ textAlign: 'center', marginBottom: 56 }}>
@@ -886,10 +888,7 @@ function FinalCTA() {
 /* ─── Footer ─── */
 
 function Footer() {
-  const scrollTo = id => {
-    const el = document.getElementById(id)
-    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: 'smooth' })
-  }
+  const linkStyle = { ...F.sans, fontSize: 13, color: C.textMuted, textDecoration: 'none', transition: 'color 0.12s' }
 
   const col = (heading, items) => (
     <div>
@@ -897,11 +896,9 @@ function Footer() {
         {heading}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {items.map(({ label, to, href, onClick }) => {
-          const style = { ...F.sans, fontSize: 13, color: C.textMuted, textDecoration: 'none', transition: 'color 0.12s', cursor: 'pointer', background: 'none', border: 'none', padding: 0, textAlign: 'left' }
-          if (href) return <a key={label} href={href} style={style}>{label}</a>
-          if (onClick) return <button key={label} onClick={onClick} style={style}>{label}</button>
-          return <Link key={label} to={to} style={style}>{label}</Link>
+        {items.map(({ label, to, href }) => {
+          if (href) return <a key={label} href={href} style={linkStyle}>{label}</a>
+          return <Link key={label} to={to} style={linkStyle}>{label}</Link>
         })}
       </div>
     </div>
@@ -920,32 +917,32 @@ function Footer() {
             <div style={{ ...F.sans, fontSize: 13, color: C.textMuted, lineHeight: 1.6, marginBottom: 20, maxWidth: 260 }}>
               Built for independent insurance agents.
             </div>
-            <a href="mailto:support@usebindiq.com" style={{ ...F.sans, fontSize: 13, color: C.textMuted, textDecoration: 'none' }}>
+            <a href="mailto:support@usebindiq.com" style={linkStyle}>
               support@usebindiq.com
             </a>
           </div>
 
           {/* Product */}
           {col('Product', [
-            { label: 'How it works',    onClick: () => scrollTo('how') },
-            { label: 'What gets flagged', onClick: () => scrollTo('flags') },
-            { label: 'BindIQ Score',    onClick: () => scrollTo('how') },
-            { label: 'Pricing',         onClick: () => scrollTo('pricing') },
-            { label: 'Sign in',         to: '/sign-in' },
+            { label: 'How it works',      href: '#how' },
+            { label: 'What gets flagged', href: '#flags' },
+            { label: 'BindIQ Score',      href: '#score' },
+            { label: 'Pricing',           href: '#pricing' },
+            { label: 'Sign in',           to: '/sign-in' },
           ])}
 
           {/* Resources */}
           {col('Resources', [
-            { label: 'Help Center',    href: 'mailto:support@usebindiq.com' },
-            { label: 'Support',        to: '/support' },
-            { label: 'System Status',  href: '#' },
+            { label: 'Help Center',   href: 'mailto:support@usebindiq.com' },
+            { label: 'Support',       to: '/support' },
+            { label: 'System Status', href: 'https://status.usebindiq.com' },
           ])}
 
           {/* Legal */}
           {col('Legal', [
-            { label: 'Privacy Policy',    to: '/privacy' },
-            { label: 'Terms of Service',  to: '/terms' },
-            { label: 'Data Handling',     to: '/privacy' },
+            { label: 'Privacy Policy',   to: '/privacy' },
+            { label: 'Terms of Service', to: '/terms' },
+            { label: 'Data Handling',    to: '/privacy' },
           ])}
         </div>
 
