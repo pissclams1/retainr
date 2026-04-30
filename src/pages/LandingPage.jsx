@@ -50,7 +50,7 @@ const PAGE_CSS = `
   html, body { background: ${C.bg}; }
   * { box-sizing: border-box; }
   ::selection { background: rgba(4,37,108,0.10); }
-  section[id] { scroll-margin-top: 100px; }
+  section { scroll-margin-top: 100px; }
 
   .lp-nav { background: rgba(255,255,255,0.8); border-bottom: 1px solid transparent; transition: background 0.2s, border-color 0.2s; }
   .lp-nav.scrolled { background: rgba(255,255,255,0.96); border-bottom-color: ${C.border}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
