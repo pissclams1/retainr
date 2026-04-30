@@ -64,6 +64,7 @@ const PAGE_CSS = `
     .lp-three-grid { grid-template-columns: 1fr !important; }
     .lp-extract-grid { grid-template-columns: 1fr !important; }
     .lp-plans-grid { grid-template-columns: 1fr !important; }
+    .lp-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
     .lp-h1 { font-size: 38px !important; }
     .lp-h2 { font-size: 28px !important; }
     .lp-section-pad { padding: 72px 24px !important; }
@@ -74,6 +75,7 @@ const PAGE_CSS = `
     .lp-section-pad { padding: 56px 20px !important; }
     .lp-nav-links { display: none !important; }
     .score-calc-grid { grid-template-columns: 1fr !important; }
+    .lp-footer-grid { grid-template-columns: 1fr !important; }
   }
 `
 
@@ -884,16 +886,91 @@ function FinalCTA() {
 /* ─── Footer ─── */
 
 function Footer() {
+  const scrollTo = id => {
+    const el = document.getElementById(id)
+    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: 'smooth' })
+  }
+
+  const col = (heading, items) => (
+    <div>
+      <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: C.text, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 }}>
+        {heading}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {items.map(({ label, to, href, onClick }) => {
+          const style = { ...F.sans, fontSize: 13, color: C.textMuted, textDecoration: 'none', transition: 'color 0.12s', cursor: 'pointer', background: 'none', border: 'none', padding: 0, textAlign: 'left' }
+          if (href) return <a key={label} href={href} style={style}>{label}</a>
+          if (onClick) return <button key={label} onClick={onClick} style={style}>{label}</button>
+          return <Link key={label} to={to} style={style}>{label}</Link>
+        })}
+      </div>
+    </div>
+  )
+
   return (
-    <footer style={{ borderTop: `1px solid ${C.border}`, padding: '28px 24px' }}>
-      <div style={{ maxWidth: MAX, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-        <span style={{ ...F.sans, fontSize: 14, fontWeight: 700, color: C.text }}>BindIQ</span>
-        <div style={{ display: 'flex', gap: 20 }}>
-          {[['Privacy', '/privacy'], ['Terms', '/terms'], ['Support', '/support']].map(([label, to]) => (
-            <Link key={label} to={to} style={{ ...F.sans, fontSize: 13, color: C.textSubtle, textDecoration: 'none' }}>{label}</Link>
-          ))}
+    <footer style={{ borderTop: `1px solid ${C.border}`, background: C.bg, padding: '56px 24px 32px' }}>
+      <div style={{ maxWidth: MAX, margin: '0 auto' }}>
+
+        {/* Top grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }} className="lp-footer-grid">
+
+          {/* Brand */}
+          <div>
+            <div style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: '-0.01em', marginBottom: 8 }}>BindIQ</div>
+            <div style={{ ...F.sans, fontSize: 13, color: C.textMuted, lineHeight: 1.6, marginBottom: 20, maxWidth: 260 }}>
+              Built for independent insurance agents.
+            </div>
+            <a href="mailto:support@usebindiq.com" style={{ ...F.sans, fontSize: 13, color: C.textMuted, textDecoration: 'none' }}>
+              support@usebindiq.com
+            </a>
+          </div>
+
+          {/* Product */}
+          {col('Product', [
+            { label: 'How it works',    onClick: () => scrollTo('how') },
+            { label: 'What gets flagged', onClick: () => scrollTo('flags') },
+            { label: 'BindIQ Score',    onClick: () => scrollTo('how') },
+            { label: 'Pricing',         onClick: () => scrollTo('pricing') },
+            { label: 'Sign in',         to: '/sign-in' },
+          ])}
+
+          {/* Resources */}
+          {col('Resources', [
+            { label: 'Help Center',    href: 'mailto:support@usebindiq.com' },
+            { label: 'Support',        to: '/support' },
+            { label: 'System Status',  href: '#' },
+          ])}
+
+          {/* Legal */}
+          {col('Legal', [
+            { label: 'Privacy Policy',    to: '/privacy' },
+            { label: 'Terms of Service',  to: '/terms' },
+            { label: 'Data Handling',     to: '/privacy' },
+          ])}
         </div>
-        <span style={{ ...F.sans, fontSize: 12, color: C.textSubtle }}>© 2026 BindIQ. Built for Florida agents.</span>
+
+        {/* Security trust line */}
+        <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 24, marginBottom: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, maxWidth: 680 }}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
+              <path d="M7 1L2 3v4c0 3.31 2.24 5.96 5 6.5C9.76 12.96 12 10.31 12 7V3L7 1z" stroke={C.textSubtle} strokeWidth="1.2" strokeLinejoin="round"/>
+            </svg>
+            <span style={{ ...F.sans, fontSize: 12, color: C.textSubtle, lineHeight: 1.6 }}>
+              Inspection reports are processed securely to generate underwriting insights. No client data is stored after processing.
+            </span>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <span style={{ ...F.sans, fontSize: 12, color: C.textSubtle }}>© 2026 BindIQ. All rights reserved.</span>
+          <div style={{ display: 'flex', gap: 20 }}>
+            {[['Privacy Policy', '/privacy'], ['Terms of Service', '/terms'], ['Support', '/support']].map(([label, to]) => (
+              <Link key={label} to={to} style={{ ...F.sans, fontSize: 12, color: C.textSubtle, textDecoration: 'none' }}>{label}</Link>
+            ))}
+          </div>
+        </div>
+
       </div>
     </footer>
   )
