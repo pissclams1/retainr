@@ -50,7 +50,7 @@ const PAGE_CSS = `
   html, body { background: ${C.bg}; }
   * { box-sizing: border-box; }
   ::selection { background: rgba(4,37,108,0.10); }
-  section { scroll-margin-top: 100px; }
+  section { scroll-margin-top: 72px; }
 
   .lp-nav { background: rgba(255,255,255,0.8); border-bottom: 1px solid transparent; transition: background 0.2s, border-color 0.2s; }
   .lp-nav.scrolled { background: rgba(255,255,255,0.96); border-bottom-color: ${C.border}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
@@ -102,7 +102,6 @@ export default function LandingPage() {
   return (
     <div style={{ ...F.sans, color: C.text, background: C.bg, WebkitFontSmoothing: 'antialiased' }}>
       <style>{PAGE_CSS}</style>
-      <Banner />
       <Nav />
       <Hero />
       <CoreValue />
@@ -144,7 +143,7 @@ function Nav() {
     return () => window.removeEventListener('scroll', h)
   }, [])
   return (
-    <nav className={`lp-nav${scrolled ? ' scrolled' : ''}`} style={{ position: 'fixed', top: 40, left: 0, right: 0, zIndex: 100 }}>
+    <nav className={`lp-nav${scrolled ? ' scrolled' : ''}`} style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100 }}>
       <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
           <Link to="/" style={{ textDecoration: 'none' }}><Logo size={18} /></Link>
@@ -169,7 +168,7 @@ function Nav() {
 
 function Hero() {
   return (
-    <section style={{ paddingTop: 164, paddingBottom: 72, background: 'linear-gradient(180deg, #EEF2FF 0%, #fff 72%)' }}>
+    <section style={{ paddingTop: 120, paddingBottom: 72, background: 'linear-gradient(180deg, #EEF2FF 0%, #fff 72%)' }}>
       <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
         <div className="lp-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 460px', gap: 72, alignItems: 'center' }}>
 
