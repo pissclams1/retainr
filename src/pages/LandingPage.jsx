@@ -50,7 +50,7 @@ const PAGE_CSS = `
   html, body { background: ${C.bg}; }
   * { box-sizing: border-box; }
   ::selection { background: rgba(4,37,108,0.10); }
-  section[id] { scroll-margin-top: 80px; }
+  section[id] { scroll-margin-top: 100px; }
 
   .lp-nav { background: rgba(255,255,255,0.8); border-bottom: 1px solid transparent; transition: background 0.2s, border-color 0.2s; }
   .lp-nav.scrolled { background: rgba(255,255,255,0.96); border-bottom-color: ${C.border}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
@@ -143,19 +143,15 @@ function Nav() {
     window.addEventListener('scroll', h)
     return () => window.removeEventListener('scroll', h)
   }, [])
-  const scrollTo = id => {
-    const el = document.getElementById(id)
-    if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 72, behavior: 'smooth' })
-  }
   return (
     <nav className={`lp-nav${scrolled ? ' scrolled' : ''}`} style={{ position: 'fixed', top: 40, left: 0, right: 0, zIndex: 100 }}>
       <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
           <Link to="/" style={{ textDecoration: 'none' }}><Logo size={18} /></Link>
           <div className="lp-nav-links" style={{ display: 'flex', gap: 4 }}>
-            <button onClick={() => scrollTo('how')}     className="lp-nav-link" style={{ ...F.sans, background: 'none', border: 'none', cursor: 'pointer' }}>How it works</button>
-            <button onClick={() => scrollTo('flags')}   className="lp-nav-link" style={{ ...F.sans, background: 'none', border: 'none', cursor: 'pointer' }}>What gets flagged</button>
-            <button onClick={() => scrollTo('pricing')} className="lp-nav-link" style={{ ...F.sans, background: 'none', border: 'none', cursor: 'pointer' }}>Pricing</button>
+            <a href="#how"     className="lp-nav-link" style={{ ...F.sans }}>How it works</a>
+            <a href="#flags"   className="lp-nav-link" style={{ ...F.sans }}>What gets flagged</a>
+            <a href="#pricing" className="lp-nav-link" style={{ ...F.sans }}>Pricing</a>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -198,9 +194,9 @@ function Hero() {
               <Link to="/inspect" className="lp-cta-primary" style={F.sans}>
                 Try BindIQ free — no account needed
               </Link>
-              <button onClick={() => document.getElementById('how')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} className="lp-cta-ghost" style={F.sans}>
+              <a href="#how" className="lp-cta-ghost" style={F.sans}>
                 See how it works
-              </button>
+              </a>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px' }}>
@@ -301,7 +297,7 @@ function ProductSnapshotMockup() {
 
 function CoreValue() {
   return (
-    <section style={{ background: C.navy, padding: '80px 24px' }}>
+    <section id="value" style={{ background: C.navy, padding: '80px 24px' }}>
       <div style={{ maxWidth: 820, margin: '0 auto', textAlign: 'center' }}>
         <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: '#fff', margin: '0 0 20px' }}>
           Stop writing quotes that will never bind.
@@ -370,7 +366,7 @@ function HowItWorks() {
 
 function AsyncWorkflow() {
   return (
-    <section className="lp-section-pad" style={{ background: C.bgAlt }}>
+    <section id="workflow" className="lp-section-pad" style={{ background: C.bgAlt }}>
       <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }} className="lp-extract-grid">
 
@@ -645,7 +641,7 @@ function WhatGetsFlagged() {
 
 function WhatGetsExtracted() {
   return (
-    <section className="lp-section-pad">
+    <section id="extracted" className="lp-section-pad">
       <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>What gets extracted</div>
@@ -817,7 +813,7 @@ function Pricing() {
 
 function ROI() {
   return (
-    <section className="lp-section-pad">
+    <section id="roi" className="lp-section-pad">
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 24px', textAlign: 'center' }}>
         <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>The math</div>
         <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: '0 0 16px' }}>
@@ -861,7 +857,7 @@ function FAQ() {
      'Yes. No contracts. Cancel anytime from your billing dashboard.'],
   ]
   return (
-    <section className="lp-section-pad" style={{ background: C.bgAlt }}>
+    <section id="faq" className="lp-section-pad" style={{ background: C.bgAlt }}>
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 24px' }}>
         <div style={{ textAlign: 'center', marginBottom: 48 }}>
           <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0 }}>Questions</h2>
@@ -886,7 +882,7 @@ function FAQ() {
 
 function FinalCTA() {
   return (
-    <section className="lp-section-pad">
+    <section id="cta" className="lp-section-pad">
       <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px', textAlign: 'center' }}>
         <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: '0 auto 16px', maxWidth: 480 }}>
           Know before you quote.
