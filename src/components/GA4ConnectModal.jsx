@@ -3,28 +3,25 @@ import Button from './ui/Button'
 import Input from './ui/Input'
 
 export default function GA4ConnectModal({ clientId, onClose }) {
-  const [propertyId, setPropertyId] = useState('')
+  const [customerId, setCustomerId] = useState('')
   const [error, setError] = useState(null)
 
   const handleConnect = () => {
-    const raw = propertyId.trim()
+    const raw = customerId.trim().replace(/-/g, '')
     if (!raw) return
 
-    // Accept bare numeric ID or full "properties/XXXXXXXXX" format
-    const normalized = raw.startsWith('properties/') ? raw : `properties/${raw}`
-    const numericPart = normalized.replace('properties/', '')
-    if (!/^\d+$/.test(numericPart)) {
-      setError('Property ID should be numeric, e.g. 123456789')
+    if (!/^\d{8,12}$/.test(raw)) {
+      setError('Customer ID should be a 10-digit number, e.g. 1234567890')
       return
     }
 
-    const state = btoa(JSON.stringify({ clientId, propertyId: normalized }))
+    const state = btoa(JSON.stringify({ clientId, customerId: raw }))
 
     const params = new URLSearchParams({
       client_id:     import.meta.env.VITE_GOOGLE_CLIENT_ID,
       redirect_uri:  `${import.meta.env.VITE_APP_URL ?? window.location.origin}/auth/google/callback`,
       response_type: 'code',
-      scope:         'https://www.googleapis.com/auth/analytics.readonly',
+      scope:         'https://www.googleapis.com/auth/adwords',
       access_type:   'offline',
       prompt:        'consent',
       state,
@@ -45,26 +42,26 @@ export default function GA4ConnectModal({ clientId, onClose }) {
         boxShadow: '0 8px 32px rgba(15,15,14,0.12)',
       }}>
         <h2 style={{ fontFamily: 'Instrument Serif, serif', fontSize: '22px', color: 'var(--ink-2)', marginBottom: '6px' }}>
-          Connect Google Analytics
+          Connect Google Ads
         </h2>
         <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '13px', color: 'var(--ink-5)', lineHeight: 1.6, marginBottom: '24px' }}>
-          Enter the GA4 property ID for this client. You'll find it in Google Analytics under Admin → Property Settings.
+          Enter the Google Ads customer ID for this client. You'll find it in the top-right corner of Google Ads, formatted as XXX-XXX-XXXX.
         </p>
 
         <div style={{ marginBottom: '20px' }}>
           <Input
-            label="GA4 Property ID"
-            placeholder="123456789 or properties/123456789"
-            value={propertyId}
-            onChange={(e) => { setPropertyId(e.target.value); setError(null) }}
+            label="Google Ads Customer ID"
+            placeholder="1234567890 or 123-456-7890"
+            value={customerId}
+            onChange={(e) => { setCustomerId(e.target.value); setError(null) }}
             error={error}
-            hint="Numeric ID from Google Analytics → Admin → Property Settings"
+            hint="10-digit ID from the top-right corner of Google Ads"
           />
         </div>
 
         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleConnect} disabled={!propertyId.trim()}>
+          <Button onClick={handleConnect} disabled={!customerId.trim()}>
             Connect with Google
           </Button>
         </div>

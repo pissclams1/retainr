@@ -1,46 +1,50 @@
 export const PLANS = {
-  starter: {
-    name:       'Starter',
-    price:      39,
-    priceId:    'price_1TPagAAD9v8suvv9wZ5q40Br',
-    clientLimit: 5,
-    features: [
-      'Up to 5 clients',
-      'Daily GA4 data sync',
-      'AI-generated client reports',
-      'Internal briefing cards',
-      'Commitment tracking',
-    ],
-  },
   growth: {
-    name:       'Growth',
-    price:      79,
-    priceId:    'price_1TPagEAD9v8suvv9nePbMsCL',
-    clientLimit: 15,
+    name:        'Growth',
+    price:       79,
+    priceId:     'price_1TPagAAD9v8suvv9wZ5q40Br',  // update in Stripe dashboard
+    clientLimit: 10,
     features: [
-      'Up to 15 clients',
-      'Everything in Starter',
-      'Priority data refresh',
-      'Team-ready reporting',
+      'Up to 10 client accounts',
+      'Google Ads reports',
+      'Meta Ads reports (watermarked)',
+      'Client report + AM internal brief',
+      'Predicted questions (3 per report)',
     ],
   },
-  agency: {
-    name:       'Agency',
-    price:      149,
-    priceId:    'price_1TPagHAD9v8suvv9GoinsyQA',
-    clientLimit: 999,
+  pro: {
+    name:        'Pro Agency',
+    price:       199,
+    priceId:     'price_1TPagEAD9v8suvv9nePbMsCL',  // update in Stripe dashboard
+    clientLimit: 30,
     features: [
-      'Unlimited clients',
+      'Up to 30 client accounts',
       'Everything in Growth',
-      'White-label reports',
-      'Dedicated support',
+      'White-label branding',
+      'Scheduled auto-delivery',
+      'Team access (up to 5 seats)',
+      'Custom templates',
+    ],
+  },
+  scale: {
+    name:        'Scale',
+    price:       399,
+    priceId:     'price_1TPagHAD9v8suvv9GoinsyQA',  // update in Stripe dashboard
+    clientLimit: 75,
+    features: [
+      'Up to 75 client accounts',
+      'Everything in Pro Agency',
+      'Unlimited team seats',
+      'Custom domain',
+      'API access',
+      'Priority support + custom onboarding',
     ],
   },
 }
 
 export const TIER_LIMIT = {
-  trial:   3,
-  starter: PLANS.starter.clientLimit,
-  growth:  PLANS.growth.clientLimit,
-  agency:  PLANS.agency.clientLimit,
+  trial:  3,
+  growth: PLANS.growth.clientLimit,
+  pro:    PLANS.pro.clientLimit,
+  scale:  PLANS.scale.clientLimit,
 }

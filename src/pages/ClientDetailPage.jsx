@@ -6,6 +6,7 @@ import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import Callout from '../components/ui/Callout'
 import GA4ConnectModal from '../components/GA4ConnectModal'
+import MetaConnectModal from '../components/MetaConnectModal'
 import Skeleton from '../components/ui/Skeleton'
 
 export default function ClientDetailPage() {
@@ -17,10 +18,12 @@ export default function ClientDetailPage() {
   const [alerts, setAlerts]           = useState([])
   const [loading, setLoading]         = useState(true)
   const [activeTab, setActiveTab]     = useState('overview')
-  const [showGA4Modal, setShowGA4Modal] = useState(false)
-  const [refreshing, setRefreshing]     = useState(false)
-  const [refreshMsg, setRefreshMsg]     = useState(null)
-  const ga4JustConnected = searchParams.get('ga4') === 'connected'
+  const [showGadsModal, setShowGadsModal]   = useState(false)
+  const [showMetaModal, setShowMetaModal]   = useState(false)
+  const [refreshing, setRefreshing]         = useState(false)
+  const [refreshMsg, setRefreshMsg]         = useState(null)
+  const gadsJustConnected = searchParams.get('gads') === 'connected'
+  const metaJustConnected = searchParams.get('meta') === 'connected'
 
   async function load() {
     const [{ data: clientData }, { data: reportData }, { data: commitData }, { data: alertData }] = await Promise.all([
@@ -41,7 +44,7 @@ export default function ClientDetailPage() {
   const handleRefresh = async () => {
     setRefreshing(true)
     setRefreshMsg(null)
-    const { data, error } = await supabase.functions.invoke('ga4-refresh', { body: { client_id: id } })
+    const { data, error } = await supabase.functions.invoke('gads-refresh', { body: { client_id: id } })
     if (error || data?.error) {
       setRefreshMsg({ type: 'error', text: data?.error ?? error.message })
     } else {
@@ -109,19 +112,34 @@ export default function ClientDetailPage() {
                 ${client.retainer_amount.toLocaleString()}/mo retainer
               </span>
             )}
-            {client.ga4_property_id ? (
-              <Badge variant="win">GA4 connected</Badge>
+            {client.gads_customer_id ? (
+              <Badge variant="win">Google Ads</Badge>
             ) : (
-              <Badge variant="alert">GA4 not connected</Badge>
+              <Badge variant="alert">No Google Ads</Badge>
+            )}
+            {client.meta_ad_account_id ? (
+              <Badge variant="win">Meta Ads</Badge>
+            ) : (
+              <Badge style={{ background: '#FFF7ED', color: '#C2410C', border: '1px solid #FED7AA' }}>Meta · Beta</Badge>
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: '8px', flexShrink: 0, flexWrap: 'wrap' }}>
           <Button variant="outline" size="sm">Edit client</Button>
-          {client.ga4_property_id
-            ? <Button size="sm" onClick={handleRefresh} disabled={refreshing}>{refreshing ? 'Refreshing…' : 'Refresh now'}</Button>
-            : <Button size="sm" onClick={() => setShowGA4Modal(true)}>Connect GA4</Button>
-          }
+          {!client.gads_customer_id && (
+            <Button size="sm" variant="outline" onClick={() => setShowGadsModal(true)}>Connect Google Ads</Button>
+          )}
+          {!client.meta_ad_account_id && (
+            <Button size="sm" variant="outline" onClick={() => setShowMetaModal(true)}
+              style={{ borderColor: '#1877F2', color: '#1877F2' }}>
+              Connect Meta
+            </Button>
+          )}
+          {(client.gads_customer_id || client.meta_ad_account_id) && (
+            <Button size="sm" onClick={handleRefresh} disabled={refreshing}>
+              {refreshing ? 'Refreshing…' : 'Refresh now'}
+            </Button>
+          )}
         </div>
       </div>
 
@@ -132,19 +150,25 @@ export default function ClientDetailPage() {
         </Callout>
       )}
 
-      {/* GA4 status callouts */}
-      {ga4JustConnected && (
-        <Callout variant="win" title="Google Analytics connected">
-          GA4 is now connected. The first data pull will run at 6am tomorrow, or you can trigger a manual refresh.
+      {/* Connection callouts */}
+      {gadsJustConnected && (
+        <Callout variant="win" title="Google Ads connected">
+          Google Ads is now connected. The first data pull will run at 6am tomorrow, or you can trigger a manual refresh.
         </Callout>
       )}
-      {!client.ga4_property_id && !ga4JustConnected && (
-        <Callout variant="alert" title="GA4 not connected">
-          Connect this client's GA4 property to start pulling data and generating reports.
+      {metaJustConnected && (
+        <Callout variant="win" title="Meta Ads connected (beta)">
+          Meta is now connected. Reports will include a "Powered by retainr" watermark during the beta period. Upgrade to remove branding.
+        </Callout>
+      )}
+      {!client.gads_customer_id && !client.meta_ad_account_id && !gadsJustConnected && !metaJustConnected && (
+        <Callout variant="alert" title="No channels connected">
+          Connect Google Ads or Meta Ads to start generating reports.
         </Callout>
       )}
 
-      {showGA4Modal && <GA4ConnectModal clientId={id} onClose={() => setShowGA4Modal(false)} />}
+      {showGadsModal && <GA4ConnectModal clientId={id} onClose={() => setShowGadsModal(false)} />}
+      {showMetaModal && <MetaConnectModal clientId={id} onClose={() => setShowMetaModal(false)} />}
 
       {/* Tabs */}
       <div style={{ borderBottom: '1px solid var(--border)', display: 'flex', gap: '4px' }}>
@@ -178,7 +202,8 @@ export default function ClientDetailPage() {
           <InfoField label="Location" value={client.location} />
           <InfoField label="Retainer" value={client.retainer_amount ? `$${client.retainer_amount.toLocaleString()}/mo` : null} />
           <InfoField label="Client since" value={client.start_date ? new Date(client.start_date).toLocaleDateString() : null} />
-          <InfoField label="GA4 property" value={client.ga4_property_id} mono />
+          <InfoField label="Google Ads customer" value={client.gads_customer_id} mono />
+          <InfoField label="Meta ad account" value={client.meta_ad_account_id} mono />
           <InfoField label="Last refreshed" value={client.last_refreshed ? new Date(client.last_refreshed).toLocaleString() : null} />
         </div>
       )}
@@ -186,7 +211,7 @@ export default function ClientDetailPage() {
       {activeTab === 'reports' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {reports.length === 0 ? (
-            <EmptyState title="No reports yet" body="Click 'Refresh now' to pull GA4 data and generate the first report." />
+            <EmptyState title="No reports yet" body="Click 'Refresh now' to pull Google Ads data and generate the first report." />
           ) : reports.map((r) => (
             <ReportRow key={r.id} report={r} />
           ))}

@@ -59,14 +59,16 @@ const PAGE_CSS = `
 
 const PLANS = [
   {
-    id: 'starter',
-    name: 'Starter',
-    monthly: 199,
-    annual: 159,
+    id: 'growth',
+    name: 'Growth',
+    monthly: 79,
+    annual: 63,
     desc: 'For agencies getting started with automated client reporting.',
     highlight: false,
     features: [
-      { label: 'Client accounts', value: 'Up to 5' },
+      { label: 'Client accounts', value: 'Up to 10' },
+      { label: 'Google Ads reports', value: true },
+      { label: 'Meta Ads reports', value: 'Coming soon · free in beta' },
       { label: 'AI report generation', value: true },
       { label: 'Client-facing reports', value: true },
       { label: 'Internal AM briefings', value: true },
@@ -74,22 +76,22 @@ const PLANS = [
       { label: 'Share via email, link, or PDF', value: true },
       { label: 'White-label branding', value: false },
       { label: 'Scheduled report generation', value: false },
-      { label: 'Custom templates', value: false },
       { label: 'Team seats', value: false },
-      { label: 'API access', value: false },
     ],
     cta: 'Start free trial',
   },
   {
-    id: 'growth',
-    name: 'Growth',
-    monthly: 499,
-    annual: 399,
+    id: 'pro',
+    name: 'Pro Agency',
+    monthly: 199,
+    annual: 159,
     desc: 'For growing agencies with larger portfolios and teams.',
     highlight: true,
     badge: 'Most Popular',
     features: [
-      { label: 'Client accounts', value: 'Up to 25' },
+      { label: 'Client accounts', value: 'Up to 30' },
+      { label: 'Google Ads reports', value: true },
+      { label: 'Meta Ads reports', value: 'Coming soon · free in beta' },
       { label: 'AI report generation', value: true },
       { label: 'Client-facing reports', value: true },
       { label: 'Internal AM briefings', value: true },
@@ -97,21 +99,21 @@ const PLANS = [
       { label: 'Share via email, link, or PDF', value: true },
       { label: 'White-label branding', value: true },
       { label: 'Scheduled report generation', value: true },
-      { label: 'Custom templates', value: true },
       { label: 'Team seats', value: 'Up to 5' },
-      { label: 'API access', value: false },
     ],
     cta: 'Start free trial',
   },
   {
-    id: 'agency',
-    name: 'Agency',
-    monthly: 999,
-    annual: 799,
+    id: 'scale',
+    name: 'Scale',
+    monthly: 399,
+    annual: 319,
     desc: 'Unlimited scale for enterprise teams with custom needs.',
     highlight: false,
     features: [
-      { label: 'Client accounts', value: 'Unlimited' },
+      { label: 'Client accounts', value: 'Up to 75' },
+      { label: 'Google Ads reports', value: true },
+      { label: 'Meta Ads reports', value: 'Coming soon · free in beta' },
       { label: 'AI report generation', value: true },
       { label: 'Client-facing reports', value: true },
       { label: 'Internal AM briefings', value: true },
@@ -119,8 +121,7 @@ const PLANS = [
       { label: 'Share via email, link, or PDF', value: true },
       { label: 'White-label branding', value: true },
       { label: 'Scheduled report generation', value: true },
-      { label: 'Custom templates', value: true },
-      { label: 'Team seats', value: 'Up to 10' },
+      { label: 'Team seats', value: 'Unlimited' },
       { label: 'API access', value: true },
     ],
     cta: 'Start free trial',
@@ -131,10 +132,11 @@ const FAQS = [
   { q: 'What counts as a client account?', a: 'Each Google Ads account (or MCC sub-account) you connect counts as one client account. You can connect multiple accounts across different clients.' },
   { q: 'Can I switch plans later?', a: 'Yes — upgrade or downgrade at any time. Changes take effect at the start of your next billing cycle.' },
   { q: 'What happens after my free trial?', a: "After 14 days you'll be prompted to choose a plan. We won't charge you anything without confirmation." },
-  { q: 'Do clients see retainr branding?', a: "On Starter, reports include a small 'Powered by retainr' footer. On Growth and Agency, reports are fully white-labeled with your agency branding." },
-  { q: 'Is my Google Ads data safe?', a: 'retainr uses read-only OAuth access to Google Ads. We never store ad credentials and cannot make changes to your campaigns.' },
+  { q: 'Do clients see retainr branding?', a: "On Growth, reports include a small 'Powered by retainr' footer. On Pro Agency and Scale, reports are fully white-labeled with your agency branding. Meta Ads reports carry the watermark for all plans during the beta period." },
+  { q: 'What is the Meta Ads beta?', a: "Meta Ads reporting is available now on all plans at no extra charge while we work through the Meta App Review process. During this period, Meta reports include a 'Powered by retainr' watermark on all plans. When Meta officially launches, it will be included in paid plans and white-labeled." },
+  { q: 'Is my ad data safe?', a: 'retainr uses read-only OAuth access to Google Ads and Meta Ads. We never store ad credentials and cannot make changes to your campaigns or budgets.' },
   { q: 'How do I share reports with clients?', a: 'You control that. Once a report is generated, you can copy a shareable link, send it via email, or download a PDF — whenever you\'re ready. Nothing goes to your client until you choose to share it.' },
-  { q: 'Do you offer custom enterprise pricing?', a: 'Yes — for agencies with 50+ accounts or specific compliance requirements, contact us for a custom quote.' },
+  { q: 'Do you offer custom enterprise pricing?', a: 'Yes — for agencies with 75+ accounts or specific compliance requirements, contact us for a custom quote.' },
 ]
 
 /* ─────────── Components ─────────── */
@@ -201,15 +203,29 @@ function PlanCard({ plan, annual }) {
       </Link>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 9 }}>
-        {plan.features.map(({ label, value }) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
-            {value === false ? <DashIcon /> : <CheckIcon highlight={highlight} />}
-            <span style={{ ...F.sans, fontSize: 13, lineHeight: 1.4, opacity: value === false ? 0.4 : 1 }}>
-              {label}
-              {typeof value === 'string' && <strong style={{ marginLeft: 4 }}>— {value}</strong>}
-            </span>
-          </div>
-        ))}
+        {plan.features.map(({ label, value }) => {
+          const isBeta = typeof value === 'string' && value.includes('Coming soon')
+          return (
+            <div key={label} style={{ display: 'flex', alignItems: 'flex-start', gap: 9 }}>
+              {value === false ? <DashIcon /> : <CheckIcon highlight={highlight} />}
+              <span style={{ ...F.sans, fontSize: 13, lineHeight: 1.4, opacity: value === false ? 0.4 : 1 }}>
+                {label}
+                {isBeta && (
+                  <span style={{ marginLeft: 6, fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 8,
+                    background: highlight ? 'rgba(255,255,255,0.2)' : '#FFF7ED',
+                    color: highlight ? '#fff' : '#C2410C',
+                    border: highlight ? 'none' : '1px solid #FED7AA',
+                  }}>
+                    Coming soon · free beta
+                  </span>
+                )}
+                {!isBeta && typeof value === 'string' && (
+                  <strong style={{ marginLeft: 4 }}>— {value}</strong>
+                )}
+              </span>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

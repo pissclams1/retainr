@@ -7,6 +7,20 @@ const corsHeaders = {
 
 const ANTHROPIC_MODEL = 'claude-sonnet-4-6'
 
+// When true, Meta reports always carry the "Powered by retainr" watermark
+// regardless of subscription tier (Meta beta / coming-soon period).
+// Flip to false when Meta is included in paid plans at launch.
+const META_WATERMARK_ENABLED = Deno.env.get('META_WATERMARK_ENABLED') !== 'false'
+
+const WATERMARK_HTML = `
+<div style="text-align:center;padding:20px 16px;border-top:1px solid #E2E8F0;margin-top:32px">
+  <span style="font-family:system-ui,-apple-system,sans-serif;font-size:11px;color:#94A3B8">
+    Powered by <a href="https://retainr.io" style="color:#04256c;font-weight:600;text-decoration:none">retainr</a>
+    &nbsp;·&nbsp;
+    <a href="https://retainr.io/pricing" style="color:#94A3B8;text-decoration:underline;font-size:11px">Remove branding</a>
+  </span>
+</div>`
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -19,25 +33,29 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     )
 
-    // Fetch report + client + commitments in parallel
     const [{ data: report }, { data: client }, { data: commitments }, { data: reportPrompt }, { data: briefingPrompt }] =
       await Promise.all([
         supabase.from('reports').select('*').eq('id', report_id).single(),
-        supabase.from('clients').select('*, agencies(name, brand_color, voice_notes)').eq('id', client_id).single(),
+        supabase.from('clients').select('*, agencies(name, brand_color, voice_notes, subscription_tier)').eq('id', client_id).single(),
         supabase.from('commitments').select('text, due_date, status').eq('client_id', client_id).neq('status', 'done'),
         supabase.from('prompt_templates').select('system_prompt, user_template').eq('name', 'client_report').eq('is_active', true).single(),
         supabase.from('prompt_templates').select('system_prompt, user_template').eq('name', 'internal_briefing').eq('is_active', true).single(),
       ])
 
-    if (!report?.raw_ga4_data) return err('Report has no GA4 data', 400)
+    const hasGads = !!report?.raw_gads_data
+    const hasMeta = !!report?.raw_meta_data
+
+    if (!hasGads && !hasMeta) return err('Report has no ad data', 400)
     if (!reportPrompt || !briefingPrompt) return err('Prompt templates not found — run seed migration', 400)
 
-    const ga4 = report.raw_ga4_data
     const agency = client?.agencies
 
-    // Build data payload for prompts
+    // Build combined data payload — include whichever channels have data
     const dataPayload = JSON.stringify({
-      ...ga4,
+      channels: {
+        ...(hasGads ? { google_ads: report.raw_gads_data } : {}),
+        ...(hasMeta ? { meta_ads:   report.raw_meta_data } : {}),
+      },
       commitments_open: commitments ?? [],
     }, null, 2)
 
@@ -45,7 +63,6 @@ Deno.serve(async (req) => {
       ? `Agency: ${agency.name}. Brand color: ${agency.brand_color}.${agency.voice_notes ? ` Voice notes: ${agency.voice_notes}` : ''}`
       : ''
 
-    // Run both AI chains in parallel with prompt caching on system prompts
     const [clientReportHtml, internalBriefingJson] = await Promise.all([
       callAnthropic(
         reportPrompt.system_prompt,
@@ -57,7 +74,12 @@ Deno.serve(async (req) => {
       ),
     ])
 
-    // Parse internal briefing — must be valid JSON
+    // Inject watermark when: trial/starter tier, OR Meta data present during beta period
+    const tier         = agency?.subscription_tier ?? 'trial'
+    const isWhiteLabel = ['growth', 'pro', 'scale'].includes(tier)
+    const needsWatermark = !isWhiteLabel || (hasMeta && META_WATERMARK_ENABLED)
+    const finalHtml    = needsWatermark ? clientReportHtml + WATERMARK_HTML : clientReportHtml
+
     let briefingData: object
     try {
       const jsonMatch = internalBriefingJson.match(/```json\s*([\s\S]*?)\s*```/) ??
@@ -68,11 +90,10 @@ Deno.serve(async (req) => {
       briefingData = { raw: internalBriefingJson, parse_error: true }
     }
 
-    // Update report with both outputs
     const { error: updateErr } = await supabase
       .from('reports')
       .update({
-        client_report_html:     clientReportHtml,
+        client_report_html:     finalHtml,
         internal_briefing_json: briefingData,
         generated_at:           new Date().toISOString(),
       })
@@ -107,16 +128,8 @@ async function callAnthropic(systemPrompt: string, userMessage: string): Promise
     body: JSON.stringify({
       model:      ANTHROPIC_MODEL,
       max_tokens: 2000,
-      system: [
-        {
-          type: 'text',
-          text: systemPrompt,
-          cache_control: { type: 'ephemeral' }, // cache the system prompt across calls
-        },
-      ],
-      messages: [
-        { role: 'user', content: userMessage },
-      ],
+      system: [{ type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }],
+      messages: [{ role: 'user', content: userMessage }],
     }),
   })
 
@@ -128,8 +141,6 @@ async function callAnthropic(systemPrompt: string, userMessage: string): Promise
   const data = await res.json()
   return data.content[0].text
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function interpolate(template: string, vars: Record<string, string>): string {
   return template.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? '')

@@ -12,12 +12,11 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   )
 
-  // Fetch all clients with GA4 connected
+  // Fetch all clients that have at least one channel connected
   const { data: clients, error } = await supabase
     .from('clients')
-    .select('id, name')
-    .not('ga4_property_id', 'is', null)
-    .not('ga4_refresh_token', 'is', null)
+    .select('id, name, gads_customer_id, gads_refresh_token, meta_ad_account_id, meta_access_token')
+    .or('gads_customer_id.not.is.null,meta_ad_account_id.not.is.null')
 
   if (error) {
     console.error('Failed to fetch clients:', error)
@@ -25,25 +24,43 @@ Deno.serve(async (req) => {
   }
 
   if (!clients?.length) {
-    console.log('No GA4-connected clients to refresh')
+    console.log('No connected clients to refresh')
     return new Response(JSON.stringify({ ok: true, refreshed: 0 }), { status: 200 })
   }
 
   console.log(`Refreshing ${clients.length} clients`)
 
-  // Invoke ga4-refresh for each client — stagger slightly to avoid GA4 rate limits
+  // For each client: run gads-refresh and/or meta-refresh in parallel per client,
+  // staggered across clients to avoid rate limits.
   const results = await Promise.allSettled(
     clients.map((client, i) =>
-      new Promise((resolve) => setTimeout(resolve, i * 500)).then(() =>
-        supabase.functions.invoke('ga4-refresh', {
-          body: { client_id: client.id },
-        }).then(({ data, error }) => {
-          if (error) throw new Error(`${client.name}: ${error.message}`)
-          if (data?.error) throw new Error(`${client.name}: ${data.error}`)
-          console.log(`✓ ${client.name} — health score ${data.health_score}`)
-          return data
-        })
-      )
+      new Promise((resolve) => setTimeout(resolve, i * 600)).then(async () => {
+        const channelJobs: Promise<any>[] = []
+
+        if (client.gads_customer_id && client.gads_refresh_token) {
+          channelJobs.push(
+            supabase.functions.invoke('gads-refresh', { body: { client_id: client.id } })
+              .then(({ data, error }) => {
+                if (error) throw new Error(`${client.name} [gads]: ${error.message}`)
+                if (data?.error) throw new Error(`${client.name} [gads]: ${data.error}`)
+                console.log(`✓ ${client.name} [gads] — health score ${data.health_score}`)
+              })
+          )
+        }
+
+        if (client.meta_ad_account_id && client.meta_access_token) {
+          channelJobs.push(
+            supabase.functions.invoke('meta-refresh', { body: { client_id: client.id } })
+              .then(({ data, error }) => {
+                if (error) throw new Error(`${client.name} [meta]: ${error.message}`)
+                if (data?.error) throw new Error(`${client.name} [meta]: ${data.error}`)
+                console.log(`✓ ${client.name} [meta] — health score ${data.health_score}`)
+              })
+          )
+        }
+
+        return Promise.all(channelJobs)
+      })
     )
   )
 

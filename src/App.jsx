@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage'
 import ClientsPage from './pages/ClientsPage'
 import ClientDetailPage from './pages/ClientDetailPage'
 import GoogleCallbackPage from './pages/GoogleCallbackPage'
+import MetaCallbackPage from './pages/MetaCallbackPage'
 import ReportViewPage from './pages/ReportViewPage'
 import BillingPage from './pages/BillingPage'
 import LandingPage from './pages/LandingPage'
@@ -16,6 +17,10 @@ import SampleReportPage from './pages/SampleReportPage'
 import PricingPage from './pages/PricingPage'
 import SignInPage from './pages/SignInPage'
 import SignUpPage from './pages/SignUpPage'
+import BriefGeneratorPage from './pages/BriefGeneratorPage'
+import InspectionPage from './pages/InspectionPage'
+import GenerateLinkPage from './pages/GenerateLinkPage'
+import IntakePage from './pages/IntakePage'
 
 function Placeholder({ label }) {
   return (
@@ -50,11 +55,17 @@ export default function App() {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
+        <Route path="/generate" element={<BriefGeneratorPage />} />
+        <Route path="/propose"  element={<BriefGeneratorPage />} />
+        <Route path="/inspect"  element={<InspectionPage />} />
+        <Route path="/generate-link" element={<GenerateLinkPage />} />
+        <Route path="/intake/:slug"  element={<IntakePage />} />
         <Route path="/privacy"  element={<PrivacyPage />} />
         <Route path="/terms"    element={<TermsPage />} />
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/support"  element={<SupportPage />} />
         <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
+        <Route path="/auth/meta/callback"   element={<MetaCallbackPage />} />
         <Route path="/r/:id" element={<ReportViewPage />} />
         <Route path="/dashboard" element={
           <AuthGuard><AppLayout><DashboardPage /></AppLayout></AuthGuard>
