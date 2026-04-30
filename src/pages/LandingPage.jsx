@@ -173,13 +173,6 @@ function Hero() {
         <div className="lp-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 460px', gap: 72, alignItems: 'center' }}>
 
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: C.accentBg, border: `1px solid ${C.accentBorder}`, borderRadius: 20, padding: '5px 14px 5px 8px', marginBottom: 22 }}>
-              <span style={{ width: 18, height: 18, borderRadius: '50%', background: C.accent, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="9" height="9" viewBox="0 0 9 9" fill="none"><path d="M1.5 4.5h6M4.5 1.5v6" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>
-              </span>
-              <span style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: C.accent }}>For Florida independent insurance agents</span>
-            </div>
-
             <h1 className="lp-h1" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 20 }}>
               Know if a policy will bind —<br />
               <span style={{ color: C.accent }}>before you waste time quoting it.</span>
