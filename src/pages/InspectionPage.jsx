@@ -400,15 +400,22 @@ function InputView({ initialMode, autoGenerate, onResult }) {
         <span style={{ ...F.sans, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: C.accent, textTransform: 'uppercase' }}>Bind Likelihood Scorer</span>
       </div>
 
-      {/* Mode tabs */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
-        {[['paste','Paste text'],['upload','Upload PDF']].map(([m, label]) => (
-          <button key={m} className={`ip-btn-outline${mode === m ? ' active' : ''}`} onClick={() => setMode(m)}>{label}</button>
-        ))}
-      </div>
+      {/* Mode tabs — hidden in sample mode */}
+      {initialMode === 'sample' ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+          <span style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', background: 'rgba(4,37,108,0.07)', border: `1px solid rgba(4,37,108,0.15)`, borderRadius: 6, padding: '4px 10px' }}>Sample report</span>
+          <span style={{ ...F.sans, fontSize: 12, color: C.subtle }}>Wind mitigation · Naples, FL</span>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
+          {[['paste','Paste text'],['upload','Upload PDF']].map(([m, label]) => (
+            <button key={m} className={`ip-btn-outline${mode === m ? ' active' : ''}`} onClick={() => setMode(m)}>{label}</button>
+          ))}
+        </div>
+      )}
 
-      {/* Input area */}
-      {mode === 'paste' ? (
+      {/* Input area — hidden in sample mode */}
+      {initialMode === 'sample' ? null : mode === 'paste' ? (
         <textarea
           className="ip-textarea"
           value={text}
@@ -436,7 +443,7 @@ function InputView({ initialMode, autoGenerate, onResult }) {
             </div>
           )}
         </div>
-      )}
+      ) }
 
       {/* Progress */}
       {(loading || stage === 'Extracting text from PDFs...') && (
