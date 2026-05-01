@@ -240,13 +240,13 @@ function EntryScreen({ onSelect, stateConfig }) {
 
 /* ─── Input view ─── */
 
-function InputView({ initialMode, autoGenerate, onResult, stateConfig }) {
+function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) {
   const sc = stateConfig
   const [mode, setMode] = useState(initialMode === 'upload' ? 'upload' : 'paste')
   const [text, setText] = useState(initialMode === 'sample' ? SAMPLE_WIND_MIT : '')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(autoGenerate) // start loading immediately for auto-generate
   const [progress, setProgress] = useState(0)
-  const [stage, setStage] = useState('')
+  const [stage, setStage] = useState(autoGenerate ? 'Reading document...' : '')
   const [error, setError] = useState(null)
   const [dragging, setDragging] = useState(false)
   const [fileNames, setFileNames] = useState([])
@@ -356,7 +356,8 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig }) {
   useEffect(() => {
     if (autoGenerate && !autoFired.current) {
       autoFired.current = true
-      const t = setTimeout(() => extract(SAMPLE_WIND_MIT), 400)
+      // Fire immediately — no delay, no button click needed
+      const t = setTimeout(() => extract(SAMPLE_WIND_MIT), 0)
       return () => clearTimeout(t)
     }
   }, [autoGenerate, extract])
@@ -399,10 +400,12 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig }) {
     {showEmailGate && <EmailGate onSubmit={handleEmailSubmit} onDismiss={() => setShowEmailGate(false)} />}
     {showPaywall && <PaywallGate />}
     <div style={{ maxWidth: 600, margin: '0 auto', padding: '0 20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
-        <div style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: '-0.01em' }}>BindIQ</div>
-        <span style={{ ...F.sans, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: C.accent, textTransform: 'uppercase' }}>Bind Likelihood Scorer</span>
-      </div>
+      {!embed && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+          <div style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: '-0.01em' }}>BindIQ</div>
+          <span style={{ ...F.sans, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: C.accent, textTransform: 'uppercase' }}>Bind Likelihood Scorer</span>
+        </div>
+      )}
 
       {/* Mode tabs — hidden in sample mode */}
       {initialMode === 'sample' ? (
@@ -469,16 +472,21 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig }) {
         </div>
       )}
 
-      <button className="ip-btn-primary" onClick={() => extract()} disabled={loading} style={{ marginTop: 16 }}>
-        {loading
-          ? <><div className="ip-spinner"/><span>Scoring...</span></>
-          : <><span>Get BindIQ Score</span><span style={{ fontSize: 18 }}>→</span></>
-        }
-      </button>
+      {/* In auto-generate sample mode, no manual button needed */}
+      {!(autoGenerate && loading) && (
+        <button className="ip-btn-primary" onClick={() => extract()} disabled={loading} style={{ marginTop: 16 }}>
+          {loading
+            ? <><div className="ip-spinner"/><span>Scoring...</span></>
+            : <><span>Get BindIQ Score</span><span style={{ fontSize: 18 }}>→</span></>
+          }
+        </button>
+      )}
 
-      <p style={{ ...F.sans, fontSize: 12, color: C.subtle, textAlign: 'center', marginTop: 12 }}>
-        {sc?.footerNote || 'Florida 4-point · Wind mitigation OIR-B1-1802'}
-      </p>
+      {!embed && (
+        <p style={{ ...F.sans, fontSize: 12, color: C.subtle, textAlign: 'center', marginTop: 12 }}>
+          {sc?.footerNote || 'Florida 4-point · Wind mitigation OIR-B1-1802'}
+        </p>
+      )}
     </div>
     </>
   )
@@ -730,7 +738,7 @@ function BindIQScore({ bs }) {
   )
 }
 
-function InspectionOutput({ result, onReset }) {
+function InspectionOutput({ result, onReset, embed }) {
   const { form_type, property, wind_mitigation, four_point, flags, insurability_summary, bind_score } = result
   const [copied, setCopied] = useState(false)
 
@@ -802,9 +810,16 @@ function InspectionOutput({ result, onReset }) {
           <button className={`copy-btn${copied ? ' copied' : ''}`} onClick={handleCopy}>
             {copied ? '✓ Copied' : 'Copy summary'}
           </button>
-          <button className="ip-btn-outline" onClick={onReset} style={{ fontSize: 12, padding: '6px 12px' }}>
-            New inspection
-          </button>
+          {!embed && (
+            <button className="ip-btn-outline" onClick={onReset} style={{ fontSize: 12, padding: '6px 12px' }}>
+              New inspection
+            </button>
+          )}
+          {embed && (
+            <a href="/inspect" style={{ ...F.sans, fontSize: 12, padding: '6px 12px', borderRadius: 8, border: `1.5px solid ${C.border}`, color: C.accent, textDecoration: 'none', fontWeight: 600 }}>
+              Try with your report →
+            </a>
+          )}
         </div>
       </div>
 
@@ -949,6 +964,7 @@ function PaywallGate() {
 export default function InspectionPage() {
   const [searchParams] = useSearchParams()
   const initialMode = searchParams.get('mode') // e.g. ?mode=sample
+  const embed = searchParams.get('embed') === '1'
   const [stage, setStage] = useState(initialMode ? 'input' : 'entry')
   const [inputMode, setInputMode] = useState(initialMode)
   const [result, setResult] = useState(null)
@@ -973,9 +989,9 @@ export default function InspectionPage() {
   return (
     <>
       <style>{PAGE_CSS}</style>
-      <div style={{ minHeight: '100vh', background: C.bg, paddingTop: 72, paddingBottom: 40 }}>
+      <div style={{ minHeight: embed ? 'auto' : '100vh', background: C.bg, paddingTop: embed ? 20 : 72, paddingBottom: embed ? 24 : 40 }}>
         {result ? (
-          <InspectionOutput result={result} onReset={handleReset} />
+          <InspectionOutput result={result} onReset={handleReset} embed={embed} />
         ) : stage === 'entry' ? (
           <EntryScreen onSelect={handleSelect} stateConfig={stateConfig} />
         ) : (
@@ -984,6 +1000,7 @@ export default function InspectionPage() {
             autoGenerate={inputMode === 'sample'}
             onResult={handleResult}
             stateConfig={stateConfig}
+            embed={embed}
           />
         )}
       </div>

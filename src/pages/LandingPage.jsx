@@ -186,9 +186,9 @@ function Hero() {
               <Link to="/inspect" className="lp-cta-primary" style={F.sans}>
                 Try BindIQ free — no account needed
               </Link>
-              <Link to="/inspect?mode=sample" className="lp-cta-ghost" style={F.sans}>
+              <a href="#demo" className="lp-cta-ghost" style={F.sans}>
                 See how it works
-              </Link>
+              </a>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px' }}>
@@ -338,7 +338,7 @@ function HowItWorks() {
             Three steps. Under a minute. No training required.
           </p>
         </div>
-        <div className="lp-steps-grid" style={{ display: 'flex', gap: 20 }}>
+        <div className="lp-steps-grid" style={{ display: 'flex', gap: 20, marginBottom: 56 }}>
           {steps.map((s, i) => (
             <div key={i} className="lp-step-card">
               <div style={{ width: 36, height: 36, borderRadius: 10, background: C.accentBg, border: `1px solid ${C.accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
@@ -348,6 +348,29 @@ function HowItWorks() {
               <div style={{ ...F.sans, fontSize: 14, color: C.textMuted, lineHeight: 1.7 }}>{s.body}</div>
             </div>
           ))}
+        </div>
+
+        {/* Live demo — embedded directly below the 3 steps */}
+        <div id="demo">
+          <div style={{ textAlign: 'center', marginBottom: 28 }}>
+            <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Live demo</div>
+            <p style={{ ...F.sans, fontSize: 15, color: C.textMuted, margin: 0 }}>
+              A real wind mitigation report — scored automatically, no clicks needed.
+            </p>
+          </div>
+          <div style={{ border: `1.5px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 40px rgba(15,31,61,0.08)', background: '#F8FAFC' }}>
+            <iframe
+              src="/inspect?mode=sample&embed=1"
+              title="BindIQ live demo"
+              style={{ width: '100%', height: 860, border: 'none', display: 'block' }}
+              loading="lazy"
+            />
+          </div>
+          <div style={{ textAlign: 'center', marginTop: 20 }}>
+            <Link to="/inspect" className="lp-cta-ghost" style={{ ...F.sans, fontSize: 14 }}>
+              Try with your own report →
+            </Link>
+          </div>
         </div>
       </div>
     </section>
