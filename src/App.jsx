@@ -21,6 +21,7 @@ import BriefGeneratorPage from './pages/BriefGeneratorPage'
 import InspectionPage from './pages/InspectionPage'
 import GenerateLinkPage from './pages/GenerateLinkPage'
 import IntakePage from './pages/IntakePage'
+import AdminPage from './pages/AdminPage'
 
 function Placeholder({ label }) {
   return (
@@ -85,6 +86,7 @@ export default function App() {
         <Route path="/billing" element={
           <AuthGuard><AppLayout><BillingPage /></AppLayout></AuthGuard>
         } />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </BrowserRouter>
   )
