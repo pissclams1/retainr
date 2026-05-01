@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { createClient } from '@supabase/supabase-js'
 
 const FREE_LIMIT = 3
-const STORAGE_KEY = 'fs_uses'
+const STORAGE_KEY = 'bindiq_uses'
 function getUses() { try { return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10) } catch { return 0 } }
 function incrementUses() { try { localStorage.setItem(STORAGE_KEY, String(getUses() + 1)) } catch {} }
 
