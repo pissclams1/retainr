@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { createClient } from '@supabase/supabase-js'
+import { getStateConfig } from '../config/states'
+import { useDetectedState } from '../hooks/useDetectedState'
 
 const USES_KEY  = 'bindiq_uses'
 const EMAIL_KEY = 'bindiq_email'
@@ -194,11 +196,12 @@ async function extractTextFromPDF(file) {
 
 /* ─── Entry screen ─── */
 
-function EntryScreen({ onSelect }) {
+function EntryScreen({ onSelect, stateConfig }) {
+  const sc = stateConfig
   const OPTIONS = [
-    { id: 'upload', icon: '📄', label: 'Upload PDF',       desc: 'Drop a 4-point or wind mitigation PDF — text is extracted automatically' },
+    { id: 'upload', icon: '📄', label: 'Upload PDF',       desc: `Drop a ${sc.formShort.split('·')[0].trim()} PDF — text is extracted automatically` },
     { id: 'paste',  icon: '📋', label: 'Paste report text', desc: 'Copy and paste text from any inspection report' },
-    { id: 'sample', icon: '⚡', label: 'See a demo',        desc: 'Run extraction on a sample wind mitigation report instantly', badge: 'Instant' },
+    { id: 'sample', icon: '⚡', label: 'See a demo',        desc: `Run extraction on a sample ${sc.sampleType.toLowerCase()} instantly`, badge: 'Instant' },
   ]
   return (
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 20px' }}>
@@ -208,7 +211,7 @@ function EntryScreen({ onSelect }) {
           Get your BindIQ Score
         </h1>
         <p style={{ ...F.sans, fontSize: 15, color: C.muted, margin: 0, lineHeight: 1.6 }}>
-          Upload a 4-point or wind mitigation PDF. Get an instant bind likelihood score and every underwriting red flag in seconds.
+          {sc.entryDesc}
         </p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -229,7 +232,7 @@ function EntryScreen({ onSelect }) {
         ))}
       </div>
       <p style={{ ...F.sans, fontSize: 13, color: C.subtle, textAlign: 'center', marginTop: 24 }}>
-        Florida 4-point · Wind mitigation OIR-B1-1802 · More forms coming soon
+        {sc.footerNote} · More forms coming soon
       </p>
     </div>
   )
@@ -237,7 +240,8 @@ function EntryScreen({ onSelect }) {
 
 /* ─── Input view ─── */
 
-function InputView({ initialMode, autoGenerate, onResult }) {
+function InputView({ initialMode, autoGenerate, onResult, stateConfig }) {
+  const sc = stateConfig
   const [mode, setMode] = useState(initialMode === 'upload' ? 'upload' : 'paste')
   const [text, setText] = useState(initialMode === 'sample' ? SAMPLE_WIND_MIT : '')
   const [loading, setLoading] = useState(false)
@@ -317,7 +321,7 @@ function InputView({ initialMode, autoGenerate, onResult }) {
     startProgress()
     try {
       const { data, error: fnErr } = await supabase.functions.invoke('extract-inspection', {
-        body: { rawText: raw },
+        body: { rawText: raw, state: sc?.abbr || 'FL' },
       })
       if (fnErr) throw new Error(fnErr.message)
       if (data?.error) throw new Error(data.error)
@@ -404,7 +408,7 @@ function InputView({ initialMode, autoGenerate, onResult }) {
       {initialMode === 'sample' ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
           <span style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', background: 'rgba(4,37,108,0.07)', border: `1px solid rgba(4,37,108,0.15)`, borderRadius: 6, padding: '4px 10px' }}>Sample report</span>
-          <span style={{ ...F.sans, fontSize: 12, color: C.subtle }}>Wind mitigation · Naples, FL</span>
+          <span style={{ ...F.sans, fontSize: 12, color: C.subtle }}>{sc?.sampleLabel || 'Wind mitigation · Naples, FL'}</span>
         </div>
       ) : (
         <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
@@ -420,7 +424,7 @@ function InputView({ initialMode, autoGenerate, onResult }) {
           className="ip-textarea"
           value={text}
           onChange={e => setText(e.target.value)}
-          placeholder="Paste the full text of a 4-point inspection or wind mitigation report (OIR-B1-1802)."
+          placeholder={sc?.formHint || 'Paste the full text of a 4-point or wind mitigation inspection report.'}
           rows={10}
         />
       ) : (
@@ -434,7 +438,7 @@ function InputView({ initialMode, autoGenerate, onResult }) {
           <input ref={fileRef} type="file" accept=".pdf,.txt" multiple style={{ display: 'none' }} onChange={e => handleFiles(e.target.files)} />
           <div style={{ fontSize: 28, marginBottom: 10 }}>📄</div>
           <div style={{ ...F.sans, fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 6 }}>Drop up to 2 inspection PDFs here</div>
-          <div style={{ ...F.sans, fontSize: 13, color: C.muted }}>or click to browse · 4-point + wind mit together · PDF only</div>
+          <div style={{ ...F.sans, fontSize: 13, color: C.muted }}>or click to browse · {sc?.uploadHint || '4-point + wind mit together'} · PDF only</div>
           {fileNames.length > 0 && (
             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
               {fileNames.map(n => (
@@ -473,7 +477,7 @@ function InputView({ initialMode, autoGenerate, onResult }) {
       </button>
 
       <p style={{ ...F.sans, fontSize: 12, color: C.subtle, textAlign: 'center', marginTop: 12 }}>
-        Works with Florida 4-point and OIR-B1-1802 wind mitigation forms
+        {sc?.footerNote || 'Florida 4-point · Wind mitigation OIR-B1-1802'}
       </p>
     </div>
     </>
@@ -696,7 +700,7 @@ function BindIQScore({ bs }) {
           <div style={{ height: 8, background: 'rgba(0,0,0,0.07)', borderRadius: 4, overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${bs.score}%`, background: s.barColor, borderRadius: 4, transition: 'width 1s ease' }} />
           </div>
-          <div style={{ ...F.sans, fontSize: 11, color: s.scoreColor, opacity: 0.55, marginTop: 5 }}>Standard FL carrier placement likelihood</div>
+          <div style={{ ...F.sans, fontSize: 11, color: s.scoreColor, opacity: 0.55, marginTop: 5 }}>{bs.scoreSubtitle || 'Standard carrier placement likelihood'}</div>
         </div>
       </div>
 
@@ -919,7 +923,7 @@ function PaywallGate() {
           Subscribe for unlimited 4-point and wind mitigation extractions — plus automatic red flag detection on every report.
         </p>
         <div style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 12, padding: '14px 20px', marginBottom: 24, textAlign: 'left' }}>
-          {['Unlimited extractions', 'Automatic red flag detection', 'Florida OIR-B1-1802 + 4-point', 'Cancel any time'].map(item => (
+          {['Unlimited extractions', 'Automatic red flag detection', 'All supported state forms', 'Cancel any time'].map(item => (
             <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="rgba(16,185,129,0.12)"/><path d="M4.5 7l1.8 1.8L9.5 5" stroke={C.positive} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
               <span style={{ ...F.sans, fontSize: 13, color: C.text }}>{item}</span>
@@ -948,6 +952,8 @@ export default function InspectionPage() {
   const [stage, setStage] = useState(initialMode ? 'input' : 'entry')
   const [inputMode, setInputMode] = useState(initialMode)
   const [result, setResult] = useState(null)
+  const stateCode = useDetectedState()
+  const stateConfig = getStateConfig(stateCode)
 
   function handleSelect(mode) {
     setInputMode(mode)
@@ -971,12 +977,13 @@ export default function InspectionPage() {
         {result ? (
           <InspectionOutput result={result} onReset={handleReset} />
         ) : stage === 'entry' ? (
-          <EntryScreen onSelect={handleSelect} />
+          <EntryScreen onSelect={handleSelect} stateConfig={stateConfig} />
         ) : (
           <InputView
             initialMode={inputMode}
             autoGenerate={inputMode === 'sample'}
             onResult={handleResult}
+            stateConfig={stateConfig}
           />
         )}
       </div>
