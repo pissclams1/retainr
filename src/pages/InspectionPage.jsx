@@ -236,7 +236,7 @@ function InputView({ initialMode, autoGenerate, onResult, onGate }) {
   const [stage, setStage] = useState('')
   const [error, setError] = useState(null)
   const [dragging, setDragging] = useState(false)
-  const [fileName, setFileName] = useState(null)
+  const [fileNames, setFileNames] = useState([])
   const fileRef = useRef(null)
   const autoFired = useRef(false)
   const timers = useRef([])
@@ -305,29 +305,36 @@ function InputView({ initialMode, autoGenerate, onResult, onGate }) {
     }
   }, [autoGenerate, extract])
 
-  async function handleFile(file) {
-    if (!file) return
-    setFileName(file.name)
+  async function handleFiles(fileList) {
+    const files = Array.from(fileList).slice(0, 2)
+    if (files.length === 0) return
+    setFileNames(files.map(f => f.name))
     setError(null)
+    setStage('Extracting text from PDFs...')
     try {
-      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-        setStage('Extracting text from PDF...')
-        const extracted = await extractTextFromPDF(file)
-        if (!extracted || extracted.length < 50) {
-          setError('Could not extract text from this PDF. It may be a scanned image — try copying and pasting the text instead.')
-          setFileName(null)
-          return
+      const texts = await Promise.all(files.map(async f => {
+        if (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) {
+          const extracted = await extractTextFromPDF(f)
+          if (!extracted || extracted.length < 50) {
+            throw new Error(`Could not extract text from ${f.name} — it may be a scanned image.`)
+          }
+          return extracted
+        } else {
+          return await new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = e => resolve(e.target.result)
+            reader.onerror = () => reject(new Error(`Could not read ${f.name}`))
+            reader.readAsText(f)
+          })
         }
-        setText(extracted)
-        setMode('paste')
-      } else {
-        const reader = new FileReader()
-        reader.onload = e => { setText(e.target.result); setMode('paste') }
-        reader.readAsText(file)
-      }
+      }))
+      setText(texts.length > 1 ? texts.join('\n\n--- SECOND DOCUMENT ---\n\n') : texts[0])
+      setStage('')
+      setMode('paste')
     } catch (e) {
-      setError('Could not read this file. Try copying and pasting the text instead.')
-      setFileName(null)
+      setError(e.message || 'Could not read files. Try copying and pasting the text instead.')
+      setFileNames([])
+      setStage('')
     }
   }
 
@@ -360,18 +367,24 @@ function InputView({ initialMode, autoGenerate, onResult, onGate }) {
           onClick={() => fileRef.current?.click()}
           onDragOver={e => { e.preventDefault(); setDragging(true) }}
           onDragLeave={() => setDragging(false)}
-          onDrop={e => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]) }}
+          onDrop={e => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files) }}
         >
-          <input ref={fileRef} type="file" accept=".pdf,.txt" style={{ display: 'none' }} onChange={e => handleFile(e.target.files[0])} />
+          <input ref={fileRef} type="file" accept=".pdf,.txt" multiple style={{ display: 'none' }} onChange={e => handleFiles(e.target.files)} />
           <div style={{ fontSize: 28, marginBottom: 10 }}>📄</div>
-          <div style={{ ...F.sans, fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 6 }}>Drop the inspection PDF here</div>
-          <div style={{ ...F.sans, fontSize: 13, color: C.muted }}>or click to browse · PDF only</div>
-          {fileName && <div style={{ ...F.sans, fontSize: 13, color: C.positive, marginTop: 12, fontWeight: 600 }}>✓ {fileName} — ready to extract</div>}
+          <div style={{ ...F.sans, fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 6 }}>Drop up to 2 inspection PDFs here</div>
+          <div style={{ ...F.sans, fontSize: 13, color: C.muted }}>or click to browse · 4-point + wind mit together · PDF only</div>
+          {fileNames.length > 0 && (
+            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {fileNames.map(n => (
+                <div key={n} style={{ ...F.sans, fontSize: 13, color: C.positive, fontWeight: 600 }}>✓ {n}</div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       {/* Progress */}
-      {(loading || stage === 'Extracting text from PDF...') && (
+      {(loading || stage === 'Extracting text from PDFs...') && (
         <div style={{ marginTop: 16 }}>
           <div className="ip-progress-bar">
             <div className="ip-progress-fill" style={{ width: `${progress}%` }} />
