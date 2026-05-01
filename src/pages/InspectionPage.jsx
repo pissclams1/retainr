@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { createClient } from '@supabase/supabase-js'
 
 const FREE_LIMIT = 3
@@ -827,8 +827,10 @@ function UsageGate({ onDismiss }) {
 /* ─── Page root ─── */
 
 export default function InspectionPage() {
-  const [stage, setStage] = useState('entry')
-  const [inputMode, setInputMode] = useState(null)
+  const [searchParams] = useSearchParams()
+  const initialMode = searchParams.get('mode') // e.g. ?mode=sample
+  const [stage, setStage] = useState(initialMode ? 'input' : 'entry')
+  const [inputMode, setInputMode] = useState(initialMode)
   const [result, setResult] = useState(null)
   const [showGate, setShowGate] = useState(false)
 

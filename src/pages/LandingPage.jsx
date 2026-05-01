@@ -186,9 +186,9 @@ function Hero() {
               <Link to="/inspect" className="lp-cta-primary" style={F.sans}>
                 Try BindIQ free — no account needed
               </Link>
-              <a href="#how" className="lp-cta-ghost" style={F.sans}>
+              <Link to="/inspect?mode=sample" className="lp-cta-ghost" style={F.sans}>
                 See how it works
-              </a>
+              </Link>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px' }}>
