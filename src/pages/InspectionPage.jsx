@@ -738,6 +738,36 @@ function BindIQScore({ bs }) {
   )
 }
 
+function UsageNudge({ embed }) {
+  if (embed) return null
+  const uses = getLocalUses()
+  const email = getStoredEmail()
+  // Only show for real (non-sample) reports, and only when under the limit
+  if (uses === 0 || uses >= 3) return null
+  const remaining = 3 - uses
+  const isLastFree = remaining === 1 && !email
+
+  return (
+    <div style={{
+      ...F.sans, fontSize: 13, fontWeight: 500,
+      background: isLastFree ? 'rgba(245,158,11,0.08)' : 'rgba(4,37,108,0.05)',
+      border: `1px solid ${isLastFree ? 'rgba(245,158,11,0.30)' : 'rgba(4,37,108,0.14)'}`,
+      borderRadius: 10, padding: '10px 16px', marginBottom: 20,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+    }}>
+      <span style={{ color: isLastFree ? '#92400E' : C.muted }}>
+        {isLastFree
+          ? `⚠️ This is your last free report. Enter your email to continue after this.`
+          : `✓ Report ${uses} of 3 free reports used — ${remaining} remaining.`
+        }
+      </span>
+      <Link to="/sign-up" style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+        Upgrade for unlimited →
+      </Link>
+    </div>
+  )
+}
+
 function InspectionOutput({ result, onReset, embed }) {
   const { form_type, property, wind_mitigation, four_point, flags, insurability_summary, bind_score } = result
   const [copied, setCopied] = useState(false)
@@ -790,6 +820,9 @@ function InspectionOutput({ result, onReset, embed }) {
 
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 20px 60px' }}>
+
+      {/* Free usage nudge — shows how many reports remain */}
+      <UsageNudge embed={embed} />
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>

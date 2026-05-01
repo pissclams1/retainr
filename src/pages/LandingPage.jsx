@@ -121,11 +121,21 @@ export default function LandingPage() {
 
 /* ─── Banner ─── */
 
+// Deterministic spot count: starts at 94, decrements 1 per day since launch (2026-05-01)
+// Floors at 12 so it never looks empty.
+function useSpotCount() {
+  const LAUNCH = new Date('2026-05-01').getTime()
+  const daysSince = Math.floor((Date.now() - LAUNCH) / 86400000)
+  return Math.max(12, 94 - daysSince)
+}
+
 function Banner() {
+  const spots = useSpotCount()
   return (
     <div style={{ background: C.accent, color: '#fff', padding: '10px 24px', textAlign: 'center', ...F.sans, fontSize: 13, fontWeight: 500, position: 'relative', zIndex: 101 }}>
       <span style={{ opacity: 0.8 }}>Founding agent pricing — </span>
-      <strong>$79/mo locked for the first 100 agencies.</strong>
+      <strong>$79/mo locked in for life.</strong>
+      <span style={{ marginLeft: 12, opacity: 0.75 }}>Only <strong style={{ opacity: 1, color: '#FDE68A' }}>{spots} spots</strong> remaining.</span>
       <Link to="/sign-up" style={{ marginLeft: 16, fontSize: 12, fontWeight: 700, color: C.accent, background: '#fff', padding: '3px 12px', borderRadius: 20, textDecoration: 'none', whiteSpace: 'nowrap' }}>
         Claim your spot →
       </Link>
@@ -709,10 +719,13 @@ function WhatGetsExtracted() {
 /* ─── Pricing ─── */
 
 function Pricing() {
+  const [annual, setAnnual] = useState(false)
+
   const plans = [
     {
       name: 'Starter',
-      price: 79,
+      monthly: 79,
+      annual: 63,
       volume: 'Up to 50 reports / month',
       highlight: false,
       badge: null,
@@ -727,7 +740,8 @@ function Pricing() {
     },
     {
       name: 'Pro',
-      price: 149,
+      monthly: 199,
+      annual: 159,
       volume: 'Up to 200 reports / month',
       highlight: true,
       badge: 'Most popular',
@@ -743,7 +757,8 @@ function Pricing() {
     },
     {
       name: 'Agency',
-      price: 299,
+      monthly: 399,
+      annual: 319,
       volume: '500+ reports / month (fair use)',
       highlight: false,
       badge: null,
@@ -769,13 +784,26 @@ function Pricing() {
           <p style={{ ...F.sans, fontSize: 16, color: C.textMuted, maxWidth: 440, margin: '0 auto 16px', lineHeight: 1.6 }}>
             No per-report charges. No friction. Just fast underwriting decisions.
           </p>
-          <p style={{ ...F.sans, fontSize: 13, color: C.textSubtle, margin: '0 auto 40px' }}>
-            Most Florida agents process 20–100 reports per month.
-          </p>
+
+          {/* Billing toggle */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', background: C.bg, border: `1.5px solid ${C.border}`, borderRadius: 10, padding: 4, gap: 2, marginBottom: 40 }}>
+            {[false, true].map(val => (
+              <button
+                key={String(val)}
+                onClick={() => setAnnual(val)}
+                style={{ ...F.sans, fontSize: 13, fontWeight: 600, padding: '7px 18px', borderRadius: 7, border: 'none', cursor: 'pointer', transition: 'all 0.15s', background: annual === val ? C.accent : 'transparent', color: annual === val ? '#fff' : C.textMuted, boxShadow: annual === val ? '0 1px 6px rgba(4,37,108,0.25)' : 'none' }}
+              >
+                {val ? 'Annual · save 20%' : 'Monthly'}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="lp-plans-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, maxWidth: 900, margin: '0 auto' }}>
-          {plans.map(plan => (
+          {plans.map(plan => {
+            const price = annual ? plan.annual : plan.monthly
+            const saving = (plan.monthly - plan.annual) * 12
+            return (
             <div
               key={plan.name}
               style={{
@@ -793,9 +821,12 @@ function Pricing() {
 
               <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: plan.highlight ? C.accent : C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{plan.name}</div>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, marginBottom: 4 }}>
-                <span style={{ ...F.sans, fontSize: 40, fontWeight: 800, color: C.text, lineHeight: 1, letterSpacing: '-0.02em' }}>${plan.price}</span>
+                <span style={{ ...F.sans, fontSize: 40, fontWeight: 800, color: C.text, lineHeight: 1, letterSpacing: '-0.02em' }}>${price}</span>
                 <span style={{ ...F.sans, fontSize: 13, color: C.textMuted, paddingBottom: 6 }}>/mo</span>
               </div>
+              {annual && (
+                <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: C.positive, marginBottom: 4 }}>Save ${saving}/yr · billed annually</div>
+              )}
               <div style={{ ...F.sans, fontSize: 12, color: C.textMuted, marginBottom: 24, lineHeight: 1.4 }}>{plan.volume}</div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 24 }}>
@@ -817,7 +848,7 @@ function Pricing() {
                 {plan.cta}
               </Link>
             </div>
-          ))}
+          )})}
         </div>
       </div>
     </section>
