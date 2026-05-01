@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { createClient } from '@supabase/supabase-js'
+import { useDetectedState } from '../hooks/useDetectedState'
+import { getStateConfig } from '../config/states'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -138,6 +140,8 @@ const selectStyle = { ...inputStyle, appearance: 'none', backgroundImage: `url("
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function IntakePage() {
+  const stateCode = useDetectedState()
+  const sc = getStateConfig(stateCode)
   const { slug } = useParams()
   const [linkData, setLinkData] = useState(null)
   const [linkLoading, setLinkLoading] = useState(true)
@@ -319,7 +323,7 @@ export default function IntakePage() {
           <div>
             <StepHeading n={1} title="Property basics" />
             <Field label="Property address" required>
-              <input style={inputStyle} placeholder="123 Bayfront Dr, Miami, FL 33101" value={form.address} onChange={e => setField('address', e.target.value)} />
+              <input style={inputStyle} placeholder={sc.intakePlaceholder} value={form.address} onChange={e => setField('address', e.target.value)} />
             </Field>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <Field label="Year built" required>
@@ -390,7 +394,7 @@ export default function IntakePage() {
           <div>
             <StepHeading n={3} title="Upload inspection report" badge="Optional" />
             <p style={{ margin: '0 0 20px', fontSize: 13, color: C.muted, lineHeight: 1.6 }}>
-              If you have a Florida 4-point or wind mitigation inspection report, upload it here for a more accurate BindIQ Score. Otherwise, we'll estimate from your answers.
+              {sc.intakeUploadText}
             </p>
 
             {!pdfFile ? (

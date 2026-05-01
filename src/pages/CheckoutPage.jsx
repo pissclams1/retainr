@@ -146,7 +146,7 @@ export default function CheckoutPage() {
               'Unlimited 4-point extractions',
               'Unlimited wind mitigation extractions',
               'Automatic red flag detection',
-              'Florida OIR-B1-1802 support',
+              'Wind mitigation & 4-point form support',
             ].map(item => (
               <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 7 }}>
                 <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
