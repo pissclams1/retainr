@@ -7,11 +7,20 @@ const supabase = createClient(
   import.meta.env.VITE_SUPABASE_ANON_KEY,
 )
 
-// ── Shared usage gate ──────────────────────────────────────────────────────────
-const FREE_LIMIT = 3
-const STORAGE_KEY = 'bindiq_uses'
-function getUses() { try { return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10) } catch { return 0 } }
-function incrementUses() { try { localStorage.setItem(STORAGE_KEY, String(getUses() + 1)) } catch {} }
+// ── Shared usage gate (same keys as InspectionPage) ───────────────────────────
+const USES_KEY  = 'bindiq_uses'
+const EMAIL_KEY = 'bindiq_email'
+function getLocalUses()   { try { return parseInt(localStorage.getItem(USES_KEY) || '0', 10) } catch { return 0 } }
+function incLocalUses()   { try { localStorage.setItem(USES_KEY, String(getLocalUses() + 1)) } catch {} }
+function getStoredEmail() { try { return localStorage.getItem(EMAIL_KEY) || '' } catch { return '' } }
+function saveEmail(e)     { try { localStorage.setItem(EMAIL_KEY, e.trim().toLowerCase()) } catch {} }
+
+async function trackUsage(email, supabaseClient) {
+  try {
+    const { data } = await supabaseClient.functions.invoke('track-usage', { body: { email } })
+    return data ?? { allowed: false }
+  } catch { return { allowed: false } }
+}
 
 // ── Colors ─────────────────────────────────────────────────────────────────────
 const C = {
@@ -28,8 +37,68 @@ const C = {
   red: '#EF4444',
 }
 
-// ── Gate modal ─────────────────────────────────────────────────────────────────
-function FreeGate({ onDismiss }) {
+// ── Email capture gate ─────────────────────────────────────────────────────────
+function EmailGate({ onSubmit, onDismiss }) {
+  const [email, setEmail] = useState('')
+  const [err, setErr]     = useState('')
+  const [busy, setBusy]   = useState(false)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    const v = email.trim().toLowerCase()
+    if (!v || !v.includes('@') || !v.includes('.')) { setErr('Enter a valid email address.'); return }
+    setBusy(true)
+    setErr('')
+    await onSubmit(v)
+    setBusy(false)
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(4,37,108,0.55)', backdropFilter: 'blur(6px)' }}>
+      <div style={{ background: '#fff', borderRadius: 20, padding: 40, maxWidth: 440, width: '100%', boxShadow: '0 24px 80px rgba(4,37,108,0.25)', textAlign: 'center', fontFamily: "'DM Sans', sans-serif" }}>
+        <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(4,37,108,0.07)', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', fontSize: 24 }}>
+          🔗
+        </div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.navy, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+          Continue for free
+        </div>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: C.fg, margin: '0 0 10px', letterSpacing: '-0.02em' }}>
+          Get 2 more free reports
+        </h2>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.65, margin: '0 0 24px' }}>
+          Enter your email to continue — no password, no credit card.
+        </p>
+        <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
+          <input
+            type="email"
+            placeholder="you@agency.com"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setErr('') }}
+            autoFocus
+            style={{ width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: 9, border: `1.5px solid ${err ? C.red : C.border}`, fontSize: 14, color: C.fg, outline: 'none', marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}
+          />
+          {err && <p style={{ fontSize: 12, color: C.red, margin: '0 0 10px', fontFamily: "'DM Sans', sans-serif" }}>{err}</p>}
+          <button
+            type="submit"
+            disabled={busy}
+            style={{ width: '100%', padding: '13px', background: C.navy, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1, fontFamily: "'DM Sans', sans-serif" }}
+          >
+            {busy ? 'Checking...' : 'Continue →'}
+          </button>
+        </form>
+        <button
+          onClick={onDismiss}
+          style={{ fontSize: 13, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: '12px 0 0', display: 'block', margin: '0 auto', fontFamily: "'DM Sans', sans-serif" }}
+        >
+          Maybe later
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Paywall ────────────────────────────────────────────────────────────────────
+function PaywallGate() {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(4,37,108,0.55)', backdropFilter: 'blur(6px)' }}>
       <div style={{ background: '#fff', borderRadius: 20, padding: 40, maxWidth: 460, width: '100%', boxShadow: '0 24px 80px rgba(4,37,108,0.25)', textAlign: 'center', fontFamily: "'DM Sans', sans-serif" }}>
@@ -45,14 +114,8 @@ function FreeGate({ onDismiss }) {
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.65, margin: '0 0 28px' }}>
           Subscribe for unlimited intake links and scored risk profiles — plus automatic underwriting flag detection on every submission.
         </p>
-
         <div style={{ background: C.bgSoft, border: `1px solid ${C.border}`, borderRadius: 12, padding: '14px 20px', marginBottom: 24, textAlign: 'left' }}>
-          {[
-            'Unlimited intake links',
-            'Automatic red flag detection',
-            'BindIQ Score on every property',
-            'Cancel any time',
-          ].map(item => (
+          {['Unlimited intake links', 'Automatic red flag detection', 'BindIQ Score on every property', 'Cancel any time'].map(item => (
             <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="rgba(16,185,129,0.12)"/><path d="M4.5 7l1.8 1.8L9.5 5" stroke={C.positive} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
               <span style={{ fontSize: 13, color: C.fg }}>{item}</span>
@@ -62,19 +125,12 @@ function FreeGate({ onDismiss }) {
             $79<span style={{ fontSize: 13, fontWeight: 500, color: C.muted }}>/mo · or $59/mo billed annually</span>
           </div>
         </div>
-
         <Link
           to="/sign-up"
-          style={{ display: 'block', width: '100%', padding: '14px', background: C.navy, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 4px 16px rgba(4,37,108,0.30)', marginBottom: 10 }}
+          style={{ display: 'block', width: '100%', padding: '14px', background: C.navy, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 4px 16px rgba(4,37,108,0.30)' }}
         >
-          Start 14-day free trial →
+          Choose a plan →
         </Link>
-        <button
-          onClick={onDismiss}
-          style={{ fontSize: 13, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0' }}
-        >
-          Maybe later
-        </button>
       </div>
     </div>
   )
@@ -85,22 +141,14 @@ export default function GenerateLinkPage() {
   const [agentName, setAgentName]   = useState('')
   const [agencyName, setAgencyName] = useState('')
   const [agentEmail, setAgentEmail] = useState('')
-  const [loading, setLoading]       = useState(false)
-  const [result, setResult]         = useState(null)
-  const [copied, setCopied]         = useState(false)
-  const [error, setError]           = useState(null)
-  const [showGate, setShowGate]     = useState(false)
+  const [loading, setLoading]           = useState(false)
+  const [result, setResult]             = useState(null)
+  const [copied, setCopied]             = useState(false)
+  const [error, setError]               = useState(null)
+  const [showEmailGate, setShowEmailGate] = useState(false)
+  const [showPaywall, setShowPaywall]   = useState(false)
 
-  async function handleGenerate(e) {
-    e.preventDefault()
-    if (!agentName.trim()) return
-
-    // Usage gate
-    if (getUses() >= FREE_LIMIT) {
-      setShowGate(true)
-      return
-    }
-
+  async function doGenerate() {
     setLoading(true)
     setError(null)
     try {
@@ -113,7 +161,7 @@ export default function GenerateLinkPage() {
       })
       if (fnErr) throw new Error(fnErr.message)
       if (data?.error) throw new Error(data.error)
-      incrementUses()
+      incLocalUses()
       const url = `${window.location.origin}/intake/${data.slug}`
       setResult({ ...data, url })
     } catch (e) {
@@ -121,6 +169,42 @@ export default function GenerateLinkPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleGenerate(e) {
+    e.preventDefault()
+    if (!agentName.trim()) return
+
+    const localUses = getLocalUses()
+    const email = getStoredEmail()
+
+    if (localUses === 0) {
+      await doGenerate()
+      return
+    }
+
+    if (!email) {
+      setShowEmailGate(true)
+      return
+    }
+
+    // Has email — check server
+    const res = await trackUsage(email, supabase)
+    if (!res?.allowed) { setShowPaywall(true); return }
+
+    await doGenerate()
+  }
+
+  async function handleEmailSubmit(email) {
+    saveEmail(email)
+    const res = await trackUsage(email, supabase)
+    if (!res?.allowed) {
+      setShowEmailGate(false)
+      setShowPaywall(true)
+      return
+    }
+    setShowEmailGate(false)
+    await doGenerate()
   }
 
   function handleCopy() {
@@ -131,22 +215,16 @@ export default function GenerateLinkPage() {
   }
 
   function handleReset() {
-    // Gate check before letting them generate another
-    if (getUses() >= FREE_LIMIT) {
-      setShowGate(true)
-      return
-    }
     setResult(null)
     setAgentName('')
     setAgencyName('')
     setAgentEmail('')
   }
 
-  const usesLeft = Math.max(0, FREE_LIMIT - getUses())
-
   return (
     <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'DM Sans', sans-serif" }}>
-      {showGate && <FreeGate onDismiss={() => setShowGate(false)} />}
+      {showEmailGate && <EmailGate onSubmit={handleEmailSubmit} onDismiss={() => setShowEmailGate(false)} />}
+      {showPaywall && <PaywallGate />}
 
       {/* Nav */}
       <div style={{ borderBottom: `1px solid ${C.border}`, padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -157,11 +235,6 @@ export default function GenerateLinkPage() {
           <span style={{ fontWeight: 700, fontSize: 15, color: C.fg }}>BindIQ</span>
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {usesLeft > 0 && (
-            <span style={{ fontSize: 12, color: C.muted }}>
-              {usesLeft} free {usesLeft === 1 ? 'report' : 'reports'} left
-            </span>
-          )}
           <Link to="/inspect" style={{ fontSize: 13, color: C.muted, textDecoration: 'none' }}>
             ← Back to Inspector
           </Link>

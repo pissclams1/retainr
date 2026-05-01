@@ -2,10 +2,19 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { createClient } from '@supabase/supabase-js'
 
-const FREE_LIMIT = 3
-const STORAGE_KEY = 'bindiq_uses'
-function getUses() { try { return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10) } catch { return 0 } }
-function incrementUses() { try { localStorage.setItem(STORAGE_KEY, String(getUses() + 1)) } catch {} }
+const USES_KEY  = 'bindiq_uses'
+const EMAIL_KEY = 'bindiq_email'
+function getLocalUses()   { try { return parseInt(localStorage.getItem(USES_KEY) || '0', 10) } catch { return 0 } }
+function incLocalUses()   { try { localStorage.setItem(USES_KEY, String(getLocalUses() + 1)) } catch {} }
+function getStoredEmail() { try { return localStorage.getItem(EMAIL_KEY) || '' } catch { return '' } }
+function saveEmail(e)     { try { localStorage.setItem(EMAIL_KEY, e.trim().toLowerCase()) } catch {} }
+
+async function trackUsage(email, supabaseClient) {
+  try {
+    const { data } = await supabaseClient.functions.invoke('track-usage', { body: { email } })
+    return data ?? { allowed: false }
+  } catch { return { allowed: false } }
+}
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -228,7 +237,7 @@ function EntryScreen({ onSelect }) {
 
 /* ─── Input view ─── */
 
-function InputView({ initialMode, autoGenerate, onResult, onGate }) {
+function InputView({ initialMode, autoGenerate, onResult }) {
   const [mode, setMode] = useState(initialMode === 'upload' ? 'upload' : 'paste')
   const [text, setText] = useState(initialMode === 'sample' ? SAMPLE_WIND_MIT : '')
   const [loading, setLoading] = useState(false)
@@ -237,6 +246,10 @@ function InputView({ initialMode, autoGenerate, onResult, onGate }) {
   const [error, setError] = useState(null)
   const [dragging, setDragging] = useState(false)
   const [fileNames, setFileNames] = useState([])
+  const [showEmailGate, setShowEmailGate] = useState(false)
+  const [showPaywall, setShowPaywall] = useState(false)
+  const [pendingRaw, setPendingRaw] = useState(null)
+  const skipGateRef = useRef(false)
   const fileRef = useRef(null)
   const autoFired = useRef(false)
   const timers = useRef([])
@@ -271,9 +284,33 @@ function InputView({ initialMode, autoGenerate, onResult, onGate }) {
     const raw = (overrideText ?? text).trim()
     if (!raw || raw.length < 50) { setError('Paste more of the inspection report first.'); return }
 
-    // Usage gate — sample mode is always free
+    // Sample mode is always free
     const isSample = initialMode === 'sample' && !overrideText
-    if (!isSample && getUses() >= FREE_LIMIT) { onGate(); return }
+
+    if (!isSample) {
+      if (skipGateRef.current) {
+        // Email was just verified in handleEmailSubmit — proceed without re-checking
+        skipGateRef.current = false
+      } else {
+        const localUses = getLocalUses()
+        const email = getStoredEmail()
+
+        if (localUses >= 1) {
+          if (!email) {
+            // Need email before proceeding
+            setPendingRaw(overrideText ?? null)
+            setShowEmailGate(true)
+            return
+          }
+          // Has email — check server
+          const result = await trackUsage(email, supabase)
+          if (!result?.allowed) {
+            setShowPaywall(true)
+            return
+          }
+        }
+      }
+    }
 
     setError(null)
     setLoading(true)
@@ -287,7 +324,7 @@ function InputView({ initialMode, autoGenerate, onResult, onGate }) {
       stopProgress()
       setProgress(100)
       await new Promise(r => setTimeout(r, 300))
-      if (!isSample) incrementUses()
+      if (!isSample) incLocalUses()
       onResult(data.result)
     } catch (e) {
       stopProgress()
@@ -296,6 +333,21 @@ function InputView({ initialMode, autoGenerate, onResult, onGate }) {
       setProgress(0)
     }
   }, [text, onResult])
+
+  async function handleEmailSubmit(email) {
+    saveEmail(email)
+    const result = await trackUsage(email, supabase)
+    if (!result?.allowed) {
+      setShowEmailGate(false)
+      setShowPaywall(true)
+      return
+    }
+    setShowEmailGate(false)
+    skipGateRef.current = true
+    const raw = pendingRaw
+    setPendingRaw(null)
+    extract(raw)
+  }
 
   useEffect(() => {
     if (autoGenerate && !autoFired.current) {
@@ -339,6 +391,9 @@ function InputView({ initialMode, autoGenerate, onResult, onGate }) {
   }
 
   return (
+    <>
+    {showEmailGate && <EmailGate onSubmit={handleEmailSubmit} onDismiss={() => setShowEmailGate(false)} />}
+    {showPaywall && <PaywallGate />}
     <div style={{ maxWidth: 600, margin: '0 auto', padding: '0 20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
         <div style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: '-0.01em' }}>BindIQ</div>
@@ -414,6 +469,7 @@ function InputView({ initialMode, autoGenerate, onResult, onGate }) {
         Works with Florida 4-point and OIR-B1-1802 wind mitigation forms
       </p>
     </div>
+    </>
   )
 }
 
@@ -776,9 +832,70 @@ function InspectionOutput({ result, onReset }) {
   )
 }
 
-/* ─── Usage gate modal ─── */
+/* ─── Email capture gate ─── */
 
-function UsageGate({ onDismiss }) {
+function EmailGate({ onSubmit, onDismiss }) {
+  const [email, setEmail] = useState('')
+  const [err, setErr]     = useState('')
+  const [busy, setBusy]   = useState(false)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    const v = email.trim().toLowerCase()
+    if (!v || !v.includes('@') || !v.includes('.')) { setErr('Enter a valid email address.'); return }
+    setBusy(true)
+    setErr('')
+    await onSubmit(v)
+    setBusy(false)
+  }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(15,31,61,0.55)', backdropFilter: 'blur(6px)' }}>
+      <div style={{ background: '#fff', borderRadius: 20, padding: 40, maxWidth: 440, width: '100%', boxShadow: '0 24px 80px rgba(15,31,61,0.25)', textAlign: 'center' }}>
+        <div style={{ width: 52, height: 52, borderRadius: '50%', background: C.accentBg, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', fontSize: 24 }}>
+          📄
+        </div>
+        <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
+          Continue for free
+        </div>
+        <h2 style={{ ...F.sans, fontSize: 22, fontWeight: 800, color: C.text, margin: '0 0 10px', letterSpacing: '-0.02em' }}>
+          Get 2 more free reports
+        </h2>
+        <p style={{ ...F.sans, fontSize: 14, color: C.muted, lineHeight: 1.65, margin: '0 0 24px' }}>
+          Enter your email to continue — no password, no credit card.
+        </p>
+        <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
+          <input
+            type="email"
+            placeholder="you@agency.com"
+            value={email}
+            onChange={e => { setEmail(e.target.value); setErr('') }}
+            autoFocus
+            style={{ ...F.sans, width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: 9, border: `1.5px solid ${err ? C.danger : C.border}`, fontSize: 14, color: C.text, outline: 'none', marginBottom: 8 }}
+          />
+          {err && <p style={{ ...F.sans, fontSize: 12, color: C.danger, margin: '0 0 10px' }}>{err}</p>}
+          <button
+            type="submit"
+            disabled={busy}
+            style={{ ...F.sans, width: '100%', padding: '13px', background: C.accent, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1, boxShadow: '0 4px 16px rgba(4,37,108,0.30)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+          >
+            {busy ? <><div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'ipspin 0.7s linear infinite' }} />Checking...</> : 'Continue →'}
+          </button>
+        </form>
+        <button
+          onClick={onDismiss}
+          style={{ ...F.sans, fontSize: 13, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: '12px 0 0', display: 'block', margin: '0 auto' }}
+        >
+          Maybe later
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ─── Paywall modal ─── */
+
+function PaywallGate() {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(15,31,61,0.55)', backdropFilter: 'blur(6px)' }}>
       <div style={{ background: '#fff', borderRadius: 20, padding: 40, maxWidth: 460, width: '100%', boxShadow: '0 24px 80px rgba(15,31,61,0.25)', textAlign: 'center' }}>
@@ -789,12 +906,11 @@ function UsageGate({ onDismiss }) {
           Free limit reached
         </div>
         <h2 style={{ ...F.sans, fontSize: 22, fontWeight: 800, color: C.text, margin: '0 0 10px', letterSpacing: '-0.02em' }}>
-          You've used your 3 free extractions
+          You've used your 3 free reports
         </h2>
         <p style={{ ...F.sans, fontSize: 14, color: C.muted, lineHeight: 1.65, margin: '0 0 28px' }}>
           Subscribe for unlimited 4-point and wind mitigation extractions — plus automatic red flag detection on every report.
         </p>
-
         <div style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 12, padding: '14px 20px', marginBottom: 24, textAlign: 'left' }}>
           {['Unlimited extractions', 'Automatic red flag detection', 'Florida OIR-B1-1802 + 4-point', 'Cancel any time'].map(item => (
             <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -806,19 +922,12 @@ function UsageGate({ onDismiss }) {
             $79<span style={{ fontSize: 13, fontWeight: 500, color: C.muted }}>/mo · or $59/mo billed annually</span>
           </div>
         </div>
-
         <Link
           to="/sign-up"
-          style={{ ...F.sans, display: 'block', width: '100%', padding: '14px', background: C.accent, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 4px 16px rgba(4,37,108,0.30)', marginBottom: 10 }}
+          style={{ ...F.sans, display: 'block', width: '100%', padding: '14px', background: C.accent, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 4px 16px rgba(4,37,108,0.30)' }}
         >
-          Start 14-day free trial →
+          Choose a plan →
         </Link>
-        <button
-          onClick={onDismiss}
-          style={{ ...F.sans, fontSize: 13, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0' }}
-        >
-          Maybe later
-        </button>
       </div>
     </div>
   )
@@ -832,7 +941,6 @@ export default function InspectionPage() {
   const [stage, setStage] = useState(initialMode ? 'input' : 'entry')
   const [inputMode, setInputMode] = useState(initialMode)
   const [result, setResult] = useState(null)
-  const [showGate, setShowGate] = useState(false)
 
   function handleSelect(mode) {
     setInputMode(mode)
@@ -852,7 +960,6 @@ export default function InspectionPage() {
   return (
     <>
       <style>{PAGE_CSS}</style>
-      {showGate && <UsageGate onDismiss={() => setShowGate(false)} />}
       <div style={{ minHeight: '100vh', background: C.bg, paddingTop: 72, paddingBottom: 40 }}>
         {result ? (
           <InspectionOutput result={result} onReset={handleReset} />
@@ -863,7 +970,6 @@ export default function InspectionPage() {
             initialMode={inputMode}
             autoGenerate={inputMode === 'sample'}
             onResult={handleResult}
-            onGate={() => setShowGate(true)}
           />
         )}
       </div>

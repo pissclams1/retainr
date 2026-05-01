@@ -700,7 +700,7 @@ function Pricing() {
         'PDF upload + paste mode',
         'Clipboard export',
       ],
-      cta: 'Start free trial',
+      cta: 'Get started →',
     },
     {
       name: 'Pro',
@@ -716,7 +716,7 @@ function Pricing() {
         'Enhanced underwriting explanations',
         'Submission history dashboard',
       ],
-      cta: 'Start free trial',
+      cta: 'Get started →',
     },
     {
       name: 'Agency',

@@ -78,7 +78,7 @@ const PLANS = [
       { label: 'Scheduled report generation', value: false },
       { label: 'Team seats', value: false },
     ],
-    cta: 'Start free trial',
+    cta: 'Get started →',
   },
   {
     id: 'pro',
@@ -101,7 +101,7 @@ const PLANS = [
       { label: 'Scheduled report generation', value: true },
       { label: 'Team seats', value: 'Up to 5' },
     ],
-    cta: 'Start free trial',
+    cta: 'Get started →',
   },
   {
     id: 'scale',
@@ -124,14 +124,14 @@ const PLANS = [
       { label: 'Team seats', value: 'Unlimited' },
       { label: 'API access', value: true },
     ],
-    cta: 'Start free trial',
+    cta: 'Get started →',
   },
 ]
 
 const FAQS = [
   { q: 'What counts as a client account?', a: 'Each Google Ads account (or MCC sub-account) you connect counts as one client account. You can connect multiple accounts across different clients.' },
   { q: 'Can I switch plans later?', a: 'Yes — upgrade or downgrade at any time. Changes take effect at the start of your next billing cycle.' },
-  { q: 'What happens after my free trial?', a: "After 14 days you'll be prompted to choose a plan. We won't charge you anything without confirmation." },
+  { q: 'Is there a free trial?', a: "Yes — try BindIQ free for up to 3 reports, no account or credit card needed. After that, choose a plan to continue." },
   { q: 'Do clients see retainr branding?', a: "On Growth, reports include a small 'Powered by retainr' footer. On Pro Agency and Scale, reports are fully white-labeled with your agency branding. Meta Ads reports carry the watermark for all plans during the beta period." },
   { q: 'What is the Meta Ads beta?', a: "Meta Ads reporting is available now on all plans at no extra charge while we work through the Meta App Review process. During this period, Meta reports include a 'Powered by retainr' watermark on all plans. When Meta officially launches, it will be included in paid plans and white-labeled." },
   { q: 'Is my ad data safe?', a: 'retainr uses read-only OAuth access to Google Ads and Meta Ads. We never store ad credentials and cannot make changes to your campaigns or budgets.' },
@@ -297,7 +297,7 @@ export default function PricingPage() {
           Simple, transparent pricing
         </h1>
         <p style={{ ...F.sans, fontSize: 17, color: C.muted, lineHeight: 1.65, maxWidth: 480, margin: '0 auto 28px' }}>
-          Start free for 14 days. No credit card required. Cancel anytime.
+          Try free — 3 reports, no account needed. Then choose a plan.
         </p>
 
         {/* Billing toggle */}
@@ -399,13 +399,13 @@ export default function PricingPage() {
         {/* CTA */}
         <div style={{ marginTop: 56, background: C.accent, borderRadius: 16, padding: '48px', textAlign: 'center' }}>
           <h2 style={{ ...F.sans, fontSize: 32, fontWeight: 800, color: '#fff', letterSpacing: '-0.025em', marginBottom: 10 }}>
-            Start your free 14-day trial
+            Try BindIQ free
           </h2>
           <p style={{ ...F.sans, fontSize: 16, color: 'rgba(255,255,255,0.65)', marginBottom: 28, lineHeight: 1.6 }}>
-            No credit card required. Get your first report in under 60 seconds.
+            3 free reports, no account needed. See the output before you subscribe.
           </p>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <Link to="/sign-up" className="pp-cta-primary" style={F.sans}>Start Free Trial</Link>
+            <Link to="/inspect" className="pp-cta-primary" style={F.sans}>Try it free →</Link>
             <Link to="/sample-reports" className="pp-cta-ghost" style={F.sans}>See Sample Reports</Link>
           </div>
         </div>
