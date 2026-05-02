@@ -316,6 +316,106 @@ function CoreValue() {
   )
 }
 
+/* ─── Static demo result (no API calls) ─── */
+
+function StaticDemoResult() {
+  const score = 91
+  const sc = { bg: 'rgba(16,185,129,0.07)', border: '1.5px solid rgba(16,185,129,0.28)', barColor: '#10B981', scoreColor: '#065F46', labelBg: 'rgba(16,185,129,0.14)' }
+  return (
+    <div style={{ border: `1.5px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 40px rgba(15,31,61,0.08)', background: '#F8FAFC', padding: '28px 32px', maxWidth: 720, margin: '0 auto' }}>
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: C.accent, textTransform: 'uppercase', marginBottom: 4 }}>Wind Mitigation</div>
+          <div style={{ ...F.sans, fontSize: 20, fontWeight: 800, color: C.text, letterSpacing: '-0.02em' }}>4821 Pelican Cove Road, Naples, FL</div>
+          <div style={{ ...F.sans, fontSize: 13, color: C.textMuted, marginTop: 4 }}>03/12/2024 · Robert D. Torres · HI12334455</div>
+        </div>
+        <div style={{ ...F.sans, fontSize: 11, fontWeight: 600, color: C.textMuted, background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 7, padding: '5px 12px' }}>Sample report</div>
+      </div>
+
+      {/* BindIQ Score */}
+      <div style={{ background: sc.bg, border: sc.border, borderRadius: 16, padding: '22px 24px', marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 14 }}>
+          <div style={{ flexShrink: 0 }}>
+            <div style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: sc.scoreColor, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 4 }}>BindIQ Score</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, lineHeight: 1 }}>
+              <span style={{ ...F.sans, fontSize: 52, fontWeight: 800, color: sc.scoreColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{score}</span>
+              <span style={{ ...F.sans, fontSize: 14, color: sc.scoreColor, opacity: 0.45, fontWeight: 600 }}>/100</span>
+            </div>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <span style={{ fontSize: 18 }}>🟢</span>
+              <span style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: sc.scoreColor }}>Likely to Bind</span>
+            </div>
+            <div style={{ height: 8, background: 'rgba(0,0,0,0.07)', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${score}%`, background: sc.barColor, borderRadius: 4 }} />
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 14 }}>
+          {[
+            'Hurricane-rated / impact-resistant opening protection — reduces wind risk',
+            'Strong roof-to-wall connection — positive wind mitigation factor',
+            'Roof replaced within last 10 years (7 yrs) — positive underwriting factor',
+          ].map(r => (
+            <div key={r} style={{ display: 'flex', gap: 8 }}>
+              <span style={{ ...F.sans, fontSize: 12, color: sc.scoreColor, flexShrink: 0 }}>·</span>
+              <span style={{ ...F.sans, fontSize: 13, color: sc.scoreColor, lineHeight: 1.5, opacity: 0.85 }}>{r}</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ paddingTop: 12, borderTop: `1px solid ${sc.barColor}22` }}>
+          <div style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: sc.scoreColor, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>Carrier impact</div>
+          <div style={{ ...F.sans, fontSize: 13, color: sc.scoreColor, lineHeight: 1.6, opacity: 0.8 }}>No significant underwriting barriers identified. Standard FL carriers should write this property with normal review.</div>
+        </div>
+      </div>
+
+      {/* No flags */}
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Red Flags</div>
+        <div style={{ background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 18 }}>✅</span>
+          <div>
+            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: '#065F46' }}>No red flags</div>
+            <div style={{ ...F.sans, fontSize: 12, color: '#047857', marginTop: 2 }}>Nothing found that would prevent placement with standard carriers.</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Wind mit selections */}
+      <div>
+        <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Mitigation Selections</div>
+        <div style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12, padding: '16px 20px' }}>
+          {[
+            ['Roof Covering',            'A', 'FBC compliant — concrete barrel tile, permit #17-0088341'],
+            ['Roof Deck Attachment',     'C', '8d nails ≤6" o.c. — 19/32" plywood OSB'],
+            ['Roof-to-Wall Connection',  'D', 'Double wraps throughout'],
+            ['Roof Geometry',            'A', 'Hip — 100% hip, no gable ends'],
+            ['Secondary Water Resist.',  '✓', 'Present — peel-and-stick SWR throughout'],
+            ['Opening Protection',       'D', 'Impact resistant glazing — PGT impact-rated throughout'],
+          ].map(([label, sel, desc]) => {
+            const isCheck = sel === '✓'
+            const selColor = sel === 'A' || sel === 'D' || sel === '✓' ? { bg: 'rgba(16,185,129,0.12)', color: '#065F46' } : { bg: 'rgba(245,158,11,0.10)', color: '#92400E' }
+            return (
+              <div key={label} style={{ display: 'flex', alignItems: 'flex-start', padding: '9px 0', borderBottom: `1px solid ${C.border}`, gap: 14 }}>
+                <div style={{ ...F.sans, fontSize: 12, fontWeight: 600, color: C.textMuted, width: 170, flexShrink: 0, paddingTop: 2 }}>{label}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {!isCheck && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: 6, fontSize: 12, fontWeight: 800, background: selColor.bg, color: selColor.color, flexShrink: 0 }}>{sel}</span>
+                  )}
+                  <span style={{ ...F.sans, fontSize: 13, color: isCheck ? '#065F46' : C.text, fontWeight: isCheck ? 600 : 400 }}>{isCheck ? `✓ ${desc}` : desc}</span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ─── How it works ─── */
 
 function HowItWorks() {
@@ -360,21 +460,10 @@ function HowItWorks() {
           ))}
         </div>
 
-        {/* Demo — embedded directly below the 3 steps */}
+        {/* Static demo result */}
         <div id="demo">
-          <div style={{ textAlign: 'center', marginBottom: 28 }}>
-            <p style={{ ...F.sans, fontSize: 15, color: C.textMuted, margin: 0 }}>
-              A real wind mitigation report — scored automatically.
-            </p>
-          </div>
-          <div style={{ border: `1.5px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 40px rgba(15,31,61,0.08)', background: '#F8FAFC' }}>
-            <iframe
-              src="/inspect?mode=sample&embed=1"
-              title="BindIQ live demo"
-              style={{ width: '100%', height: 860, border: 'none', display: 'block' }}
-            />
-          </div>
-          <div style={{ textAlign: 'center', marginTop: 20 }}>
+          <StaticDemoResult />
+          <div style={{ textAlign: 'center', marginTop: 24 }}>
             <Link to="/inspect" className="lp-cta-ghost" style={{ ...F.sans, fontSize: 14 }}>
               Try with your own report →
             </Link>
