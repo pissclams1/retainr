@@ -360,12 +360,11 @@ function HowItWorks() {
           ))}
         </div>
 
-        {/* Live demo — embedded directly below the 3 steps */}
+        {/* Demo — embedded directly below the 3 steps */}
         <div id="demo">
           <div style={{ textAlign: 'center', marginBottom: 28 }}>
-            <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Live demo</div>
             <p style={{ ...F.sans, fontSize: 15, color: C.textMuted, margin: 0 }}>
-              A real wind mitigation report — scored automatically, no clicks needed.
+              A real wind mitigation report — scored automatically.
             </p>
           </div>
           <div style={{ border: `1.5px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 40px rgba(15,31,61,0.08)', background: '#F8FAFC' }}>
@@ -373,7 +372,6 @@ function HowItWorks() {
               src="/inspect?mode=sample&embed=1"
               title="BindIQ live demo"
               style={{ width: '100%', height: 860, border: 'none', display: 'block' }}
-              loading="lazy"
             />
           </div>
           <div style={{ textAlign: 'center', marginTop: 20 }}>
