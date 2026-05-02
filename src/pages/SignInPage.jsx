@@ -202,7 +202,7 @@ export default function SignInPage() {
                 <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...F.sans, fontSize: 12, fontWeight: 700, color: '#fff' }}>SK</div>
                 <div>
                   <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: '#fff' }}>Sarah K.</div>
-                  <div style={{ ...F.sans, fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>Head of PPC · Apex Digital</div>
+                  <div style={{ ...F.sans, fontSize: 12, color: 'rgba(255,255,255,0.45)' }}>Independent P&C Agent · Florida</div>
                 </div>
               </div>
             </div>
