@@ -999,6 +999,15 @@ export default function InspectionPage() {
   const initialMode = searchParams.get('mode') // e.g. ?mode=sample
   const embed = searchParams.get('embed') === '1'
   const [stage, setStage] = useState(initialMode ? 'input' : 'entry')
+
+  // Sync signed-in user's email to localStorage so they bypass the email gate
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email && !getStoredEmail()) {
+        saveEmail(session.user.email)
+      }
+    })
+  }, [])
   const [inputMode, setInputMode] = useState(initialMode)
   const [result, setResult] = useState(null)
   const stateCode = useDetectedState()
