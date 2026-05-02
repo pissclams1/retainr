@@ -79,14 +79,14 @@ export default function SignInPage() {
               </div>
             ) : (
               <>
-                <h1 style={{ ...F.sans, fontSize: 26, fontWeight: 800, letterSpacing: '-0.025em', color: C.dark, marginBottom: 6 }}>Welcome back</h1>
-                <p style={{ ...F.sans, fontSize: 14, color: C.muted, marginBottom: 32 }}>
-                  Enter your email and we'll send you a sign-in link.
+                <h1 style={{ ...F.sans, fontSize: 26, fontWeight: 800, letterSpacing: '-0.025em', color: C.dark, marginBottom: 6 }}>Sign in</h1>
+                <p style={{ ...F.sans, fontSize: 14, color: C.muted, marginBottom: 28 }}>
+                  For existing BindIQ subscribers.
                 </p>
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <label style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: C.dark }}>Work email</label>
+                    <label style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: C.dark }}>Email</label>
                     <input
                       className="si-input"
                       type="email"
@@ -105,14 +105,18 @@ export default function SignInPage() {
                   </button>
                 </form>
 
-                <p style={{ ...F.sans, textAlign: 'center', fontSize: 12, color: C.muted, marginTop: 20, lineHeight: 1.6 }}>
-                  No password to remember — just click the link in your email.
-                </p>
-
-                <p style={{ ...F.sans, textAlign: 'center', fontSize: 13, color: C.muted, marginTop: 16 }}>
-                  No account?{' '}
-                  <Link to="/sign-up" style={{ color: C.navy, fontWeight: 600, textDecoration: 'none' }}>Start free →</Link>
-                </p>
+                <div style={{ borderTop: `1px solid ${C.border}`, marginTop: 24, paddingTop: 20 }}>
+                  <p style={{ ...F.sans, fontSize: 13, color: C.muted, margin: '0 0 6px' }}>
+                    <strong style={{ color: C.dark }}>New to BindIQ?</strong> Try 3 reports free — no account needed.
+                  </p>
+                  <Link to="/inspect" style={{ ...F.sans, fontSize: 13, color: C.navy, fontWeight: 600, textDecoration: 'none' }}>
+                    Try it free →
+                  </Link>
+                  <span style={{ ...F.sans, fontSize: 13, color: C.muted, margin: '0 8px' }}>·</span>
+                  <Link to="/sign-up" style={{ ...F.sans, fontSize: 13, color: C.navy, fontWeight: 600, textDecoration: 'none' }}>
+                    Create account →
+                  </Link>
+                </div>
               </>
             )}
           </div>
