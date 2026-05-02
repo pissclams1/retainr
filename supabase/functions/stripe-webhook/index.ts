@@ -11,10 +11,15 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 )
 
-const PRICE_TO_TIER: Record<string, string> = {
-  'price_1TPagAAD9v8suvv9wZ5q40Br': 'starter',
-  'price_1TPagEAD9v8suvv9nePbMsCL': 'growth',
-  'price_1TPagHAD9v8suvv9GoinsyQA': 'agency',
+// Both monthly and annual prices grant the same 'pro' tier.
+// Update these price IDs after creating live products in the Stripe Dashboard.
+const PAID_PRICE_IDS = new Set([
+  Deno.env.get('STRIPE_PRICE_MONTHLY') ?? 'price_LIVE_MONTHLY',
+  Deno.env.get('STRIPE_PRICE_ANNUAL')  ?? 'price_LIVE_ANNUAL',
+])
+
+function tierForPrice(priceId: string): string {
+  return PAID_PRICE_IDS.has(priceId) ? 'pro' : 'trial'
 }
 
 Deno.serve(async (req) => {
@@ -28,14 +33,15 @@ Deno.serve(async (req) => {
     return new Response('Invalid signature', { status: 400 })
   }
 
+  // ── Checkout completed → activate subscription ───────────────────────────
   if (event.type === 'checkout.session.completed') {
-    const session   = event.data.object as Stripe.Checkout.Session
-    const agencyId  = session.metadata?.agency_id
+    const session  = event.data.object as Stripe.Checkout.Session
+    const agencyId = session.metadata?.agency_id
     if (!agencyId || session.mode !== 'subscription') return ok()
 
     const subscription = await stripe.subscriptions.retrieve(session.subscription as string)
     const priceId      = subscription.items.data[0]?.price.id
-    const tier         = PRICE_TO_TIER[priceId] ?? 'starter'
+    const tier         = tierForPrice(priceId)
 
     await supabase.from('agencies').update({
       stripe_customer_id:  session.customer as string,
@@ -44,16 +50,17 @@ Deno.serve(async (req) => {
     }).eq('id', agencyId)
   }
 
+  // ── Subscription updated (plan change / renewal) ─────────────────────────
   if (event.type === 'customer.subscription.updated') {
     const sub      = event.data.object as Stripe.Subscription
     const agencyId = sub.metadata?.agency_id
     if (!agencyId) return ok()
 
     const priceId = sub.items.data[0]?.price.id
-    const tier    = PRICE_TO_TIER[priceId] ?? 'starter'
-    const status  = sub.status === 'active' ? 'active'
-                  : sub.status === 'past_due' ? 'past_due'
-                  : sub.status === 'canceled' ? 'cancelled'
+    const tier    = tierForPrice(priceId)
+    const status  = sub.status === 'active'     ? 'active'
+                  : sub.status === 'past_due'   ? 'past_due'
+                  : sub.status === 'canceled'   ? 'cancelled'
                   : 'active'
 
     await supabase.from('agencies').update({
@@ -62,6 +69,7 @@ Deno.serve(async (req) => {
     }).eq('id', agencyId)
   }
 
+  // ── Subscription cancelled ───────────────────────────────────────────────
   if (event.type === 'customer.subscription.deleted') {
     const sub      = event.data.object as Stripe.Subscription
     const agencyId = sub.metadata?.agency_id

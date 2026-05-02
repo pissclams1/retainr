@@ -1,17 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { createClient } from '@supabase/supabase-js'
+import { PRICE_IDS } from '../lib/plans'
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY,
 )
 
-// Update these with real Stripe price IDs from your dashboard
-const PRICES = {
-  monthly: 'price_1TPagAAD9v8suvv9wZ5q40Br',
-  annual:  'price_1TPagEAD9v8suvv9nePbMsCL',
-}
+const PRICES = PRICE_IDS
 
 const F = { sans: { fontFamily: "'DM Sans', system-ui, -apple-system, sans-serif" } }
 const C = {
