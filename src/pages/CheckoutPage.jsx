@@ -177,7 +177,7 @@ export default function CheckoutPage() {
 
         <p style={{ ...F.sans, fontSize: 13, color: C.muted, textAlign: 'center', marginTop: 20 }}>
           Already have an account?{' '}
-          <Link to="/sign-in" style={{ color: C.accent, fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
+          <Link to="/sign-up" style={{ color: C.accent, fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
         </p>
       </div>
     </div>
