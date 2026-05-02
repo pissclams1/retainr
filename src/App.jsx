@@ -1,4 +1,40 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { createClient } from '@supabase/supabase-js'
+
+const _supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
+
+// Handles /auth/confirm — Supabase drops the access token in the URL hash here.
+// The client picks it up automatically; we just wait for a session then redirect.
+function AuthConfirmPage() {
+  const navigate = useNavigate()
+  useEffect(() => {
+    const { data: { subscription } } = _supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        subscription.unsubscribe()
+        // Honour any redirect_to in the hash, fall back to /inspect
+        const hash = window.location.hash
+        const match = hash.match(/redirect_to=([^&]+)/)
+        const dest = match ? decodeURIComponent(match[1]) : '/inspect'
+        navigate(dest, { replace: true })
+      }
+    })
+    // If session is already set (token processed synchronously) navigate immediately
+    _supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        subscription.unsubscribe()
+        navigate('/inspect', { replace: true })
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [navigate])
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif", color: '#64748B', fontSize: 14 }}>
+      Signing you in…
+    </div>
+  )
+}
 import AuthGuard from './components/AuthGuard'
 import AppBar from './components/AppBar'
 import LoginPage from './pages/LoginPage'
@@ -65,6 +101,7 @@ export default function App() {
         <Route path="/terms"    element={<TermsPage />} />
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/support"  element={<SupportPage />} />
+        <Route path="/auth/confirm" element={<AuthConfirmPage />} />
         <Route path="/auth/google/callback" element={<GoogleCallbackPage />} />
         <Route path="/auth/meta/callback"   element={<MetaCallbackPage />} />
         <Route path="/r/:id" element={<ReportViewPage />} />
