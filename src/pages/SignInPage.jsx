@@ -23,9 +23,21 @@ export default function SignInPage() {
   const [password, setPassword] = useState('')
   const [mode, setMode] = useState('magic') // 'magic' | 'password'
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+
+  async function handleGoogle() {
+    setGoogleLoading(true)
+    setError('')
+    const { error: err } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: `${window.location.origin}/dashboard` },
+    })
+    if (err) { setError(err.message); setGoogleLoading(false) }
+    // on success the browser redirects — no need to setLoading(false)
+  }
 
   async function handleMagicLink(e) {
     e.preventDefault()
@@ -85,11 +97,11 @@ export default function SignInPage() {
                 <h1 style={{ ...F.sans, fontSize: 26, fontWeight: 800, letterSpacing: '-0.025em', marginBottom: 6 }}>Welcome back</h1>
                 <p style={{ ...F.sans, fontSize: 14, color: C.muted, marginBottom: 32 }}>Sign in to your BindIQ account</p>
 
-                {/* Google SSO — placeholder, triggers magic link fallback */}
                 <button
                   className="si-google-btn"
-                  onClick={() => setMode('magic')}
-                  style={{ marginBottom: 20 }}
+                  onClick={handleGoogle}
+                  disabled={googleLoading}
+                  style={{ marginBottom: 20, opacity: googleLoading ? 0.6 : 1 }}
                 >
                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
                     <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4" />
