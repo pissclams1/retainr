@@ -22,3 +22,9 @@ export const PLAN = {
 // Tier name written to agencies.subscription_tier on successful checkout.
 // Used by the app to check if a user has an active subscription.
 export const PAID_TIER = 'pro'
+
+// Legacy exports kept for compatibility with existing components
+export const TIER_LIMIT = { trial: 3, pro: Infinity }
+export const PLANS = {
+  pro: { name: 'BindIQ Pro', price: PLAN.monthly, priceId: PRICE_IDS.monthly, features: PLAN.features },
+}
