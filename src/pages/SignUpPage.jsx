@@ -79,7 +79,7 @@ export default function SignUpPage() {
                 Create your account
               </h1>
               <p style={{ ...F.sans, fontSize: 14, color: C.muted, margin: '0 0 28px' }}>
-                14-day free trial · No credit card required
+                3 free reports · No credit card required
               </p>
 
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

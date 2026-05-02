@@ -183,9 +183,9 @@ export default function SignInPage() {
             </div>
 
             {[
-              { stat: '< 20s', desc: 'average time to score any inspection report' },
+              { stat: '~30s', desc: 'typical time to score any inspection report' },
               { stat: '8+', desc: 'underwriting flags detected automatically' },
-              { stat: '7', desc: 'states supported — FL, TX, LA, SC, AL, MS, NC' },
+              { stat: 'FL', desc: 'purpose-built for Florida — more states coming' },
             ].map(({ stat, desc }) => (
               <div key={stat} style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28 }}>
                 <div style={{ ...F.sans, fontSize: 32, fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', minWidth: 80 }}>{stat}</div>

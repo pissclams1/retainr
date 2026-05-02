@@ -94,7 +94,7 @@ export default function CheckoutPage() {
             Start your subscription
           </h1>
           <p style={{ ...F.sans, fontSize: 14, color: C.muted, margin: 0 }}>
-            14-day free trial · Cancel any time · No setup fees
+            3 free reports · Cancel any time · No setup fees
           </p>
         </div>
 
@@ -171,7 +171,7 @@ export default function CheckoutPage() {
           </button>
 
           <p style={{ ...F.sans, fontSize: 12, color: C.subtle, textAlign: 'center', marginTop: 14, lineHeight: 1.5 }}>
-            Secured by Stripe · Cancel any time from your billing page · No credit card required for the 14-day trial
+            Secured by Stripe · Cancel any time from your billing page
           </p>
         </div>
 

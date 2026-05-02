@@ -207,13 +207,13 @@ export function SupportPage() {
       <h2 style={h2style}>Common questions</h2>
 
       <p style={{ ...pstyle, fontWeight: 600, color: '#0F1F3D', marginBottom: 4, marginTop: 18 }}>How long does extraction take?</p>
-      <p style={pstyle}>Under 20 seconds for most reports once submitted.</p>
+      <p style={pstyle}>Typically around 30 seconds for most reports once submitted.</p>
 
       <p style={{ ...pstyle, fontWeight: 600, color: '#0F1F3D', marginBottom: 4, marginTop: 18 }}>What inspection formats does BindIQ support?</p>
       <p style={pstyle}>Any PDF or pasted text from a standard 4-point or wind mitigation report. Selectable-text PDFs process fastest; scanned PDFs are also supported.</p>
 
       <p style={{ ...pstyle, fontWeight: 600, color: '#0F1F3D', marginBottom: 4, marginTop: 18 }}>Which states are supported?</p>
-      <p style={pstyle}>Florida, Texas, Louisiana, South Carolina, Alabama, Mississippi, and North Carolina — the seven states with state-mandated wind/hail inspection programs.</p>
+      <p style={pstyle}>Florida is fully supported today. Additional states are in development — check back or email support@usebindiq.com to request a specific state.</p>
 
       <p style={{ ...pstyle, fontWeight: 600, color: '#0F1F3D', marginBottom: 4, marginTop: 18 }}>Is client inspection data stored?</p>
       <p style={pstyle}>No. Report content is processed and discarded immediately. Nothing is retained after the score is returned.</p>
