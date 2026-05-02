@@ -83,7 +83,7 @@ export default function SignInPage() {
             ) : (
               <>
                 <h1 style={{ ...F.sans, fontSize: 26, fontWeight: 800, letterSpacing: '-0.025em', marginBottom: 6 }}>Welcome back</h1>
-                <p style={{ ...F.sans, fontSize: 14, color: C.muted, marginBottom: 32 }}>Sign in to your retainr account</p>
+                <p style={{ ...F.sans, fontSize: 14, color: C.muted, marginBottom: 32 }}>Sign in to your BindIQ account</p>
 
                 {/* Google SSO — placeholder, triggers magic link fallback */}
                 <button
@@ -167,13 +167,13 @@ export default function SignInPage() {
 
           <div style={{ maxWidth: 420, position: 'relative', zIndex: 1 }}>
             <div style={{ ...F.sans, fontSize: 13, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', marginBottom: 20 }}>
-              Why agencies use retainr
+              Why agents use BindIQ
             </div>
 
             {[
-              { stat: '22%', desc: 'average improvement in client retention in year 1' },
-              { stat: '4.8 hrs', desc: 'saved per client account every month' },
-              { stat: '47 sec', desc: 'average time to generate a complete AI report' },
+              { stat: '< 20s', desc: 'average time to score any inspection report' },
+              { stat: '8+', desc: 'underwriting flags detected automatically' },
+              { stat: '7', desc: 'states supported — FL, TX, LA, SC, AL, MS, NC' },
             ].map(({ stat, desc }) => (
               <div key={stat} style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28 }}>
                 <div style={{ ...F.sans, fontSize: 32, fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', minWidth: 80 }}>{stat}</div>
@@ -184,7 +184,7 @@ export default function SignInPage() {
             {/* Testimonial */}
             <div style={{ marginTop: 12, padding: '20px 24px', background: 'rgba(255,255,255,0.08)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)' }}>
               <p style={{ ...F.sans, fontSize: 14, color: 'rgba(255,255,255,0.8)', lineHeight: 1.65, fontStyle: 'italic', marginBottom: 14 }}>
-                "retainr turned our monthly reporting from a chore into a competitive advantage. Every junior AM sounds like a senior one now."
+                "BindIQ caught a Federal Pacific panel on a submission I almost quoted. Saved me the carrier call and the client embarrassment."
               </p>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', ...F.sans, fontSize: 12, fontWeight: 700, color: '#fff' }}>SK</div>
