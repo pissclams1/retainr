@@ -950,7 +950,7 @@ function ROI() {
       <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 24px', textAlign: 'center' }}>
         <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>The math</div>
         <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: '0 0 16px' }}>
-          Avoid one bad submission<br />and it pays for itself.
+          Avoiding one bad submission<br />means BindIQ pays for itself.
         </h2>
         <p style={{ ...F.sans, fontSize: 16, color: C.textMuted, lineHeight: 1.7, maxWidth: 520, margin: '0 auto 40px' }}>
           A declined policy means lost commission, wasted quoting time, and a delayed placement.
