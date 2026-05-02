@@ -288,8 +288,8 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
     const raw = (overrideText ?? text).trim()
     if (!raw || raw.length < 50) { setError('Paste more of the inspection report first.'); return }
 
-    // Sample mode is always free
-    const isSample = initialMode === 'sample' && !overrideText
+    // Sample mode is always free — regardless of whether text came from overrideText or state
+    const isSample = initialMode === 'sample'
 
     if (!isSample) {
       if (skipGateRef.current) {
