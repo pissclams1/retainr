@@ -305,6 +305,8 @@ function UserDetailPanel({ user, onClose, secret }) {
   const [flagging, setFlagging] = useState(false)
   const [flagged, setFlagged]   = useState(false)
   const [disabling, setDisabling] = useState(false)
+  const [deleting, setDeleting]   = useState(false)
+  const [disabled, setDisabled]   = useState(false)
 
   if (!user) return null
 
@@ -342,15 +344,34 @@ function UserDetailPanel({ user, onClose, secret }) {
   }
 
   async function handleDisable() {
-    if (!confirm(`Disable account for ${user.owner_email}? They won't be able to log in.`)) return
+    const action = disabled ? 'enable_user' : 'disable_user'
+    const msg = disabled
+      ? `Re-enable account for ${user.owner_email}?`
+      : `Disable account for ${user.owner_email}? They won't be able to sign in.`
+    if (!confirm(msg)) return
     setDisabling(true)
     try {
-      await callAction('disable_user', { user_id: user.auth_user_id })
-      alert('Account disabled.')
-    } catch {
-      alert('Action failed — admin-action function not yet deployed.')
+      await callAction(action, { user_id: user.auth_user_id })
+      setDisabled(d => !d)
+    } catch (e) {
+      alert('Failed: ' + e.message)
     } finally {
       setDisabling(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!confirm(`Permanently delete account for ${user.owner_email}?\n\nThis cannot be undone. They can sign up again with the same email.`)) return
+    if (!confirm(`Second confirmation — delete ${user.owner_email}?`)) return
+    setDeleting(true)
+    try {
+      await callAction('delete_user', { user_id: user.auth_user_id })
+      alert('Account deleted. Close this panel.')
+      onClose()
+    } catch (e) {
+      alert('Failed: ' + e.message)
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -460,7 +481,15 @@ function UserDetailPanel({ user, onClose, secret }) {
                 disabled={disabling}
                 style={{ padding: '9px 14px', borderRadius: 8, border: `1.5px solid rgba(239,68,68,0.3)`, background: C.redBg, color: C.red, fontSize: 13, fontWeight: 600, cursor: disabling ? 'not-allowed' : 'pointer', textAlign: 'left', ...F.sans }}
               >
-                {disabling ? 'Disabling…' : '🚫 Disable account'}
+                {disabling ? (disabled ? 'Enabling…' : 'Disabling…') : disabled ? '✓ Re-enable account' : '🚫 Disable account'}
+              </button>
+
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                style={{ padding: '9px 14px', borderRadius: 8, border: `1.5px solid rgba(239,68,68,0.5)`, background: '#FEE2E2', color: '#B91C1C', fontSize: 13, fontWeight: 600, cursor: deleting ? 'not-allowed' : 'pointer', textAlign: 'left', ...F.sans }}
+              >
+                {deleting ? 'Deleting…' : '🗑 Delete account'}
               </button>
             </div>
           </div>
