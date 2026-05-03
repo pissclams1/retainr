@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
-const APP_ROUTES = ['/dashboard', '/clients', '/reports', '/alerts', '/billing']
+const APP_ROUTES = ['/clients', '/reports', '/alerts', '/billing']
 
 export default function AppBar() {
   const location = useLocation()

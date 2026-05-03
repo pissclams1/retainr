@@ -106,7 +106,7 @@ export default function App() {
         <Route path="/auth/meta/callback"   element={<MetaCallbackPage />} />
         <Route path="/r/:id" element={<ReportViewPage />} />
         <Route path="/dashboard" element={
-          <AuthGuard><AppLayout><DashboardPage /></AppLayout></AuthGuard>
+          <AuthGuard><DashboardPage /></AuthGuard>
         } />
         <Route path="/clients" element={
           <AuthGuard><AppLayout><ClientsPage /></AppLayout></AuthGuard>

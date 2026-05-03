@@ -27,6 +27,15 @@ export default function BillingPage() {
     load()
   }, [])
 
+  const handleManageBilling = async () => {
+    const { data: { session } } = await supabase.auth.getSession()
+    const { data, error } = await supabase.functions.invoke('create-portal-session', {
+      body: { return_url: `${window.location.origin}/billing` },
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+    if (!error && data?.url) window.location.href = data.url
+  }
+
   const handleUpgrade = async (priceId) => {
     setUpgrading(priceId)
     const { data: { session } } = await supabase.auth.getSession()
@@ -91,9 +100,14 @@ export default function BillingPage() {
             </p>
           </div>
           {isActive && (
-            <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '12px', fontWeight: 500, color: 'var(--win)', background: 'var(--win-bg)', padding: '4px 10px', borderRadius: '20px' }}>
-              Active
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '12px', fontWeight: 500, color: 'var(--win)', background: 'var(--win-bg)', padding: '4px 10px', borderRadius: '20px' }}>
+                Active
+              </span>
+              <Button variant="outline" onClick={handleManageBilling}>
+                Manage billing
+              </Button>
+            </div>
           )}
           {currentTier === 'trial' && (
             <span style={{ fontFamily: 'Geist, sans-serif', fontSize: '12px', fontWeight: 500, color: 'var(--alert)', background: 'var(--alert-bg)', padding: '4px 10px', borderRadius: '20px' }}>
