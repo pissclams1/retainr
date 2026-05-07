@@ -88,9 +88,9 @@ export default function App() {
         <Route path="/login" element={<Navigate to="/sign-in" replace />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/sample-report" element={<SampleReportPage />} />
-        <Route path="/sample-reports" element={<SampleReportPage />} />
-        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/sample-report" element={<Navigate to="/inspect?mode=sample" replace />} />
+        <Route path="/sample-reports" element={<Navigate to="/inspect?mode=sample" replace />} />
+        <Route path="/pricing" element={<Navigate to="/#pricing" replace />} />
         <Route path="/sign-in" element={<SignInPage />} />
         <Route path="/sign-up" element={<SignUpPage />} />
         <Route path="/generate" element={<BriefGeneratorPage />} />
