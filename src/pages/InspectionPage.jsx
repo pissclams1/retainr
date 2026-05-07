@@ -397,6 +397,7 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
           const localUses = getLocalUses()
           const email = getStoredEmail()
 
+          // After 3 free uses, require email + account to continue
           if (localUses >= 3) {
             if (!email) {
               setPendingRaw(overrideText ?? null)
