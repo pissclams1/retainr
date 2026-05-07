@@ -1,22 +1,11 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
+import { useAuth as useClerkAuth } from '@clerk/clerk-react'
 
 export function useAuth() {
-  const [session, setSession] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { isLoaded, userId, sessionId, getToken } = useClerkAuth()
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setLoading(false)
-    })
+  // For compatibility with existing code, return a session object if user is authenticated
+  const session = userId ? { user: { id: userId } } : null
+  const loading = !isLoaded
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  return { session, loading }
+  return { session, loading, userId, sessionId, getToken }
 }

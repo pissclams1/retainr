@@ -1,32 +1,20 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { ClerkProvider } from '@clerk/clerk-react'
 
 const _supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 
-// Handles /auth/confirm — Supabase drops the access token in the URL hash here.
-// The client picks it up automatically; we just wait for a session then redirect.
+// Handles /auth/confirm — Clerk handles magic link confirmation automatically
+// This page is now just a redirect to the inspection page
 function AuthConfirmPage() {
   const navigate = useNavigate()
   useEffect(() => {
-    const { data: { subscription } } = _supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        subscription.unsubscribe()
-        // Honour any redirect_to in the hash, fall back to /inspect
-        const hash = window.location.hash
-        const match = hash.match(/redirect_to=([^&]+)/)
-        const dest = match ? decodeURIComponent(match[1]) : '/inspect'
-        navigate(dest, { replace: true })
-      }
-    })
-    // If session is already set (token processed synchronously) navigate immediately
-    _supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        subscription.unsubscribe()
-        navigate('/inspect', { replace: true })
-      }
-    })
-    return () => subscription.unsubscribe()
+    // Wait a moment for Clerk to process the auth state, then redirect
+    const timeout = setTimeout(() => {
+      navigate('/inspect', { replace: true })
+    }, 1000)
+    return () => clearTimeout(timeout)
   }, [navigate])
 
   return (
@@ -80,10 +68,11 @@ function AppLayout({ children }) {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      {/* AppBar reads the route internally and returns null on / and /login */}
-      <AppBar />
-      <Routes>
+    <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
+      <BrowserRouter>
+        {/* AppBar reads the route internally and returns null on / and /login */}
+        <AppBar />
+        <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Navigate to="/sign-in" replace />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
@@ -128,6 +117,7 @@ export default function App() {
         <Route path="/demo-capture" element={<DemoCapturePage />} />
         <Route path="*" element={<Navigate to="/inspect" replace />} />
       </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+    </ClerkProvider>
   )
 }
