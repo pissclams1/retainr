@@ -11,15 +11,21 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 )
 
-// Both monthly and annual prices grant the same 'pro' tier.
-// Update these price IDs after creating live products in the Stripe Dashboard.
-const PAID_PRICE_IDS = new Set([
-  Deno.env.get('STRIPE_PRICE_MONTHLY') ?? 'price_LIVE_MONTHLY',
-  Deno.env.get('STRIPE_PRICE_ANNUAL')  ?? 'price_LIVE_ANNUAL',
-])
+// Map every live price ID to its tier name
+const PRICE_TIER: Record<string, string> = {
+  // Starter
+  'price_1TSj4zDhLiXU2Hvz323rMzWu': 'starter', // $79/mo
+  'price_1TSjEiDhLiXU2HvzmiN7eftK': 'starter', // $804/yr
+  // Pro
+  'price_1TSjHrDhLiXU2HvzTDwlT6Qy': 'pro',     // $149/mo
+  'price_1TSjHtDhLiXU2HvzSjr0vxBu': 'pro',     // $1,524/yr
+  // Agency
+  'price_1TSjHwDhLiXU2HvzsaiA6ECo': 'agency',  // $299/mo
+  'price_1TSjHzDhLiXU2Hvz2137S7Jn': 'agency',  // $3,048/yr
+}
 
 function tierForPrice(priceId: string): string {
-  return PAID_PRICE_IDS.has(priceId) ? 'pro' : 'trial'
+  return PRICE_TIER[priceId] ?? 'trial'
 }
 
 Deno.serve(async (req) => {
@@ -47,26 +53,40 @@ Deno.serve(async (req) => {
       stripe_customer_id:  session.customer as string,
       subscription_tier:   tier,
       subscription_status: 'active',
+      // Reset usage cycle on new subscription
+      reports_this_cycle:  0,
+      cycle_started_at:    new Date().toISOString(),
     }).eq('id', agencyId)
   }
 
   // ── Subscription updated (plan change / renewal) ─────────────────────────
   if (event.type === 'customer.subscription.updated') {
     const sub      = event.data.object as Stripe.Subscription
+    const prevSub  = event.data.previous_attributes as Partial<Stripe.Subscription>
     const agencyId = sub.metadata?.agency_id
     if (!agencyId) return ok()
 
     const priceId = sub.items.data[0]?.price.id
     const tier    = tierForPrice(priceId)
-    const status  = sub.status === 'active'     ? 'active'
-                  : sub.status === 'past_due'   ? 'past_due'
-                  : sub.status === 'canceled'   ? 'cancelled'
+    const status  = sub.status === 'active'   ? 'active'
+                  : sub.status === 'past_due'  ? 'past_due'
+                  : sub.status === 'canceled'  ? 'cancelled'
                   : 'active'
 
-    await supabase.from('agencies').update({
+    const updates: Record<string, unknown> = {
       subscription_tier:   tier,
       subscription_status: status,
-    }).eq('id', agencyId)
+    }
+
+    // Reset cycle on plan upgrade/downgrade or billing period renewal
+    const periodChanged = prevSub?.current_period_start !== undefined
+    const tierChanged   = prevSub?.items !== undefined
+    if (periodChanged || tierChanged) {
+      updates.reports_this_cycle = 0
+      updates.cycle_started_at   = new Date().toISOString()
+    }
+
+    await supabase.from('agencies').update(updates).eq('id', agencyId)
   }
 
   // ── Subscription cancelled ───────────────────────────────────────────────

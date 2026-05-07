@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { PLANS } from '../lib/plans'
+import DemoAnimation from '../components/DemoAnimation'
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const T = {
@@ -23,7 +24,7 @@ const T = {
 }
 
 // ── Logo wordmark ─────────────────────────────────────────────────────────
-function Logo({ size = 24 }) {
+function Logo({ size = 24, tagline = false }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
       <div style={{ fontSize: size, fontWeight: 800, letterSpacing: '-0.04em', color: T.navy2, lineHeight: 1 }}>
@@ -33,6 +34,11 @@ function Logo({ size = 24 }) {
         <div style={{ height: 3, width: 28, borderRadius: 2, background: 'rgba(15,31,61,0.18)' }} />
         <div style={{ height: 3, width: 10, borderRadius: 2, background: T.red }} />
       </div>
+      {tagline && (
+        <div style={{ fontSize: 11, fontWeight: 500, color: T.muted, letterSpacing: '0.01em', marginTop: 1, whiteSpace: 'nowrap' }}>
+          Know before you quote.
+        </div>
+      )}
     </div>
   )
 }
@@ -129,6 +135,7 @@ export default function LandingPage() {
       <Nav geoState={geoState} />
       <Hero geoState={geoState} />
       <StatsBand />
+      <DemoSection />
       <HowItWorks />
       <WhatGetsFlagged />
       <Pricing />
@@ -151,7 +158,7 @@ function Nav({ geoState }) {
   return (
     <nav style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-      height: 64,
+      height: 72,
       background: scrolled ? 'rgba(255,255,255,0.96)' : 'rgba(255,255,255,0.92)',
       backdropFilter: 'blur(16px)',
       WebkitBackdropFilter: 'blur(16px)',
@@ -160,7 +167,7 @@ function Nav({ geoState }) {
     }}>
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 32px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-          <Link to="/" style={{ textDecoration: 'none' }}><Logo size={24} /></Link>
+          <Link to="/" style={{ textDecoration: 'none' }}><Logo size={24} tagline /></Link>
           <div className="lp-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <a href="#how-it-works" className="lp-nav-link">How it works</a>
             <a href="#flags" className="lp-nav-link">What gets flagged</a>
@@ -311,6 +318,62 @@ function Hero({ geoState }) {
 
         </div>
       </div>
+    </section>
+  )
+}
+
+// ─── Demo Section ─────────────────────────────────────────────────────────────
+function DemoSection() {
+  return (
+    <section style={{ background: '#fff', padding: '80px 32px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="demo-section-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
+          {/* Left: copy */}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+              See it in action
+            </div>
+            <h2 className="lp-h2" style={{ fontSize: 38, fontWeight: 800, color: T.navy2, letterSpacing: '-0.025em', lineHeight: 1.15, marginBottom: 20 }}>
+              From upload to score<br />in under 60 seconds
+            </h2>
+            <p style={{ fontSize: 17, color: T.muted, lineHeight: 1.65, marginBottom: 32, maxWidth: 420 }}>
+              Upload any 4-point or wind mitigation PDF. BindIQ extracts every underwriting field and returns a 0–100 bind likelihood score — with every red flag surfaced before you call the carrier.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[
+                { icon: '🟢', text: 'Score 87 — impact glass confirmed, double wraps on roof-to-wall. Clean bind.' },
+                { icon: '🔴', text: 'Score 25 — Federal Pacific panel, aluminum wiring, 28-year roof. Decline before you waste a quote.' },
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <span style={{ fontSize: 16, marginTop: 1 }}>{item.icon}</span>
+                  <span style={{ fontSize: 14, color: T.muted, lineHeight: 1.6 }}>{item.text}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 32 }}>
+              <Link to="/inspect" style={{
+                fontFamily: T.font, display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: T.navy, color: '#fff',
+                fontSize: 15, fontWeight: 700,
+                padding: '12px 24px', borderRadius: 10,
+                textDecoration: 'none',
+                boxShadow: '0 2px 8px rgba(4,37,108,0.25)',
+              }}>
+                Try it free →
+              </Link>
+            </div>
+          </div>
+          {/* Right: animation */}
+          <div>
+            <DemoAnimation />
+          </div>
+        </div>
+      </div>
+      <style>{`
+        @media (max-width: 900px) {
+          .demo-section-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </section>
   )
 }
