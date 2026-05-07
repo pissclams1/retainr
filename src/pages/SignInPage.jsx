@@ -67,33 +67,12 @@ export default function SignInPage() {
     if (!email.trim()) return
     setError(null)
     setLoading(true)
-
-    try {
-      const res = await fetch('https://sccdotqafhgihcbxctmp.supabase.co/functions/v1/request-magic-link', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email.trim(),
-          redirectTo: `${window.location.origin}/inspect`,
-        }),
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        setError(data.error || 'Failed to send magic link')
-        setLoading(false)
-        return
-      }
-
-      setLoading(false)
-      setSent(true)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to send magic link')
-      setLoading(false)
-    }
+    const { error: err } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { emailRedirectTo: `${window.location.origin}/inspect` },
+    })
+    setLoading(false)
+    if (err) { setError(err.message) } else { setSent(true) }
   }
 
   return (
