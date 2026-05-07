@@ -85,7 +85,7 @@ export default function App() {
       <AppBar />
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<Navigate to="/sign-in" replace />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/sample-report" element={<SampleReportPage />} />
@@ -126,6 +126,7 @@ export default function App() {
         } />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/demo-capture" element={<DemoCapturePage />} />
+        <Route path="*" element={<Navigate to="/inspect" replace />} />
       </Routes>
     </BrowserRouter>
   )
