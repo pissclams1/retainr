@@ -1090,13 +1090,69 @@ export default function InspectionPage() {
   const embed = searchParams.get('embed') === '1'
   const [stage, setStage] = useState(initialMode ? 'input' : 'entry')
 
-  // Sync signed-in user's email to localStorage so they bypass the email gate
+  // Restore and persist user session across visits
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user?.email && !getStoredEmail()) {
-        saveEmail(session.user.email)
+    let isMounted = true
+
+    async function restoreOrSync() {
+      // First, try to restore from localStorage if session exists
+      const storedSession = localStorage.getItem('bindiq_session')
+      if (storedSession) {
+        try {
+          const parsed = JSON.parse(storedSession)
+          // Try to restore the session
+          await supabase.auth.setSession(parsed)
+        } catch (e) {
+          console.warn('Failed to restore session from storage:', e)
+          localStorage.removeItem('bindiq_session')
+        }
       }
-    })
+
+      // Then sync with Supabase to get current session
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!isMounted) return
+
+      // If we have an active session, store it for next visit
+      if (session) {
+        localStorage.setItem('bindiq_session', JSON.stringify({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+          expires_at: session.expires_at,
+        }))
+        // Sync email if signed in
+        if (session.user?.email && !getStoredEmail()) {
+          saveEmail(session.user.email)
+        }
+      } else {
+        // No session - clear the stored one
+        localStorage.removeItem('bindiq_session')
+      }
+
+      // Watch for auth changes and update storage
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+        if (!isMounted) return
+        if (newSession) {
+          localStorage.setItem('bindiq_session', JSON.stringify({
+            access_token: newSession.access_token,
+            refresh_token: newSession.refresh_token,
+            expires_at: newSession.expires_at,
+          }))
+          if (newSession.user?.email && !getStoredEmail()) {
+            saveEmail(newSession.user.email)
+          }
+        } else {
+          localStorage.removeItem('bindiq_session')
+        }
+      })
+
+      return () => subscription?.unsubscribe()
+    }
+
+    const cleanup = restoreOrSync()
+    return () => {
+      isMounted = false
+      cleanup?.then(unsub => unsub?.())
+    }
   }, [])
 
   const [inputMode, setInputMode] = useState(initialMode)
