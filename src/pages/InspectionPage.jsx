@@ -453,8 +453,13 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
   useEffect(() => {
     if (autoGenerate && !autoFired.current) {
       autoFired.current = true
-      const t = setTimeout(() => extract(SAMPLE_WIND_MIT), 0)
-      return () => clearTimeout(t)
+      const t = setTimeout(() => {
+        if (autoFired.current) extract(SAMPLE_WIND_MIT)
+      }, 400)
+      return () => {
+        autoFired.current = false  // reset so StrictMode second-run can re-schedule
+        clearTimeout(t)
+      }
     }
   }, [autoGenerate, extract])
 
