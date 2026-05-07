@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Disallow authenticated app routes
+Disallow: /dashboard
+Disallow: /clients
+Disallow: /billing
+Disallow: /reports
+Disallow: /alerts
+Disallow: /auth/
+
+Sitemap: https://usebindiq.com/sitemap.xml

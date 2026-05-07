@@ -1,162 +1,197 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { PLANS } from '../lib/plans'
+import DemoAnimation from '../components/DemoAnimation'
 
-const F = { sans: { fontFamily: "'DM Sans', system-ui, -apple-system, sans-serif" } }
+// ── Design tokens ──────────────────────────────────────────────────────────
+const T = {
+  navy:        '#04256C',
+  navy2:       '#0F1F3D',
+  navyLight:   'rgba(4,37,108,0.07)',
+  navyBorder:  'rgba(4,37,108,0.15)',
+  red:         '#DC2626',
+  green:       '#10B981',
+  greenDark:   '#065F46',
+  amber:       '#F59E0B',
+  text:        '#0F1F3D',
+  muted:       '#64748B',
+  subtle:      '#94A3B8',
+  border:      '#E2E8F0',
+  border2:     '#CBD5E1',
+  surface:     '#F8FAFC',
+  surface2:    '#F1F5F9',
+  font:        "'DM Sans', system-ui, sans-serif",
+}
 
-// ── Shared logo wordmark ──────────────────────────────────────────────────────
-function Logo({ size = 17, lines = false }) {
+// ── Logo wordmark ─────────────────────────────────────────────────────────
+function Logo({ size = 24, tagline = false }) {
   return (
-    <div style={{ display: 'inline-flex', flexDirection: 'column', gap: 6 }}>
-      <span style={{ ...F.sans, fontSize: size, fontWeight: 800, letterSpacing: '-0.025em', lineHeight: 1, color: '#0F1F3D' }}>
-        Bind<span style={{ color: '#DC2626' }}>IQ</span>
-      </span>
-      {lines && (
-        <div style={{ display: 'flex', gap: 3 }}>
-          <div style={{ height: 2.5, width: 32, borderRadius: 2, background: '#0F1F3D' }} />
-          <div style={{ height: 2.5, width: 10, borderRadius: 2, background: '#DC2626' }} />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+      <div style={{ fontSize: size, fontWeight: 800, letterSpacing: '-0.04em', color: T.navy2, lineHeight: 1 }}>
+        Bind<span style={{ color: T.red }}>IQ</span>
+      </div>
+      <div style={{ display: 'flex', gap: 3 }}>
+        <div style={{ height: 3, width: 28, borderRadius: 2, background: 'rgba(15,31,61,0.18)' }} />
+        <div style={{ height: 3, width: 10, borderRadius: 2, background: T.red }} />
+      </div>
+      {tagline && (
+        <div style={{ fontSize: 11, fontWeight: 500, color: T.muted, letterSpacing: '0.01em', marginTop: 1, whiteSpace: 'nowrap' }}>
+          Know before you quote.
         </div>
       )}
     </div>
   )
 }
 
-const C = {
-  bg:           '#FFFFFF',
-  bgAlt:        '#F8FAFC',
-  text:         '#0F1F3D',
-  textMuted:    '#64748B',
-  textSubtle:   '#94A3B8',
-  border:       '#E2E8F0',
-  borderMid:    '#CBD5E1',
-  accent:       '#04256C',
-  accentBg:     'rgba(4,37,108,0.07)',
-  accentBorder: 'rgba(4,37,108,0.18)',
-  positive:     '#10B981',
-  positiveBg:   'rgba(16,185,129,0.08)',
-  positiveBorder:'rgba(16,185,129,0.25)',
-  amber:        '#F59E0B',
-  amberBg:      'rgba(245,158,11,0.07)',
-  amberBorder:  'rgba(245,158,11,0.25)',
-  danger:       '#EF4444',
-  dangerBg:     'rgba(239,68,68,0.07)',
-  dangerBorder: 'rgba(239,68,68,0.22)',
-  navy:         '#0F1F3D',
+// ── Geo state configs ─────────────────────────────────────────────────────
+const STATE_CONFIGS = {
+  FL: {
+    trustLine: '4-point & wind mitigation',
+    statePill: 'Florida-ready',
+    footerText: 'Built for Florida insurance agents.',
+    inspectNote: 'Florida 4-point · Wind mitigation OIR-B1-1802 · More states coming soon',
+  },
+  TX: {
+    trustLine: '4-point & windstorm forms',
+    statePill: 'Texas-ready',
+    footerText: 'Built for Texas insurance agents.',
+    inspectNote: 'Texas 4-point · Windstorm inspection · More states coming soon',
+  },
+  LA: {
+    trustLine: '4-point & wind mitigation',
+    statePill: 'Louisiana-ready',
+    footerText: 'Built for Louisiana insurance agents.',
+    inspectNote: 'Louisiana 4-point · Wind mitigation · More states coming soon',
+  },
+  SC: {
+    trustLine: '4-point & wind mitigation',
+    statePill: 'South Carolina-ready',
+    footerText: 'Built for South Carolina insurance agents.',
+    inspectNote: 'SC 4-point · Wind mitigation · More states coming soon',
+  },
 }
-
-const MAX = 1100
+const DEFAULT_STATE = STATE_CONFIGS.FL
 
 const PAGE_CSS = `
   html { scroll-behavior: smooth; }
-  html, body { background: ${C.bg}; }
+  html, body { background: #ffffff; }
   * { box-sizing: border-box; }
   ::selection { background: rgba(4,37,108,0.10); }
-  section { scroll-margin-top: 72px; }
+  section { scroll-margin-top: 80px; }
 
-  .lp-nav { background: rgba(255,255,255,0.8); border-bottom: 1px solid transparent; transition: background 0.2s, border-color 0.2s; }
-  .lp-nav.scrolled { background: rgba(255,255,255,0.96); border-bottom-color: ${C.border}; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-  .lp-nav-link { padding: 6px 12px; border-radius: 7px; color: ${C.textMuted}; text-decoration: none; font-size: 14px; font-weight: 500; transition: background 0.15s, color 0.15s; }
-  .lp-nav-link:hover { background: ${C.bgAlt}; color: ${C.text}; }
+  .lp-nav-link {
+    font-size: 15px; font-weight: 500; color: ${T.muted};
+    padding: 7px 12px; border-radius: 8px;
+    text-decoration: none; cursor: pointer; background: none; border: none;
+    font-family: ${T.font};
+    transition: color 0.15s, background 0.15s;
+  }
+  .lp-nav-link:hover { color: ${T.text}; background: ${T.surface}; }
 
-  .lp-cta-primary { background: ${C.accent}; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; padding: 14px 28px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; box-shadow: 0 4px 16px rgba(4,37,108,0.35); transition: box-shadow 0.15s, opacity 0.15s; }
-  .lp-cta-primary:hover { opacity: 0.92; box-shadow: 0 6px 24px rgba(4,37,108,0.45); }
-  .lp-cta-ghost { background: ${C.bg}; color: ${C.text}; border: 1.5px solid ${C.border}; border-radius: 10px; font-size: 15px; font-weight: 600; padding: 13px 24px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; transition: border-color 0.15s; }
-  .lp-cta-ghost:hover { border-color: ${C.borderMid}; }
-
-  .lp-section-pad { padding: 96px 24px; }
-  .lp-h1 { font-size: 56px; line-height: 1.07; letter-spacing: -0.03em; }
-  .lp-h2 { font-size: 38px; line-height: 1.12; letter-spacing: -0.025em; }
-
-  .lp-flag-critical { background: ${C.dangerBg}; border: 1px solid ${C.dangerBorder}; border-radius: 12px; padding: 18px 20px; }
-  .lp-flag-warning  { background: ${C.amberBg};  border: 1px solid ${C.amberBorder};  border-radius: 12px; padding: 18px 20px; }
-
-  .lp-step-card { background: ${C.bg}; border: 1.5px solid ${C.border}; border-radius: 16px; padding: 28px; flex: 1; }
-
-  .lp-faq summary { list-style: none; cursor: pointer; }
-  .lp-faq summary::-webkit-details-marker { display: none; }
-  .lp-faq[open] .lp-faq-icon { transform: rotate(45deg); }
+  .lp-faq-item summary { list-style: none; cursor: pointer; }
+  .lp-faq-item summary::-webkit-details-marker { display: none; }
+  .lp-faq-item[open] .faq-icon { transform: rotate(45deg); }
 
   @media (max-width: 900px) {
-    .lp-hero-grid { grid-template-columns: 1fr !important; }
-    .lp-hero-right { display: none !important; }
-    .lp-steps-grid { flex-direction: column !important; }
-    .lp-flags-grid { grid-template-columns: 1fr !important; }
-    .lp-three-grid { grid-template-columns: 1fr !important; }
-    .lp-extract-grid { grid-template-columns: 1fr !important; }
-    .lp-plans-grid { grid-template-columns: 1fr !important; }
+    .lp-nav-links { display: none !important; }
+    .hero-card-cluster { grid-template-columns: 1fr !important; }
+    .lp-steps-grid { grid-template-columns: 1fr !important; }
+    .lp-flags-list { max-width: 100% !important; }
+    .lp-plans-grid { grid-template-columns: 1fr !important; max-width: 420px !important; }
+    .lp-faq-scoring-grid { grid-template-columns: 1fr !important; }
     .lp-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
-    .lp-h1 { font-size: 38px !important; }
-    .lp-h2 { font-size: 28px !important; }
-    .lp-section-pad { padding: 72px 24px !important; }
+    .lp-h1 { font-size: 42px !important; }
+    .lp-h2 { font-size: 30px !important; }
   }
   @media (max-width: 640px) {
-    .lp-h1 { font-size: 32px !important; }
+    .lp-h1 { font-size: 34px !important; }
     .lp-h2 { font-size: 24px !important; }
-    .lp-section-pad { padding: 56px 20px !important; }
-    .lp-nav-links { display: none !important; }
-    .score-calc-grid { grid-template-columns: 1fr !important; }
+    .hero-card-cluster { max-width: 100% !important; }
+    .stats-band-inner { gap: 24px !important; flex-wrap: wrap !important; }
     .lp-footer-grid { grid-template-columns: 1fr !important; }
   }
 `
 
+// ─────────────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
+  const [geoState, setGeoState] = useState(DEFAULT_STATE)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 3000)
+    fetch('https://ipapi.co/json/', { signal: controller.signal })
+      .then(r => r.json())
+      .then(data => {
+        const cfg = STATE_CONFIGS[data.region_code]
+        if (cfg) setGeoState(cfg)
+      })
+      .catch(() => {})
+      .finally(() => clearTimeout(timeout))
+  }, [])
+
   return (
-    <div style={{ ...F.sans, color: C.text, background: C.bg, WebkitFontSmoothing: 'antialiased' }}>
+    <div style={{ fontFamily: T.font, color: T.text, background: '#fff', WebkitFontSmoothing: 'antialiased' }}>
       <style>{PAGE_CSS}</style>
-      <Nav />
-      <Hero />
-      <CoreValue />
+      <Nav geoState={geoState} />
+      <Hero geoState={geoState} />
+      <StatsBand />
+      <DemoSection />
       <HowItWorks />
-      <AsyncWorkflow />
-      <BindIQScoreSection />
       <WhatGetsFlagged />
-      <WhatGetsExtracted />
       <Pricing />
-      <ROI />
-      <FAQ />
+      <FaqAndScoring />
       <FinalCTA />
-      <Footer />
+      <Footer geoState={geoState} />
     </div>
   )
 }
 
-/* ─── Banner ─── */
-
-function Banner() {
-  return (
-    <div style={{ background: C.accent, color: '#fff', padding: '10px 24px', textAlign: 'center', ...F.sans, fontSize: 13, fontWeight: 500, position: 'relative', zIndex: 101 }}>
-      <span style={{ opacity: 0.8 }}>Founding agent pricing — </span>
-      <strong>$79/mo locked for the first 100 agencies.</strong>
-      <Link to="/sign-up" style={{ marginLeft: 16, fontSize: 12, fontWeight: 700, color: C.accent, background: '#fff', padding: '3px 12px', borderRadius: 20, textDecoration: 'none', whiteSpace: 'nowrap' }}>
-        Claim your spot →
-      </Link>
-    </div>
-  )
-}
-
-/* ─── Nav ─── */
-
-function Nav() {
+// ─── Nav ─────────────────────────────────────────────────────────────────────
+function Nav({ geoState }) {
   const [scrolled, setScrolled] = useState(false)
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', h)
     return () => window.removeEventListener('scroll', h)
   }, [])
+
   return (
-    <nav className={`lp-nav${scrolled ? ' scrolled' : ''}`} style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100 }}>
-      <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <nav style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+      height: 72,
+      background: scrolled ? 'rgba(255,255,255,0.96)' : 'rgba(255,255,255,0.92)',
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      borderBottom: `1px solid ${scrolled ? T.border : 'transparent'}`,
+      transition: 'background 0.2s, border-color 0.2s',
+    }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 32px', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-          <Link to="/" style={{ textDecoration: 'none' }}><Logo size={18} /></Link>
-          <div className="lp-nav-links" style={{ display: 'flex', gap: 4 }}>
-            <a href="#how"     className="lp-nav-link" style={{ ...F.sans }}>How it works</a>
-            <a href="#flags"   className="lp-nav-link" style={{ ...F.sans }}>What gets flagged</a>
-            <a href="#pricing" className="lp-nav-link" style={{ ...F.sans }}>Pricing</a>
+          <Link to="/" style={{ textDecoration: 'none' }}><Logo size={24} tagline /></Link>
+          <div className="lp-nav-links" style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <a href="#how-it-works" className="lp-nav-link">How it works</a>
+            <a href="#flags" className="lp-nav-link">What gets flagged</a>
+            <a href="#pricing" className="lp-nav-link">Pricing</a>
+            {geoState !== DEFAULT_STATE && (
+              <span style={{ fontSize: 13, fontWeight: 600, color: T.navy, background: T.navyLight, border: `1px solid ${T.navyBorder}`, borderRadius: 99, padding: '4px 12px' }}>
+                {geoState.statePill}
+              </span>
+            )}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Link to="/sign-in" style={{ ...F.sans, fontSize: 14, fontWeight: 500, color: C.textMuted, padding: '8px 14px', textDecoration: 'none' }}>Sign in</Link>
-          <Link to="/inspect" className="lp-cta-primary" style={{ ...F.sans, fontSize: 14, fontWeight: 700, padding: '9px 20px', borderRadius: 8, boxShadow: '0 4px 12px rgba(4,37,108,0.30)' }}>
-            Try BindIQ free
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Link to="/sign-in" style={{ fontFamily: T.font, fontSize: 15, fontWeight: 500, color: T.muted, padding: '9px 16px', borderRadius: 9, textDecoration: 'none', transition: 'color 0.15s' }}>
+            Sign in
+          </Link>
+          <Link to="/inspect" style={{
+            fontFamily: T.font, display: 'inline-flex', alignItems: 'center',
+            background: T.navy, color: '#fff',
+            fontSize: 15, fontWeight: 700,
+            padding: '9px 20px', borderRadius: 9,
+            textDecoration: 'none',
+            boxShadow: '0 2px 8px rgba(4,37,108,0.25)',
+          }}>
+            Try free
           </Link>
         </div>
       </div>
@@ -164,463 +199,308 @@ function Nav() {
   )
 }
 
-/* ─── Hero ─── */
-
-function Hero() {
+// ─── Hero ─────────────────────────────────────────────────────────────────────
+function Hero({ geoState }) {
   return (
-    <section style={{ paddingTop: 120, paddingBottom: 72, background: 'linear-gradient(180deg, #EEF2FF 0%, #fff 72%)' }}>
-      <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
-        <div className="lp-hero-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 460px', gap: 72, alignItems: 'center' }}>
+    <section style={{ paddingTop: 64 }}>
+      <div className="lp-hero" style={{ padding: '140px 32px 96px', maxWidth: 1100, margin: '0 auto', textAlign: 'center' }}>
 
-          <div>
-            <h1 className="lp-h1" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 20 }}>
-              Know if a policy will bind —<br />
-              <span style={{ color: C.accent }}>before you waste time quoting it.</span>
-            </h1>
+        <h1 className="lp-h1" style={{
+          fontSize: 62, fontWeight: 800,
+          color: T.navy2, letterSpacing: '-0.035em',
+          lineHeight: 1.06, marginBottom: 22,
+          margin: '0 0 22px',
+        }}>
+          Know if a policy will bind<br />
+          <em style={{ fontStyle: 'normal', color: T.navy }}>before you waste time quoting.</em>
+        </h1>
 
-            <p style={{ ...F.sans, fontSize: 17, color: C.textMuted, lineHeight: 1.65, marginBottom: 32, maxWidth: 500 }}>
-              Stop quoting risks that won't bind. Get a clear underwriting decision and move from inquiry to quote faster.
-            </p>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 36, flexWrap: 'wrap' }}>
-              <Link to="/inspect" className="lp-cta-primary" style={F.sans}>
-                Try BindIQ free — no account needed
-              </Link>
-              <Link to="/inspect?mode=sample" className="lp-cta-ghost" style={F.sans}>
-                See how it works
-              </Link>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 20px' }}>
-              {[
-                'Avoid dead-end quotes',
-                'See declination risks before you submit',
-                'Get complete submissions upfront',
-                'No more back-and-forth with clients',
-                'Move from inquiry to quote faster',
-                'Fewer calls. Less waiting. Faster decisions.',
-              ].map(t => (
-                <span key={t} style={{ ...F.sans, fontSize: 14, color: C.textMuted, display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
-                    <circle cx="8" cy="8" r="7" fill={C.accentBg} />
-                    <path d="M5 8l2 2 4-4" stroke={C.accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  {t}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Product snapshot mockup */}
-          <div className="lp-hero-right">
-            <ProductSnapshotMockup />
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function ProductSnapshotMockup() {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-
-      {/* Decline card */}
-      <div style={{ background: C.dangerBg, border: `1.5px solid ${C.dangerBorder}`, borderRadius: 14, padding: '20px 22px', boxShadow: '0 8px 32px rgba(15,31,61,0.08)' }}>
-        <div style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>BindIQ Score</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4 }}>
-              <span style={{ ...F.sans, fontSize: 52, fontWeight: 800, color: '#991B1B', lineHeight: 1, letterSpacing: '-0.03em' }}>25</span>
-              <span style={{ ...F.sans, fontSize: 14, color: '#991B1B', opacity: 0.45, fontWeight: 600 }}>/100</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-              <span style={{ fontSize: 15 }}>🔴</span>
-              <span style={{ ...F.sans, fontSize: 15, fontWeight: 800, color: '#991B1B' }}>Likely Decline</span>
-            </div>
-            <div style={{ height: 6, background: 'rgba(0,0,0,0.07)', borderRadius: 3, overflow: 'hidden', width: 200 }}>
-              <div style={{ height: '100%', width: '25%', background: '#EF4444', borderRadius: 3 }} />
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-          {[
-            'Federal Pacific panel detected',
-            'Roof exceeds 25 years',
-          ].map(r => (
-            <div key={r} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-              <span style={{ color: '#EF4444', fontSize: 10, marginTop: 3, flexShrink: 0 }}>●</span>
-              <span style={{ ...F.sans, fontSize: 12, color: '#B91C1C', lineHeight: 1.5 }}>{r}</span>
-            </div>
-          ))}
-        </div>
-        <div style={{ marginTop: 14, padding: '10px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(239,68,68,0.14)' }}>
-          <span style={{ ...F.sans, fontSize: 12, color: '#991B1B', lineHeight: 1.5, fontWeight: 500 }}>
-            Most Florida carriers will not bind this risk without remediation.
-          </span>
-        </div>
-      </div>
-
-      {/* Bind card */}
-      <div style={{ background: C.positiveBg, border: `1.5px solid ${C.positiveBorder}`, borderRadius: 14, padding: '18px 22px', boxShadow: '0 6px 24px rgba(15,31,61,0.06)' }}>
-        <div style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: '#065F46', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>BindIQ Score</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-            <span style={{ ...F.sans, fontSize: 40, fontWeight: 800, color: '#065F46', lineHeight: 1, letterSpacing: '-0.03em' }}>85</span>
-            <span style={{ ...F.sans, fontSize: 13, color: '#065F46', opacity: 0.45, fontWeight: 600 }}>/100</span>
-          </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-              <span style={{ fontSize: 13 }}>🟢</span>
-              <span style={{ ...F.sans, fontSize: 13, fontWeight: 800, color: '#065F46' }}>Likely to Bind</span>
-            </div>
-            <div style={{ height: 5, background: 'rgba(0,0,0,0.07)', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: '85%', background: '#10B981', borderRadius: 3 }} />
-            </div>
-          </div>
-        </div>
-        <span style={{ ...F.sans, fontSize: 11, color: '#047857', lineHeight: 1.5 }}>· Impact-resistant opening protection · Double wraps · Modern plumbing</span>
-      </div>
-    </div>
-  )
-}
-
-/* ─── Core Value (moved high) ─── */
-
-function CoreValue() {
-  return (
-    <section id="value" style={{ background: C.navy, padding: '80px 24px' }}>
-      <div style={{ maxWidth: 820, margin: '0 auto', textAlign: 'center' }}>
-        <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: '#fff', margin: '0 0 20px' }}>
-          Stop writing quotes that will never bind.
-        </h2>
-        <p style={{ ...F.sans, fontSize: 17, color: 'rgba(255,255,255,0.65)', lineHeight: 1.75, margin: '0 0 36px', maxWidth: 620, marginLeft: 'auto', marginRight: 'auto' }}>
-          Florida agents lose hours every week quoting properties carriers won't accept.
-          BindIQ identifies underwriting issues before you submit — so you only quote risks that have a real chance of binding.
+        <p style={{ fontSize: 19, fontWeight: 400, color: T.muted, lineHeight: 1.65, maxWidth: 520, margin: '0 auto 36px' }}>
+          Upload a property inspection report. Get a BindIQ Score in seconds — with every underwriting red flag surfaced before you quote.
         </p>
-        <Link to="/inspect" className="lp-cta-primary" style={{ ...F.sans, background: '#fff', color: C.navy, fontSize: 15, boxShadow: 'none' }}>
-          Try BindIQ free — no account needed
-        </Link>
-      </div>
-    </section>
-  )
-}
 
-/* ─── How it works ─── */
-
-function HowItWorks() {
-  const steps = [
-    {
-      num: '01',
-      title: 'Upload Report',
-      body: 'Upload any Florida 4-point or wind mitigation report PDF. Works with any inspection company\'s format — no reformatting, no manual data entry.',
-    },
-    {
-      num: '02',
-      title: 'Automatic Extraction',
-      body: 'BindIQ extracts every underwriting-critical field automatically. Roof material, age, and condition. Electrical panel brand and wiring type. Plumbing supply material. HVAC age and condition.',
-    },
-    {
-      num: '03',
-      title: 'BindIQ Score',
-      body: 'Every report gets a 0–100 BindIQ Score with clear risk explanations. See exactly what moved the score, what it means for placement, and what to tell the client — before you pick up the phone.',
-    },
-  ]
-  return (
-    <section id="how" className="lp-section-pad">
-      <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>How it works</div>
-          <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 14 }}>
-            From inspection report to decision in seconds
-          </h2>
-          <p style={{ ...F.sans, fontSize: 16, color: C.textMuted, maxWidth: 440, margin: '0 auto', lineHeight: 1.65 }}>
-            Three steps. Under a minute. No training required.
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 16 }}>
+          <Link to="/inspect" style={{
+            fontFamily: T.font, display: 'inline-flex', alignItems: 'center',
+            background: T.navy, color: '#fff',
+            fontSize: 15, fontWeight: 700,
+            padding: '14px 32px', borderRadius: 10,
+            textDecoration: 'none',
+            boxShadow: '0 3px 12px rgba(4,37,108,0.28)',
+          }}>
+            Try BindIQ free →
+          </Link>
+          <Link to="/inspect?mode=sample" style={{
+            fontFamily: T.font, display: 'inline-flex', alignItems: 'center',
+            background: '#fff', color: T.text,
+            fontSize: 15, fontWeight: 600,
+            padding: '13px 24px', borderRadius: 10,
+            textDecoration: 'none',
+            border: `1.5px solid ${T.border}`,
+          }}>
+            See a demo →
+          </Link>
         </div>
-        <div className="lp-steps-grid" style={{ display: 'flex', gap: 20 }}>
-          {steps.map((s, i) => (
-            <div key={i} className="lp-step-card">
-              <div style={{ width: 36, height: 36, borderRadius: 10, background: C.accentBg, border: `1px solid ${C.accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-                <span style={{ ...F.sans, fontSize: 13, fontWeight: 800, color: C.accent }}>{s.num}</span>
-              </div>
-              <div style={{ ...F.sans, fontSize: 18, fontWeight: 700, color: C.text, marginBottom: 12 }}>{s.title}</div>
-              <div style={{ ...F.sans, fontSize: 14, color: C.textMuted, lineHeight: 1.7 }}>{s.body}</div>
+
+        <div style={{ fontSize: 15, color: T.subtle, marginBottom: 72, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+          <span>No account needed</span>
+          <span style={{ width: 3, height: 3, borderRadius: '50%', background: T.border2 }} />
+          <span>3 free reports</span>
+          <span style={{ width: 3, height: 3, borderRadius: '50%', background: T.border2 }} />
+          <span>{geoState.trustLine}</span>
+        </div>
+
+        {/* Score card cluster */}
+        <div className="hero-card-cluster" style={{ maxWidth: 860, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, textAlign: 'left' }}>
+
+          {/* Green */}
+          <div style={{ borderRadius: 16, padding: '28px 24px', background: 'rgba(16,185,129,0.06)', border: '1.5px solid rgba(16,185,129,0.22)' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.greenDark, letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 12 }}>BindIQ Score</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginBottom: 14 }}>
+              <span style={{ fontSize: 60, fontWeight: 800, color: T.greenDark, letterSpacing: '-3px', lineHeight: 1 }}>87</span>
+              <span style={{ fontSize: 17, fontWeight: 500, color: T.green, opacity: 0.5 }}>/100</span>
             </div>
-          ))}
+            <div style={{ height: 6, background: 'rgba(16,185,129,0.15)', borderRadius: 99, overflow: 'hidden', marginBottom: 14 }}>
+              <div style={{ height: '100%', width: '87%', background: T.green, borderRadius: 99 }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: T.green, flexShrink: 0 }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: T.greenDark }}>Likely to Bind</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ fontSize: 13, color: '#047857', lineHeight: 1.5 }}>· Impact-resistant glazing</div>
+              <div style={{ fontSize: 13, color: '#047857', lineHeight: 1.5 }}>· Double wraps roof-to-wall</div>
+              <div style={{ fontSize: 13, color: '#047857', lineHeight: 1.5 }}>· Modern electrical panel</div>
+            </div>
+          </div>
+
+          {/* Amber */}
+          <div style={{ borderRadius: 16, padding: '28px 24px', background: 'rgba(245,158,11,0.06)', border: '1.5px solid rgba(245,158,11,0.25)' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#92400E', letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 12 }}>BindIQ Score</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginBottom: 14 }}>
+              <span style={{ fontSize: 60, fontWeight: 800, color: '#92400E', letterSpacing: '-3px', lineHeight: 1 }}>54</span>
+              <span style={{ fontSize: 17, fontWeight: 500, color: T.amber, opacity: 0.5 }}>/100</span>
+            </div>
+            <div style={{ height: 6, background: 'rgba(245,158,11,0.15)', borderRadius: 99, overflow: 'hidden', marginBottom: 14 }}>
+              <div style={{ height: '100%', width: '54%', background: T.amber, borderRadius: 99 }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: T.amber, flexShrink: 0 }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#92400E' }}>Conditional Risk</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ fontSize: 13, color: '#B45309', lineHeight: 1.5 }}>· Galvanized supply lines</div>
+              <div style={{ fontSize: 13, color: '#B45309', lineHeight: 1.5 }}>· HVAC system 18 years old</div>
+              <div style={{ fontSize: 13, color: '#B45309', lineHeight: 1.5 }}>· Gable geometry detected</div>
+            </div>
+          </div>
+
+          {/* Red */}
+          <div style={{ borderRadius: 16, padding: '28px 24px', background: 'rgba(239,68,68,0.06)', border: '1.5px solid rgba(239,68,68,0.22)' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#991B1B', letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 12 }}>BindIQ Score</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 5, marginBottom: 14 }}>
+              <span style={{ fontSize: 60, fontWeight: 800, color: '#991B1B', letterSpacing: '-3px', lineHeight: 1 }}>25</span>
+              <span style={{ fontSize: 17, fontWeight: 500, color: '#EF4444', opacity: 0.5 }}>/100</span>
+            </div>
+            <div style={{ height: 6, background: 'rgba(239,68,68,0.15)', borderRadius: 99, overflow: 'hidden', marginBottom: 14 }}>
+              <div style={{ height: '100%', width: '25%', background: '#EF4444', borderRadius: 99 }} />
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#EF4444', flexShrink: 0 }} />
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#991B1B' }}>Likely Decline</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ fontSize: 13, color: '#B91C1C', lineHeight: 1.5 }}>⚠ Federal Pacific panel</div>
+              <div style={{ fontSize: 13, color: '#B91C1C', lineHeight: 1.5 }}>⚠ Roof over 25 years</div>
+              <div style={{ fontSize: 13, color: '#B91C1C', lineHeight: 1.5 }}>⚠ Polybutylene plumbing</div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
   )
 }
 
-/* ─── Async / Workflow Upgrade ─── */
-
-function AsyncWorkflow() {
+// ─── Demo Section ─────────────────────────────────────────────────────────────
+function DemoSection() {
   return (
-    <section id="workflow" className="lp-section-pad" style={{ background: C.bgAlt }}>
-      <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }} className="lp-extract-grid">
-
+    <section style={{ background: '#fff', padding: '80px 32px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="demo-section-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
           {/* Left: copy */}
           <div>
-            <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Workflow upgrade</div>
-            <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: '0 0 16px' }}>
-              Stop chasing clients for information
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>
+              See it in action
+            </div>
+            <h2 className="lp-h2" style={{ fontSize: 38, fontWeight: 800, color: T.navy2, letterSpacing: '-0.025em', lineHeight: 1.15, marginBottom: 20 }}>
+              From upload to score<br />in under 60 seconds
             </h2>
-            <p style={{ ...F.sans, fontSize: 16, color: C.textMuted, lineHeight: 1.7, margin: '0 0 28px' }}>
-              Instead of calls and email chains, BindIQ gives you a faster path from inquiry to quote.
+            <p style={{ fontSize: 17, color: T.muted, lineHeight: 1.65, marginBottom: 32, maxWidth: 420 }}>
+              Upload any 4-point or wind mitigation PDF. BindIQ extracts every underwriting field and returns a 0–100 bind likelihood score — with every red flag surfaced before you call the carrier.
             </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
-                { icon: '📎', title: 'Upload inspection or send a simple intake link', body: 'Agent uploads a report directly, or sends a one-click intake link to the client.' },
-                { icon: '📋', title: 'Get complete property data upfront', body: 'Client fills a 3-step form. You get structured property data — no phone tag required.' },
-                { icon: '✅', title: 'Know if it\'s worth quoting immediately', body: 'BindIQ scores the submission instantly. You quote with confidence or skip before wasting an hour.' },
-              ].map(item => (
-                <div key={item.title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 10, background: C.accentBg, border: `1px solid ${C.accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 16 }}>
-                    {item.icon}
-                  </div>
-                  <div>
-                    <div style={{ ...F.sans, fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 4 }}>{item.title}</div>
-                    <div style={{ ...F.sans, fontSize: 13, color: C.textMuted, lineHeight: 1.6 }}>{item.body}</div>
-                  </div>
+                { icon: '🟢', text: 'Score 87 — impact glass confirmed, double wraps on roof-to-wall. Clean bind.' },
+                { icon: '🔴', text: 'Score 25 — Federal Pacific panel, aluminum wiring, 28-year roof. Decline before you waste a quote.' },
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <span style={{ fontSize: 16, marginTop: 1 }}>{item.icon}</span>
+                  <span style={{ fontSize: 14, color: T.muted, lineHeight: 1.6 }}>{item.text}</span>
                 </div>
               ))}
             </div>
-
             <div style={{ marginTop: 32 }}>
-              <Link to="/generate-link" style={{ ...F.sans, fontSize: 14, fontWeight: 700, color: C.accent, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 18px', border: `1.5px solid ${C.accentBorder}`, borderRadius: 9, background: C.accentBg }}>
-                Generate an intake link →
+              <Link to="/inspect" style={{
+                fontFamily: T.font, display: 'inline-flex', alignItems: 'center', gap: 8,
+                background: T.navy, color: '#fff',
+                fontSize: 15, fontWeight: 700,
+                padding: '12px 24px', borderRadius: 10,
+                textDecoration: 'none',
+                boxShadow: '0 2px 8px rgba(4,37,108,0.25)',
+              }}>
+                Try it free →
               </Link>
             </div>
           </div>
-
-          {/* Right: intake link mockup */}
+          {/* Right: animation */}
           <div>
-            <IntakeLinkMockup />
+            <DemoAnimation />
           </div>
         </div>
       </div>
+      <style>{`
+        @media (max-width: 900px) {
+          .demo-section-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </section>
   )
 }
 
-function IntakeLinkMockup() {
+// ─── Stats Band ───────────────────────────────────────────────────────────────
+function StatsBand() {
   return (
-    <div style={{ background: '#fff', border: `1.5px solid ${C.border}`, borderRadius: 16, overflow: 'hidden', boxShadow: '0 8px 32px rgba(15,31,61,0.08)' }}>
-      {/* Header */}
-      <div style={{ background: C.accentBg, borderBottom: `1px solid ${C.accentBorder}`, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ width: 22, height: 22, borderRadius: 5, background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ color: '#fff', fontWeight: 800, fontSize: 11 }}>B</span>
-        </div>
-        <span style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent }}>BindIQ Intake Form</span>
-        <span style={{ ...F.sans, fontSize: 11, color: C.textSubtle, marginLeft: 'auto' }}>Sent by Sarah Johnson</span>
-      </div>
-
-      {/* Step indicator */}
-      <div style={{ padding: '14px 16px', borderBottom: `1px solid ${C.border}`, display: 'flex', gap: 8, alignItems: 'center' }}>
-        {['Property basics', 'Systems', 'Inspection'].map((label, i) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, flex: i < 2 ? 1 : 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-              <div style={{ width: 20, height: 20, borderRadius: 100, background: i === 0 ? C.positive : i < 3 ? C.border : C.border, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700, color: i === 0 ? '#fff' : C.textSubtle }}>
-                {i === 0 ? '✓' : i + 1}
-              </div>
-              <span style={{ ...F.sans, fontSize: 10, color: i === 1 ? C.text : C.textSubtle, fontWeight: i === 1 ? 600 : 400 }}>{label}</span>
-            </div>
-            {i < 2 && <div style={{ flex: 1, height: 1, background: i === 0 ? C.positive : C.border }} />}
-          </div>
-        ))}
-      </div>
-
-      {/* Form fields */}
-      <div style={{ padding: '16px' }}>
-        <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 14 }}>Systems overview</div>
+    <div style={{ borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}`, background: T.surface, padding: '20px 32px' }}>
+      <div className="stats-band-inner" style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 48 }}>
         {[
-          { label: 'Electrical panel type', value: 'Modern circuit breaker' },
-          { label: 'Plumbing supply material', value: 'Copper' },
-        ].map(f => (
-          <div key={f.label} style={{ marginBottom: 10 }}>
-            <div style={{ ...F.sans, fontSize: 11, fontWeight: 600, color: C.textMuted, marginBottom: 4 }}>{f.label}</div>
-            <div style={{ padding: '8px 10px', border: `1.5px solid ${C.border}`, borderRadius: 7, ...F.sans, fontSize: 12, color: C.text, background: C.bgAlt }}>{f.value}</div>
-          </div>
-        ))}
-        <div style={{ marginBottom: 10 }}>
-          <div style={{ ...F.sans, fontSize: 11, fontWeight: 600, color: C.textMuted, marginBottom: 4 }}>Roof condition</div>
-          <div style={{ padding: '8px 10px', border: `1.5px solid ${C.positive}`, borderRadius: 7, ...F.sans, fontSize: 12, color: C.text, background: 'rgba(16,185,129,0.05)' }}>Good — no visible damage</div>
-        </div>
-        <button style={{ width: '100%', padding: '10px', borderRadius: 9, background: C.accent, color: '#fff', border: 'none', ...F.sans, fontSize: 13, fontWeight: 700, marginTop: 6 }}>
-          Continue →
-        </button>
+          { val: '87%', label: 'of critical issues caught first' },
+          null,
+          { val: '< 60s', label: 'from upload to score' },
+          null,
+          { val: '4-pt + Wind', label: 'Florida inspection forms' },
+          null,
+          { val: '100+', label: 'Florida agents using BindIQ' },
+        ].map((item, i) =>
+          item === null
+            ? <div key={i} style={{ width: 1, height: 32, background: T.border }} />
+            : (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
+                <span style={{ fontSize: 24, fontWeight: 800, color: T.navy2, letterSpacing: '-0.03em' }}>{item.val}</span>
+                <span style={{ fontSize: 13, color: T.subtle }}>{item.label}</span>
+              </div>
+            )
+        )}
       </div>
     </div>
   )
 }
 
-/* ─── BindIQ Score Section ─── */
-
-function BindIQScoreSection() {
-  const tiers = [
-    {
-      score: 85, emoji: '🟢', label: 'Likely to Bind', range: '70 – 100',
-      barColor: '#10B981', bg: 'rgba(16,185,129,0.06)', border: 'rgba(16,185,129,0.22)',
-      scoreColor: '#065F46',
-      reasons: ['Impact-resistant opening protection', 'Strong roof-to-wall connection', 'Modern plumbing supply material'],
-    },
-    {
-      score: 54, emoji: '🟡', label: 'Conditional Risk', range: '40 – 69',
-      barColor: '#F59E0B', bg: 'rgba(245,158,11,0.06)', border: 'rgba(245,158,11,0.25)',
-      scoreColor: '#92400E',
-      reasons: ['Galvanized supply lines — corrosion risk', 'HVAC system is 18 years old'],
-    },
-    {
-      score: 25, emoji: '🔴', label: 'Likely Decline', range: '0 – 39',
-      barColor: '#EF4444', bg: 'rgba(239,68,68,0.06)', border: 'rgba(239,68,68,0.22)',
-      scoreColor: '#991B1B',
-      reasons: ['Federal Pacific panel — high underwriting rejection risk', 'Roof exceeds 25 years'],
-    },
+// ─── How it works ─────────────────────────────────────────────────────────────
+function HowItWorks() {
+  const steps = [
+    { num: '01', title: 'Upload Report', body: "Upload any Florida 4-point or wind mitigation report PDF. Works with any inspection company's format — no reformatting required." },
+    { num: '02', title: 'Automatic Extraction', body: 'Every underwriting-critical field is extracted automatically. Roof, electrical, plumbing, HVAC — all structured in one place.' },
+    { num: '03', title: 'BindIQ Score', body: 'Every report gets a 0–100 BindIQ Score with clear risk explanations. Know exactly what moved the score and what it means for placement.' },
   ]
-
   return (
-    <section id="score" className="lp-section-pad">
-      <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
-
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>The BindIQ Score</div>
-          <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: '0 0 16px' }}>
-            One number. Instant decision.
+    <section id="how-it-works" style={{ padding: '96px 32px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ maxWidth: 560, marginBottom: 56 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>How it works</div>
+          <h2 className="lp-h2" style={{ fontSize: 40, fontWeight: 800, color: T.navy2, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 16px' }}>
+            From inspection report<br />to decision in seconds
           </h2>
-          <p style={{ ...F.sans, fontSize: 16, color: C.textMuted, maxWidth: 560, margin: '0 auto', lineHeight: 1.7 }}>
-            Every report gets scored 0–100 based on real Florida underwriting rules.
-            See exactly what moved the score — and what it means for placement.
-          </p>
+          <p style={{ fontSize: 17, color: T.muted, lineHeight: 1.7, margin: 0 }}>Three steps. Under a minute. No training required.</p>
         </div>
 
-        {/* Tier legend */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginBottom: 40, flexWrap: 'wrap' }}>
-          {[['🟢', '70–100', 'Likely to Bind'], ['🟡', '40–69', 'Conditional Risk'], ['🔴', '0–39', 'Likely Decline']].map(([emoji, range, label]) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 16 }}>{emoji}</span>
-              <span style={{ ...F.sans, fontSize: 14, fontWeight: 700, color: C.text }}>{range}</span>
-              <span style={{ ...F.sans, fontSize: 14, color: C.textMuted }}>→ {label}</span>
+        <div className="lp-steps-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
+          {steps.map(s => (
+            <div key={s.num} style={{ padding: 28, border: `1.5px solid ${T.border}`, borderRadius: 16, background: '#fff' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: T.navyLight, border: `1px solid ${T.navyBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: T.navy }}>{s.num}</span>
+              </div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: T.text, marginBottom: 10 }}>{s.title}</div>
+              <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.7 }}>{s.body}</div>
             </div>
           ))}
         </div>
-
-        {/* Three tier cards */}
-        <div className="lp-three-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 48 }}>
-          {tiers.map(t => (
-            <div key={t.label} style={{ background: t.bg, border: `1.5px solid ${t.border}`, borderRadius: 16, padding: '28px 24px' }}>
-              <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: t.scoreColor, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 6 }}>BindIQ Score</div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, marginBottom: 10 }}>
-                <span style={{ ...F.sans, fontSize: 48, fontWeight: 800, color: t.scoreColor, lineHeight: 1, letterSpacing: '-0.03em' }}>{t.score}</span>
-                <span style={{ ...F.sans, fontSize: 13, color: t.scoreColor, opacity: 0.4, fontWeight: 600 }}>/100</span>
-              </div>
-              <div style={{ height: 6, background: 'rgba(0,0,0,0.07)', borderRadius: 3, overflow: 'hidden', marginBottom: 12 }}>
-                <div style={{ height: '100%', width: `${t.score}%`, background: t.barColor, borderRadius: 3 }} />
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-                <span style={{ fontSize: 16 }}>{t.emoji}</span>
-                <span style={{ ...F.sans, fontSize: 15, fontWeight: 800, color: t.scoreColor }}>{t.label}</span>
-                <span style={{ ...F.sans, fontSize: 11, color: t.scoreColor, opacity: 0.55, marginLeft: 4 }}>{t.range}</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                {t.reasons.map(r => (
-                  <div key={r} style={{ display: 'flex', gap: 7, alignItems: 'flex-start' }}>
-                    <span style={{ ...F.sans, fontSize: 11, color: t.scoreColor, flexShrink: 0, marginTop: 2 }}>·</span>
-                    <span style={{ ...F.sans, fontSize: 12, color: t.scoreColor, lineHeight: 1.5, opacity: 0.85 }}>{r}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Score calculation table */}
-        <div style={{ background: C.bgAlt, border: `1.5px solid ${C.border}`, borderRadius: 16, padding: '32px 36px', maxWidth: 720, margin: '0 auto' }}>
-          <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>How the score is calculated</div>
-          <p style={{ ...F.sans, fontSize: 14, color: C.textMuted, lineHeight: 1.7, margin: '0 0 20px' }}>
-            Starts at 100. Risk penalties are subtracted based on what's found in the report. Any critical flag automatically caps the score at 40 — the Likely Decline range.
-          </p>
-          <div className="score-calc-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            {[
-              { label: 'Federal Pacific / Zinsco panel', pts: '−60 (cap at 40)', crit: true },
-              { label: 'Knob-and-tube wiring',           pts: '−60 (cap at 40)', crit: true },
-              { label: 'Aluminum branch wiring',         pts: '−50 (cap at 40)', crit: true },
-              { label: 'Roof in poor condition',         pts: '−35' },
-              { label: 'Polybutylene plumbing',          pts: '−30' },
-              { label: 'Roof over 25 years',             pts: '−25' },
-              { label: 'Open gable geometry',            pts: '−20' },
-              { label: 'Impact / hurricane protection',  pts: '+10', positive: true },
-            ].map(row => (
-              <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 10px', background: row.crit ? 'rgba(239,68,68,0.05)' : row.positive ? 'rgba(16,185,129,0.05)' : C.bg, borderRadius: 8 }}>
-                <span style={{ ...F.sans, fontSize: 12, color: C.text }}>{row.label}</span>
-                <span style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: row.crit ? '#991B1B' : row.positive ? '#065F46' : C.textMuted, flexShrink: 0, marginLeft: 12 }}>{row.pts}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
       </div>
     </section>
   )
 }
 
-/* ─── What gets flagged ─── */
-
+// ─── What gets flagged ────────────────────────────────────────────────────────
 function WhatGetsFlagged() {
   const flags = [
     {
-      severity: 'critical', title: 'Federal Pacific / Zinsco panels', impact: 'Likely decline',
+      sev: 'critical', icon: '⚡', title: 'Federal Pacific / Zinsco panels', badge: 'Likely decline',
       body: 'Most FL carriers will not bind on either panel brand. Both are known fire hazards — virtually every standard market requires replacement before quoting.',
     },
     {
-      severity: 'critical', title: 'Aluminum branch wiring', impact: 'High underwriting risk',
-      body: 'Aluminum wiring on branch circuits creates fire risk at connections. Requires remediation documentation or COPALUM connector certification before most carriers will write.',
+      sev: 'critical', icon: '⚡', title: 'Aluminum branch wiring', badge: 'High risk',
+      body: 'Aluminum wiring on branch circuits creates fire risk at connections. Requires remediation documentation before most carriers will write.',
     },
     {
-      severity: 'critical', title: 'Knob-and-tube wiring', impact: 'Almost always uninsurable',
-      body: 'Knob-and-tube is uninsurable with virtually all standard FL carriers. Catching this before the quote prevents a wasted submission entirely.',
+      sev: 'critical', icon: '🔌', title: 'Knob-and-tube wiring', badge: 'Almost always uninsurable',
+      body: 'Uninsurable with virtually all standard FL carriers. Catching this before the quote prevents a wasted submission entirely.',
     },
     {
-      severity: 'warning', title: 'Polybutylene plumbing', impact: 'Carrier restrictions',
+      sev: 'warning', icon: '🔧', title: 'Polybutylene plumbing', badge: 'Carrier restrictions',
       body: 'Many FL carriers exclude water damage or require replacement. Catching this before submission prevents the client call no one wants to make.',
     },
     {
-      severity: 'warning', title: 'Roof age and condition issues', impact: 'Inspection / replacement trigger',
-      body: 'Most FL carriers require a roof inspection or condition letter for roofs over 20–25 years. Age and condition are flagged automatically so you can set expectations before the quote goes out.',
+      sev: 'warning', icon: '🏠', title: 'Roof age and condition issues', badge: 'Inspection trigger',
+      body: 'Most FL carriers require a roof inspection or condition letter for roofs over 20–25 years. Age and condition are flagged automatically.',
     },
   ]
 
   return (
-    <section id="flags" className="lp-section-pad" style={{ background: C.bgAlt }}>
-      <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>What gets flagged</div>
-          <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 14 }}>
+    <section id="flags" style={{ padding: '96px 32px', background: T.surface, borderTop: `1px solid ${T.border}`, borderBottom: `1px solid ${T.border}` }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ maxWidth: 560, marginBottom: 48 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>What gets flagged</div>
+          <h2 className="lp-h2" style={{ fontSize: 40, fontWeight: 800, color: T.navy2, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 16px' }}>
             Know what carriers will reject<br />before you quote
           </h2>
-          <p style={{ ...F.sans, fontSize: 16, color: C.textMuted, maxWidth: 520, margin: '0 auto', lineHeight: 1.65 }}>
-            These are the same issues that kill deals at underwriting. BindIQ catches every one of them — automatically.
-          </p>
+          <p style={{ fontSize: 17, color: T.muted, lineHeight: 1.7, margin: 0 }}>These are the same issues that kill deals at underwriting. BindIQ catches every one of them — automatically.</p>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 780, margin: '0 auto' }}>
+        <div className="lp-flags-list" style={{ display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 800 }}>
           {flags.map(f => (
-            <div key={f.title} className={f.severity === 'critical' ? 'lp-flag-critical' : 'lp-flag-warning'}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 8, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 16 }}>{f.severity === 'critical' ? '🚨' : '⚠️'}</span>
-                  <span style={{ ...F.sans, fontSize: 15, fontWeight: 700, color: f.severity === 'critical' ? '#991B1B' : '#92400E' }}>{f.title}</span>
-                </div>
-                <span style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: f.severity === 'critical' ? '#991B1B' : '#92400E', background: f.severity === 'critical' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.15)', padding: '3px 10px', borderRadius: 20, whiteSpace: 'nowrap' }}>
-                  {f.impact}
-                </span>
+            <div key={f.title} style={{
+              padding: '20px 24px', borderRadius: 14, display: 'flex', alignItems: 'flex-start', gap: 16,
+              background: f.sev === 'critical' ? 'rgba(239,68,68,0.05)' : 'rgba(245,158,11,0.05)',
+              border: `1px solid ${f.sev === 'critical' ? 'rgba(239,68,68,0.18)' : 'rgba(245,158,11,0.20)'}`,
+            }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: f.sev === 'critical' ? 'rgba(239,68,68,0.10)' : 'rgba(245,158,11,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 15 }}>
+                {f.icon}
               </div>
-              <p style={{ ...F.sans, fontSize: 13, color: f.severity === 'critical' ? '#B91C1C' : '#B45309', lineHeight: 1.6, margin: 0, paddingLeft: 26 }}>
-                {f.body}
-              </p>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 5, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: f.sev === 'critical' ? '#991B1B' : '#92400E' }}>{f.title}</span>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center',
+                    fontSize: 13, fontWeight: 700,
+                    padding: '3px 9px', borderRadius: 99,
+                    background: f.sev === 'critical' ? 'rgba(239,68,68,0.10)' : 'rgba(245,158,11,0.10)',
+                    color: f.sev === 'critical' ? '#991B1B' : '#92400E',
+                  }}>
+                    {f.badge}
+                  </span>
+                </div>
+                <p style={{ fontSize: 13, color: f.sev === 'critical' ? '#B91C1C' : '#B45309', lineHeight: 1.65, margin: 0 }}>{f.body}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -629,260 +509,199 @@ function WhatGetsFlagged() {
   )
 }
 
-/* ─── What gets extracted ─── */
-
-function WhatGetsExtracted() {
-  return (
-    <section id="extracted" className="lp-section-pad">
-      <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>What gets extracted</div>
-          <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 12 }}>Every field. Structured instantly.</h2>
-          <p style={{ ...F.sans, fontSize: 16, color: C.textMuted, maxWidth: 440, margin: '0 auto', lineHeight: 1.6 }}>No manual reading required.</p>
-        </div>
-
-        <div className="lp-extract-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-          <div style={{ background: C.bgAlt, border: `1.5px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
-            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>Wind Mitigation</div>
-            <div style={{ ...F.sans, fontSize: 12, color: C.textSubtle, marginBottom: 20 }}>OIR-B1-1802</div>
-            {[
-              ['Roof Covering',           'Selection A–D + permit date'],
-              ['Roof Deck Attachment',    'Selection A–G + description'],
-              ['Roof-to-Wall Connection', 'Selection A–F (toe nails → structural)'],
-              ['Roof Geometry',           'Hip / gable / flat + hip percentage'],
-              ['Secondary Water Resist.', 'Yes / No + underlayment type'],
-              ['Opening Protection',      'None / basic / hurricane / impact'],
-            ].map(([label, detail]) => (
-              <div key={label} style={{ padding: '9px 0', borderBottom: `1px solid ${C.border}` }}>
-                <div style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: C.text }}>{label}</div>
-                <div style={{ ...F.sans, fontSize: 12, color: C.textMuted, marginTop: 2 }}>{detail}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ background: C.bgAlt, border: `1.5px solid ${C.border}`, borderRadius: 16, padding: 28 }}>
-            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>4-Point Inspection</div>
-            <div style={{ ...F.sans, fontSize: 12, color: C.textSubtle, marginBottom: 20 }}>All four systems</div>
-            {[
-              ['Roof',       'Material, age, condition, estimated remaining life'],
-              ['HVAC',       'Type, brand, age, condition, last service'],
-              ['Plumbing',   'Supply material, drain material, water heater age'],
-              ['Electrical', 'Panel brand, type, service amps, wiring type, condition'],
-            ].map(([label, detail]) => (
-              <div key={label} style={{ padding: '9px 0', borderBottom: `1px solid ${C.border}` }}>
-                <div style={{ ...F.sans, fontSize: 13, fontWeight: 600, color: C.text }}>{label}</div>
-                <div style={{ ...F.sans, fontSize: 12, color: C.textMuted, marginTop: 2 }}>{detail}</div>
-              </div>
-            ))}
-            <div style={{ marginTop: 16, ...F.sans, fontSize: 12, color: C.textSubtle, lineHeight: 1.6 }}>
-              Plus: property address, inspection date, inspector name and license number.
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ─── Pricing ─── */
-
+// ─── Pricing ──────────────────────────────────────────────────────────────────
 function Pricing() {
-  const plans = [
-    {
-      name: 'Starter',
-      price: 79,
-      volume: 'Up to 50 reports / month',
-      highlight: false,
-      badge: null,
-      features: [
-        'BindIQ Score + red flags on every scan',
-        'Florida 4-point + wind mitigation',
-        'Structured underwriting output',
-        'PDF upload + paste mode',
-        'Clipboard export',
-      ],
-      cta: 'Get started →',
-    },
-    {
-      name: 'Pro',
-      price: 149,
-      volume: 'Up to 200 reports / month',
-      highlight: true,
-      badge: 'Most popular',
-      features: [
-        'Everything in Starter',
-        'Intake Links — async client submissions',
-        'Client-facing 3-step intake form',
-        'PDF upload in intake flow',
-        'Enhanced underwriting explanations',
-        'Submission history dashboard',
-      ],
-      cta: 'Get started →',
-    },
-    {
-      name: 'Agency',
-      price: 299,
-      volume: '500+ reports / month (fair use)',
-      highlight: false,
-      badge: null,
-      features: [
-        'Everything in Pro',
-        'Multi-user access (3 included)',
-        'Intake links with agency branding',
-        'Exportable underwriting summaries',
-        'Priority support',
-      ],
-      cta: 'Get started',
-    },
-  ]
+  const [annual, setAnnual] = useState(false)
+  const planList = Object.values(PLANS)
 
   return (
-    <section id="pricing" className="lp-section-pad" style={{ background: C.bgAlt }}>
-      <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 12 }}>
-          <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Pricing</div>
-          <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0, marginBottom: 12 }}>
-            Built for real agency workflows
+    <section id="pricing" style={{ padding: '96px 32px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 56 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>Pricing</div>
+          <h2 className="lp-h2" style={{ fontSize: 40, fontWeight: 800, color: T.navy2, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 16px' }}>
+            Simple, predictable pricing
           </h2>
-          <p style={{ ...F.sans, fontSize: 16, color: C.textMuted, maxWidth: 440, margin: '0 auto 16px', lineHeight: 1.6 }}>
+          <p style={{ fontSize: 17, color: T.muted, lineHeight: 1.7, maxWidth: 520, margin: '0 auto 28px' }}>
             No per-report charges. No friction. Just fast underwriting decisions.
           </p>
-          <p style={{ ...F.sans, fontSize: 13, color: C.textSubtle, margin: '0 auto 40px' }}>
-            Most Florida agents process 20–100 reports per month.
-          </p>
-        </div>
 
-        <div className="lp-plans-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, maxWidth: 900, margin: '0 auto' }}>
-          {plans.map(plan => (
-            <div
-              key={plan.name}
-              style={{
-                background: C.bg,
-                border: plan.highlight ? `2px solid ${C.accent}` : `1.5px solid ${C.border}`,
-                borderRadius: 16, padding: '32px 28px', position: 'relative',
-                boxShadow: plan.highlight ? '0 10px 40px rgba(4,37,108,0.14)' : 'none',
-              }}
+          {/* Billing toggle */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 0, background: T.surface, border: `1px solid ${T.border}`, borderRadius: 99, padding: '5px 6px' }}>
+            <button
+              onClick={() => setAnnual(false)}
+              style={{ fontFamily: T.font, fontSize: 14, fontWeight: annual ? 600 : 700, padding: '8px 20px', borderRadius: 99, border: 'none', background: annual ? 'transparent' : T.navy, color: annual ? T.muted : '#fff', cursor: 'pointer', transition: 'all 0.2s' }}
             >
-              {plan.badge && (
-                <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', background: C.accent, color: '#fff', ...F.sans, fontSize: 10, fontWeight: 700, padding: '3px 14px', borderRadius: 20, letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-                  {plan.badge.toUpperCase()}
-                </div>
-              )}
+              Monthly
+            </button>
+            <button
+              onClick={() => setAnnual(true)}
+              style={{ fontFamily: T.font, fontSize: 14, fontWeight: annual ? 700 : 600, padding: '8px 20px', borderRadius: 99, border: 'none', background: annual ? T.navy : 'transparent', color: annual ? '#fff' : T.muted, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              Annual
+              {!annual && <span style={{ fontSize: 13, fontWeight: 700, color: T.greenDark, background: 'rgba(16,185,129,0.12)', borderRadius: 99, padding: '2px 8px' }}>Save 15%</span>}
+            </button>
+          </div>
+        </div>
 
-              <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: plan.highlight ? C.accent : C.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{plan.name}</div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, marginBottom: 4 }}>
-                <span style={{ ...F.sans, fontSize: 40, fontWeight: 800, color: C.text, lineHeight: 1, letterSpacing: '-0.02em' }}>${plan.price}</span>
-                <span style={{ ...F.sans, fontSize: 13, color: C.textMuted, paddingBottom: 6 }}>/mo</span>
-              </div>
-              <div style={{ ...F.sans, fontSize: 12, color: C.textMuted, marginBottom: 24, lineHeight: 1.4 }}>{plan.volume}</div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 24 }}>
-                {plan.features.map(f => (
-                  <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
-                      <circle cx="7.5" cy="7.5" r="6.5" fill="rgba(16,185,129,0.12)"/>
-                      <path d="M4.5 7.5l2 2 4-4" stroke={C.positive} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <span style={{ ...F.sans, fontSize: 13, color: C.text, lineHeight: 1.45 }}>{f}</span>
+        <div className="lp-plans-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, maxWidth: 900, margin: '0 auto' }}>
+          {planList.map(plan => {
+            const price = annual ? plan.annual : plan.monthly
+            const isFeatured = plan.popular
+            return (
+              <div key={plan.key} style={{
+                background: '#fff', borderRadius: 18,
+                border: `1.5px solid ${isFeatured ? T.navy : T.border}`,
+                padding: '32px 28px',
+                position: 'relative',
+                boxShadow: isFeatured ? '0 8px 40px rgba(4,37,108,0.12)' : '0 2px 8px rgba(15,31,61,0.04)',
+                display: 'flex', flexDirection: 'column',
+              }}>
+                {isFeatured && (
+                  <div style={{
+                    position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)',
+                    background: T.navy, color: '#fff',
+                    fontSize: 13, fontWeight: 700,
+                    padding: '3px 14px', borderRadius: 99, letterSpacing: '0.06em', whiteSpace: 'nowrap',
+                  }}>
+                    MOST POPULAR
                   </div>
-                ))}
+                )}
+                <div style={{ fontSize: 13, fontWeight: 700, color: isFeatured ? T.navy : T.muted, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>{plan.name}</div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontSize: 38, fontWeight: 800, color: T.text, letterSpacing: '-0.025em', lineHeight: 1 }}>${price}</span>
+                  <span style={{ fontSize: 13, color: T.muted, paddingBottom: 5 }}>/mo</span>
+                </div>
+                {annual
+                  ? <div style={{ fontSize: 11, fontWeight: 700, color: T.greenDark, marginBottom: 4 }}>${plan.annualTotal}/yr · save 15%</div>
+                  : <div style={{ fontSize: 11, color: T.subtle, marginBottom: 4 }}>billed monthly</div>
+                }
+                <div style={{ fontSize: 13, color: T.subtle, marginBottom: 24 }}>Up to {plan.reportLimit} reports/month</div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 28, flex: 1 }}>
+                  {plan.features.map(f => (
+                    <div key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: T.muted }}>
+                      <span style={{ color: T.green, flexShrink: 0, marginTop: 1 }}>✓</span>
+                      {f}
+                    </div>
+                  ))}
+                </div>
+
+                <Link
+                  to={`/checkout?plan=${plan.key}`}
+                  style={{
+                    fontFamily: T.font, display: 'block', textAlign: 'center', textDecoration: 'none',
+                    padding: '11px 16px', borderRadius: 10, fontSize: 14, fontWeight: 700,
+                    background: isFeatured ? T.navy : '#fff',
+                    color: isFeatured ? '#fff' : T.text,
+                    border: isFeatured ? 'none' : `1.5px solid ${T.border}`,
+                    boxShadow: isFeatured ? '0 4px 14px rgba(4,37,108,0.22)' : 'none',
+                  }}
+                >
+                  Get started →
+                </Link>
               </div>
-
-              <Link
-                to="/sign-up"
-                style={{ ...F.sans, display: 'block', textAlign: 'center', textDecoration: 'none', padding: '12px 16px', borderRadius: 9, fontSize: 14, fontWeight: 700, background: plan.highlight ? C.accent : 'transparent', color: plan.highlight ? '#fff' : C.accent, border: plan.highlight ? 'none' : `1.5px solid ${C.accent}`, transition: 'all 0.15s' }}
-              >
-                {plan.cta}
-              </Link>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </section>
   )
 }
 
-/* ─── ROI ─── */
-
-function ROI() {
-  return (
-    <section id="roi" className="lp-section-pad">
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 24px', textAlign: 'center' }}>
-        <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>The math</div>
-        <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: '0 0 16px' }}>
-          Avoid one bad submission<br />and it pays for itself.
-        </h2>
-        <p style={{ ...F.sans, fontSize: 16, color: C.textMuted, lineHeight: 1.7, maxWidth: 520, margin: '0 auto 40px' }}>
-          A declined policy means lost commission, wasted quoting time, and a delayed placement.
-          BindIQ helps you identify those risks before you quote.
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, textAlign: 'left' }} className="lp-three-grid">
-          {[
-            { icon: '💸', heading: 'Lost commission', body: 'Every declined bind is a commission that never happened — and time you can\'t get back.' },
-            { icon: '⏱', heading: 'Wasted quoting time', body: 'Filling out carrier apps for properties that can\'t bind is pure overhead. BindIQ cuts it.' },
-            { icon: '📉', heading: 'Delayed placement', body: 'Back-and-forth on a decline delays the whole deal. Catch issues early, keep the process moving.' },
-          ].map(item => (
-            <div key={item.heading} style={{ background: C.bgAlt, border: `1.5px solid ${C.border}`, borderRadius: 14, padding: '22px 20px' }}>
-              <div style={{ fontSize: 24, marginBottom: 10 }}>{item.icon}</div>
-              <div style={{ ...F.sans, fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 6 }}>{item.heading}</div>
-              <div style={{ ...F.sans, fontSize: 13, color: C.textMuted, lineHeight: 1.6 }}>{item.body}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-/* ─── FAQ ─── */
-
-function FAQ() {
-  const items = [
-    ['Does it work with any inspection PDF?',
-     'Yes — BindIQ works with most standard Florida 4-point and wind mitigation reports. If the PDF contains selectable text, it processes instantly.'],
-    ['What about scanned reports?',
-     'Scanned PDFs are supported. BindIQ processes image-based files and continues to improve coverage.'],
-    ['How accurate is it?',
-     'Highly accurate for standard inspection formats. Built specifically for Florida underwriting workflows — critical risk indicators are detected using a rules engine, not guesswork.'],
-    ['Is client data stored?',
-     'No. Reports are processed securely and discarded after extraction. No inspection content is retained.'],
-    ['Can I cancel anytime?',
-     'Yes. No contracts. Cancel anytime from your billing dashboard.'],
+// ─── FAQ + Scoring grid ───────────────────────────────────────────────────────
+function FaqAndScoring() {
+  const scoreRows = [
+    { label: 'Federal Pacific / Zinsco panel', pts: '−60 · cap at 40', type: 'critical' },
+    { label: 'Knob-and-tube wiring',           pts: '−60 · cap at 40', type: 'critical' },
+    { label: 'Aluminum branch wiring',         pts: '−50 · cap at 40', type: 'critical' },
+    { label: 'Roof in poor condition',         pts: '−35',             type: 'warning' },
+    { label: 'Polybutylene plumbing',          pts: '−30',             type: 'warning' },
+    { label: 'Roof over 25 years',             pts: '−25',             type: 'warning' },
+    { label: 'Impact / hurricane protection',  pts: '+10',             type: 'positive' },
   ]
+
+  const faqItems = [
+    ['Does it work with any inspection PDF?', 'Yes — BindIQ works with standard 4-point and wind mitigation reports from most inspection companies. If the PDF contains selectable text, it processes instantly. Scanned PDFs are also supported.'],
+    ['How accurate is it?', 'Highly accurate for standard inspection formats. Critical risk indicators are detected using a rules engine built on real carrier underwriting guidelines — not guesswork.'],
+    ['Is client data stored?', 'No. Reports are processed securely and discarded after extraction. No inspection content is retained on our servers.'],
+    ['What states are supported?', 'Currently optimized for Florida inspection forms. Additional states are being added — sign up to be notified when your state launches.'],
+    ['Can I cancel anytime?', 'Yes. No contracts, no commitments. Cancel any time from your billing dashboard with one click.'],
+  ]
+
   return (
-    <section id="faq" className="lp-section-pad" style={{ background: C.bgAlt }}>
-      <div style={{ maxWidth: 680, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: 0 }}>Questions</h2>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          {items.map(([q, a]) => (
-            <details key={q} className="lp-faq" style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 12, overflow: 'hidden' }}>
-              <summary style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-                <span style={{ ...F.sans, fontSize: 15, fontWeight: 600, color: C.text }}>{q}</span>
-                <span className="lp-faq-icon" style={{ ...F.sans, fontSize: 20, color: C.textSubtle, flexShrink: 0, transition: 'transform 0.2s', lineHeight: 1 }}>+</span>
-              </summary>
-              <div style={{ ...F.sans, fontSize: 14, color: C.textMuted, lineHeight: 1.7, padding: '0 20px 18px' }}>{a}</div>
-            </details>
-          ))}
+    <section style={{ padding: '96px 32px', background: T.surface, borderTop: `1px solid ${T.border}` }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div className="lp-faq-scoring-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'start' }}>
+
+          {/* Left: Scoring methodology */}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>How the score works</div>
+            <h2 className="lp-h2" style={{ fontSize: 40, fontWeight: 800, color: T.navy2, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 16px' }}>
+              One number.<br />Clear reasoning.
+            </h2>
+            <p style={{ fontSize: 17, color: T.muted, lineHeight: 1.7, margin: '0 0 32px', maxWidth: 520 }}>
+              Every report starts at 100. Risk factors subtract points. Any critical issue automatically caps the score at 40 — the Likely Decline zone.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {scoreRows.map(row => (
+                <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, padding: '10px 14px', background: '#fff', border: `1px solid ${T.border}`, borderRadius: 10, alignItems: 'center' }}>
+                  <span style={{ fontSize: 14, color: T.text }}>{row.label}</span>
+                  <span style={{
+                    fontSize: 13, fontWeight: 700, padding: '3px 10px', borderRadius: 99, whiteSpace: 'nowrap',
+                    background: row.type === 'critical' ? 'rgba(239,68,68,0.08)' : row.type === 'positive' ? 'rgba(16,185,129,0.08)' : 'rgba(245,158,11,0.08)',
+                    color: row.type === 'critical' ? '#991B1B' : row.type === 'positive' ? T.greenDark : '#92400E',
+                  }}>
+                    {row.pts}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: FAQ */}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.navy, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>FAQ</div>
+            <h2 className="lp-h2" style={{ fontSize: 40, fontWeight: 800, color: T.navy2, letterSpacing: '-0.03em', lineHeight: 1.1, margin: '0 0 8px' }}>
+              Common questions
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 8 }}>
+              {faqItems.map(([q, a]) => (
+                <details key={q} className="lp-faq-item" style={{ background: '#fff', border: `1px solid ${T.border}`, borderRadius: 12, overflow: 'hidden', marginBottom: 2 }}>
+                  <summary style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+                    <span style={{ fontSize: 15, fontWeight: 600, color: T.text }}>{q}</span>
+                    <span className="faq-icon" style={{ fontSize: 20, color: T.subtle, flexShrink: 0, lineHeight: 1, transition: 'transform 0.2s' }}>+</span>
+                  </summary>
+                  <div style={{ fontSize: 14, color: T.muted, lineHeight: 1.7, padding: '0 20px 18px' }}>{a}</div>
+                </details>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
   )
 }
 
-/* ─── Final CTA ─── */
-
+// ─── Final CTA ────────────────────────────────────────────────────────────────
 function FinalCTA() {
   return (
-    <section id="cta" className="lp-section-pad">
-      <div style={{ maxWidth: MAX, margin: '0 auto', padding: '0 24px', textAlign: 'center' }}>
-        <h2 className="lp-h2" style={{ ...F.sans, fontWeight: 800, color: C.text, margin: '0 auto 16px', maxWidth: 480 }}>
+    <section style={{ padding: '80px 32px', background: T.navy2, textAlign: 'center' }}>
+      <div style={{ maxWidth: 480, margin: '0 auto' }}>
+        <h2 style={{ fontSize: 38, fontWeight: 800, color: '#fff', letterSpacing: '-0.03em', margin: '0 0 16px', lineHeight: 1.1 }}>
           Know before you quote.
         </h2>
-        <p style={{ ...F.sans, fontSize: 16, color: C.textMuted, maxWidth: 420, margin: '0 auto 32px', lineHeight: 1.65 }}>
+        <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.6)', lineHeight: 1.7, margin: '0 0 32px' }}>
           Stop wasting time on risks that won't bind.
         </p>
-        <Link to="/inspect" className="lp-cta-primary" style={{ ...F.sans, fontSize: 16, padding: '16px 40px' }}>
+        <Link to="/inspect" style={{
+          fontFamily: T.font, display: 'inline-block',
+          background: '#fff', color: T.navy2,
+          fontSize: 15, fontWeight: 700,
+          padding: '14px 36px', borderRadius: 10,
+          textDecoration: 'none',
+        }}>
           Try BindIQ free — no account needed
         </Link>
       </div>
@@ -890,89 +709,59 @@ function FinalCTA() {
   )
 }
 
-/* ─── Footer ─── */
-
-function Footer() {
-  const linkStyle = { ...F.sans, fontSize: 13, color: C.textMuted, textDecoration: 'none', transition: 'color 0.12s' }
-
-  const col = (heading, items) => (
-    <div>
-      <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: C.text, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 }}>
-        {heading}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {items.map(({ label, to, href }) => {
-          if (href) return <a key={label} href={href} style={linkStyle}>{label}</a>
-          return <Link key={label} to={to} style={linkStyle}>{label}</Link>
-        })}
-      </div>
-    </div>
-  )
+// ─── Footer ───────────────────────────────────────────────────────────────────
+function Footer({ geoState }) {
+  const linkStyle = { fontSize: 13, color: T.muted, textDecoration: 'none' }
 
   return (
-    <footer style={{ borderTop: `1px solid ${C.border}`, background: C.bg, padding: '56px 24px 32px' }}>
-      <div style={{ maxWidth: MAX, margin: '0 auto' }}>
+    <footer style={{ borderTop: `1px solid ${T.border}`, padding: '56px 32px 36px', background: '#fff' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
 
-        {/* Top grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }} className="lp-footer-grid">
+        <div className="lp-footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: 48, marginBottom: 48 }}>
 
           {/* Brand */}
           <div>
-            <div style={{ marginBottom: 14 }}>
-              <Logo size={22} lines />
-            </div>
-            <div style={{ ...F.sans, fontSize: 13, color: C.textMuted, lineHeight: 1.6, marginBottom: 20, maxWidth: 260 }}>
-              Built for independent insurance agents.
-            </div>
-            <a href="mailto:support@usebindiq.com" style={linkStyle}>
-              support@usebindiq.com
-            </a>
+            <div style={{ marginBottom: 14 }}><Logo size={22} /></div>
+            <p style={{ fontSize: 13, color: T.muted, lineHeight: 1.65, maxWidth: 240, margin: '0 0 20px' }}>
+              Know if a policy will bind before you quote. Built for Florida insurance agents.
+            </p>
+            <div style={{ fontSize: 13, color: T.subtle }}>usebindiq.com</div>
           </div>
 
           {/* Product */}
-          {col('Product', [
-            { label: 'How it works',      href: '#how' },
-            { label: 'What gets flagged', href: '#flags' },
-            { label: 'BindIQ Score',      href: '#score' },
-            { label: 'Pricing',           href: '#pricing' },
-            { label: 'Sign in',           to: '/sign-in' },
-          ])}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 }}>Product</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <a href="#how-it-works" style={linkStyle}>How it works</a>
+              <a href="#flags" style={linkStyle}>What gets flagged</a>
+              <a href="#pricing" style={linkStyle}>Pricing</a>
+            </div>
+          </div>
 
-          {/* Resources */}
-          {col('Resources', [
-            { label: 'Help Center',   href: 'mailto:support@usebindiq.com' },
-            { label: 'Support',       to: '/support' },
-            { label: 'System Status', href: 'https://status.usebindiq.com' },
-          ])}
+          {/* Account */}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 }}>Account</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <Link to="/sign-in" style={linkStyle}>Sign in</Link>
+              <Link to="/sign-up" style={linkStyle}>Create account</Link>
+            </div>
+          </div>
 
           {/* Legal */}
-          {col('Legal', [
-            { label: 'Privacy Policy',   to: '/privacy' },
-            { label: 'Terms of Service', to: '/terms' },
-            { label: 'Data Handling',    to: '/privacy' },
-          ])}
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 }}>Legal</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <Link to="/privacy" style={linkStyle}>Privacy</Link>
+              <Link to="/terms" style={linkStyle}>Terms</Link>
+              <Link to="/security" style={linkStyle}>Security</Link>
+            </div>
+          </div>
+
         </div>
 
-        {/* Security trust line */}
-        <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 24, marginBottom: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, maxWidth: 680 }}>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginTop: 2 }}>
-              <path d="M7 1L2 3v4c0 3.31 2.24 5.96 5 6.5C9.76 12.96 12 10.31 12 7V3L7 1z" stroke={C.textSubtle} strokeWidth="1.2" strokeLinejoin="round"/>
-            </svg>
-            <span style={{ ...F.sans, fontSize: 12, color: C.textSubtle, lineHeight: 1.6 }}>
-              Inspection reports are processed securely to generate underwriting insights. No client data is stored after processing.
-            </span>
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <span style={{ ...F.sans, fontSize: 12, color: C.textSubtle }}>© 2026 BindIQ. All rights reserved.</span>
-          <div style={{ display: 'flex', gap: 20 }}>
-            {[['Privacy Policy', '/privacy'], ['Terms of Service', '/terms'], ['Support', '/support']].map(([label, to]) => (
-              <Link key={label} to={to} style={{ ...F.sans, fontSize: 12, color: C.textSubtle, textDecoration: 'none' }}>{label}</Link>
-            ))}
-          </div>
+        <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 28, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: 13, color: T.subtle }}>© 2026 BindIQ. All rights reserved.</span>
+          <span style={{ fontSize: 13, color: T.subtle }}>{geoState.footerText}</span>
         </div>
 
       </div>

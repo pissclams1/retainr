@@ -324,8 +324,31 @@ function err(msg: string, status = 400) {
   })
 }
 
+// ── IP rate limiter: 10 requests per IP per 10-minute window ─────────────
+// In-memory — resets per function instance. Cheap, effective against casual abuse.
+const ipWindows = new Map<string, { count: number; windowStart: number }>()
+const RATE_LIMIT   = 10
+const WINDOW_MS    = 10 * 60 * 1000 // 10 minutes
+
+function isRateLimited(ip: string): boolean {
+  const now  = Date.now()
+  const entry = ipWindows.get(ip)
+  if (!entry || now - entry.windowStart > WINDOW_MS) {
+    ipWindows.set(ip, { count: 1, windowStart: now })
+    return false
+  }
+  entry.count++
+  return entry.count > RATE_LIMIT
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
+
+  // Rate limit by IP
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (isRateLimited(ip)) {
+    return err('Too many requests — please wait a few minutes before trying again.', 429)
+  }
 
   try {
     const body = await req.json().catch(() => null)

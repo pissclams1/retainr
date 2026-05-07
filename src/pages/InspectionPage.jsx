@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { createClient } from '@supabase/supabase-js'
 import { getStateConfig } from '../config/states'
 import { useDetectedState } from '../hooks/useDetectedState'
+import UpgradeModal from '../components/UpgradeModal'
 
 const USES_KEY  = 'bindiq_uses'
 const EMAIL_KEY = 'bindiq_email'
@@ -11,9 +12,11 @@ function incLocalUses()   { try { localStorage.setItem(USES_KEY, String(getLocal
 function getStoredEmail() { try { return localStorage.getItem(EMAIL_KEY) || '' } catch { return '' } }
 function saveEmail(e)     { try { localStorage.setItem(EMAIL_KEY, e.trim().toLowerCase()) } catch {} }
 
-async function trackUsage(email, supabaseClient) {
+async function trackUsage(email, supabaseClient, accessToken = null) {
   try {
-    const { data } = await supabaseClient.functions.invoke('track-usage', { body: { email } })
+    const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+    const body    = accessToken ? {} : { email }
+    const { data } = await supabaseClient.functions.invoke('track-usage', { body, headers })
     return data ?? { allowed: false }
   } catch { return { allowed: false } }
 }
@@ -23,68 +26,139 @@ const supabase = createClient(
   import.meta.env.VITE_SUPABASE_ANON_KEY,
 )
 
-const F = { sans: { fontFamily: "'DM Sans', system-ui, -apple-system, sans-serif" } }
-
-const C = {
-  bg:         '#F8FAFC',
-  bgAlt:      '#F1F5F9',
-  bg2:        '#FFFFFF',
+const T = {
+  navy:       '#04256C',
+  navy2:      '#0F1F3D',
+  navyLight:  'rgba(4,37,108,0.07)',
+  navyBorder: 'rgba(4,37,108,0.15)',
+  red:        '#DC2626',
+  green:      '#10B981',
+  greenDark:  '#065F46',
+  amber:      '#F59E0B',
   text:       '#0F1F3D',
   muted:      '#64748B',
   subtle:     '#94A3B8',
   border:     '#E2E8F0',
-  accent:     '#04256c',
-  accentBg:   'rgba(4,37,108,0.07)',
-  positive:   '#10B981',
-  amber:      '#F59E0B',
-  danger:     '#EF4444',
+  surface:    '#F8FAFC',
+  surface2:   '#F1F5F9',
+  font:       "'DM Sans', system-ui, sans-serif",
 }
 
 const PAGE_CSS = `
-  html, body { background: ${C.bg}; }
+  html, body { background: ${T.surface}; }
   * { box-sizing: border-box; }
 
-  .ip-textarea { width: 100%; padding: 16px; font-family: 'DM Sans', sans-serif; font-size: 13px; line-height: 1.7; color: ${C.text}; background: ${C.bg2}; border: 1.5px solid ${C.border}; border-radius: 10px; resize: vertical; outline: none; transition: border-color 0.15s; min-height: 220px; }
+  .ip-textarea {
+    width: 100%; padding: 16px; font-family: ${T.font};
+    font-size: 13px; line-height: 1.7; color: ${T.text};
+    background: #fff; border: 1.5px solid ${T.border};
+    border-radius: 10px; resize: vertical; outline: none;
+    transition: border-color 0.15s; min-height: 220px;
+  }
   .ip-textarea:focus { border-color: rgba(4,37,108,0.40); }
-  .ip-textarea::placeholder { color: ${C.subtle}; }
+  .ip-textarea::placeholder { color: ${T.subtle}; }
 
-  .ip-btn-primary { background: ${C.accent}; color: #fff; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; padding: 16px 36px; cursor: pointer; transition: opacity 0.15s, box-shadow 0.15s; box-shadow: 0 4px 16px rgba(4,37,108,0.35); width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .ip-btn-primary {
+    background: ${T.navy}; color: #fff; border: none; border-radius: 10px;
+    font-family: ${T.font}; font-size: 16px; font-weight: 700;
+    padding: 16px 36px; cursor: pointer;
+    transition: opacity 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 16px rgba(4,37,108,0.35);
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
   .ip-btn-primary:hover:not(:disabled) { opacity: 0.92; }
   .ip-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-  .ip-btn-outline { padding: 9px 18px; border-radius: 8px; border: 1.5px solid ${C.border}; background: ${C.bg2}; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; color: ${C.muted}; cursor: pointer; transition: all 0.15s; }
-  .ip-btn-outline:hover { border-color: ${C.accent}; color: ${C.accent}; }
-  .ip-btn-outline.active { border-color: ${C.accent}; color: ${C.accent}; background: rgba(4,37,108,0.05); }
+  .ip-btn-outline {
+    padding: 9px 18px; border-radius: 8px;
+    border: 1.5px solid ${T.border}; background: #fff;
+    font-family: ${T.font}; font-size: 13px; font-weight: 600; color: ${T.muted};
+    cursor: pointer; transition: all 0.15s;
+  }
+  .ip-btn-outline:hover { border-color: ${T.navy}; color: ${T.navy}; }
+  .ip-btn-outline.active { border-color: ${T.navy}; color: ${T.navy}; background: rgba(4,37,108,0.05); }
 
-  .ip-dropzone { border: 2px dashed ${C.border}; border-radius: 10px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.15s; }
-  .ip-dropzone:hover, .ip-dropzone.drag-over { border-color: rgba(4,37,108,0.40); background: rgba(4,37,108,0.03); }
+  .ip-dropzone {
+    border: 2px dashed ${T.border}; border-radius: 10px;
+    padding: 40px; text-align: center; cursor: pointer; transition: all 0.15s;
+  }
+  .ip-dropzone:hover, .ip-dropzone.drag-over {
+    border-color: rgba(4,37,108,0.40); background: rgba(4,37,108,0.03);
+  }
 
-  .ip-spinner { width: 20px; height: 20px; border: 2.5px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: ipspin 0.7s linear infinite; }
+  .ip-spinner {
+    width: 52px; height: 52px;
+    border: 4px solid rgba(4,37,108,0.12);
+    border-top-color: ${T.navy};
+    border-radius: 50%;
+    animation: ipspin 0.8s linear infinite;
+  }
+  .ip-spinner-sm {
+    width: 20px; height: 20px;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: ipspin 0.7s linear infinite;
+  }
   @keyframes ipspin { to { transform: rotate(360deg); } }
 
-  .ip-progress-bar { height: 3px; background: ${C.border}; border-radius: 2px; overflow: hidden; }
-  .ip-progress-fill { height: 100%; background: ${C.accent}; border-radius: 2px; transition: width 0.6s ease; }
+  .ip-progress-bar { height: 3px; background: ${T.border}; border-radius: 2px; overflow: hidden; }
+  .ip-progress-fill { height: 100%; background: ${T.navy}; border-radius: 2px; transition: width 0.6s ease; }
 
-  .entry-card { background: ${C.bg2}; border: 1.5px solid ${C.border}; border-radius: 14px; padding: 24px 28px; cursor: pointer; text-align: left; width: 100%; transition: border-color 0.18s, box-shadow 0.18s, transform 0.12s; display: flex; align-items: flex-start; gap: 18px; }
-  .entry-card:hover { border-color: rgba(4,37,108,0.35); box-shadow: 0 6px 28px rgba(4,37,108,0.10); transform: translateY(-1px); }
-  .entry-card:active { transform: translateY(0); }
+  .entry-option {
+    background: #fff; border: 1.5px solid ${T.border};
+    border-radius: 14px; padding: 22px 24px;
+    display: flex; align-items: center; gap: 18px;
+    cursor: pointer; width: 100%;
+    transition: border-color 0.18s, box-shadow 0.18s, transform 0.1s;
+    text-align: left;
+  }
+  .entry-option:hover {
+    border-color: ${T.navyBorder};
+    box-shadow: 0 6px 24px rgba(4,37,108,0.08);
+    transform: translateY(-1px);
+  }
+  .entry-option:active { transform: translateY(0); }
 
-  .ip-field-row { display: flex; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid ${C.border}; gap: 16px; }
+  .ip-field-row {
+    display: flex; align-items: flex-start;
+    padding: 10px 0; border-bottom: 1px solid ${T.border}; gap: 16px;
+  }
   .ip-field-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .ip-section { background: ${C.bg2}; border: 1px solid ${C.border}; border-radius: 12px; padding: 20px 22px; }
+  .ip-section {
+    background: #fff; border: 1px solid ${T.border};
+    border-radius: 12px; padding: 20px 22px;
+  }
 
-  .ip-flag-critical { background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.25); border-radius: 10px; padding: 12px 16px; display: flex; align-items: flex-start; gap: 10px; }
-  .ip-flag-warning { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 12px 16px; display: flex; align-items: flex-start; gap: 10px; }
+  .ip-flag-critical {
+    background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.25);
+    border-radius: 10px; padding: 12px 16px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .ip-flag-warning {
+    background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.25);
+    border-radius: 10px; padding: 12px 16px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
 
-  .ip-selection-badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 800; flex-shrink: 0; }
+  .ip-selection-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 6px;
+    font-family: ${T.font}; font-size: 13px; font-weight: 800; flex-shrink: 0;
+  }
 
-  .copy-btn { padding: 5px 12px; border-radius: 6px; border: 1px solid ${C.border}; background: ${C.bg2}; font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; color: ${C.muted}; cursor: pointer; transition: all 0.15s; }
-  .copy-btn:hover { border-color: ${C.accent}; color: ${C.accent}; }
-  .copy-btn.copied { border-color: ${C.positive}; color: ${C.positive}; }
+  .copy-btn {
+    padding: 5px 12px; border-radius: 6px;
+    border: 1px solid ${T.border}; background: #fff;
+    font-family: ${T.font}; font-size: 11px; font-weight: 600; color: ${T.muted};
+    cursor: pointer; transition: all 0.15s;
+  }
+  .copy-btn:hover { border-color: ${T.navy}; color: ${T.navy}; }
+  .copy-btn.copied { border-color: ${T.green}; color: ${T.green}; }
 
   @media (max-width: 640px) {
     .ip-btn-primary { font-size: 15px; padding: 14px 24px; }
-    .entry-card { padding: 18px 20px; gap: 14px; }
+    .entry-option { padding: 18px 20px; gap: 14px; }
   }
 `
 
@@ -201,37 +275,47 @@ function EntryScreen({ onSelect, stateConfig }) {
   const OPTIONS = [
     { id: 'upload', icon: '📄', label: 'Upload PDF',       desc: `Drop a ${sc.formShort.split('·')[0].trim()} PDF — text is extracted automatically` },
     { id: 'paste',  icon: '📋', label: 'Paste report text', desc: 'Copy and paste text from any inspection report' },
-    { id: 'sample', icon: '⚡', label: 'See a demo',        desc: `Run extraction on a sample ${sc.sampleType.toLowerCase()} instantly`, badge: 'Instant' },
+    { id: 'sample', icon: '⚡', label: 'See a demo',        desc: `Run extraction on a sample ${sc.sampleType.toLowerCase()} instantly`, badge: 'INSTANT' },
   ]
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', padding: '0 20px' }}>
+    <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 24px' }}>
       <div style={{ textAlign: 'center', marginBottom: 40 }}>
-        <div style={{ ...F.sans, fontSize: 22, fontWeight: 800, color: C.text, letterSpacing: '-0.02em', marginBottom: 6 }}>BindIQ</div>
-        <h1 style={{ ...F.sans, fontSize: 26, fontWeight: 800, color: C.text, margin: 0, marginBottom: 10, letterSpacing: '-0.02em' }}>
+        <div style={{ fontFamily: T.font, fontSize: 13, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 12 }}>
+          BINDIQ SCORER
+        </div>
+        <h1 style={{ fontFamily: T.font, fontSize: 30, fontWeight: 800, color: T.text, letterSpacing: '-0.03em', margin: '0 0 10px' }}>
           Get your BindIQ Score
         </h1>
-        <p style={{ ...F.sans, fontSize: 15, color: C.muted, margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontFamily: T.font, fontSize: 15, color: T.muted, margin: 0, lineHeight: 1.6, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>
           {sc.entryDesc}
         </p>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {OPTIONS.map(opt => (
-          <button key={opt.id} className="entry-card" onClick={() => onSelect(opt.id)}>
-            <span style={{ fontSize: 28, flexShrink: 0, lineHeight: 1 }}>{opt.icon}</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                <span style={{ ...F.sans, fontSize: 16, fontWeight: 700, color: C.text }}>{opt.label}</span>
-                {opt.badge && <span style={{ ...F.sans, fontSize: 10, fontWeight: 700, color: '#fff', background: C.accent, padding: '2px 8px', borderRadius: 10 }}>{opt.badge}</span>}
-              </div>
-              <span style={{ ...F.sans, fontSize: 13, color: C.muted, lineHeight: 1.5 }}>{opt.desc}</span>
+          <button key={opt.id} className="entry-option" onClick={() => onSelect(opt.id)}>
+            <div style={{ width: 40, height: 40, borderRadius: 10, background: T.navyLight, border: `1px solid ${T.navyBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
+              {opt.icon}
             </div>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: 4 }}>
-              <path d="M6 3l5 5-5 5" stroke={C.subtle} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                <span style={{ fontFamily: T.font, fontSize: 15, fontWeight: 700, color: T.text }}>{opt.label}</span>
+                {opt.badge && (
+                  <span style={{ fontFamily: T.font, fontSize: 13, fontWeight: 700, color: '#fff', background: T.navy, padding: '2px 8px', borderRadius: 99 }}>
+                    {opt.badge}
+                  </span>
+                )}
+              </div>
+              <span style={{ fontFamily: T.font, fontSize: 13, color: T.muted, lineHeight: 1.5 }}>{opt.desc}</span>
+            </div>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
+              <path d="M6 3l5 5-5 5" stroke={T.subtle} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </button>
         ))}
       </div>
-      <p style={{ ...F.sans, fontSize: 13, color: C.subtle, textAlign: 'center', marginTop: 24 }}>
+
+      <p style={{ fontFamily: T.font, fontSize: 13, color: T.subtle, textAlign: 'center', marginTop: 24 }}>
         {sc.footerNote} · More forms coming soon
       </p>
     </div>
@@ -240,23 +324,25 @@ function EntryScreen({ onSelect, stateConfig }) {
 
 /* ─── Input view ─── */
 
-function InputView({ initialMode, autoGenerate, onResult, stateConfig }) {
+function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) {
   const sc = stateConfig
-  const [mode, setMode] = useState(initialMode === 'upload' ? 'upload' : 'paste')
-  const [text, setText] = useState(initialMode === 'sample' ? SAMPLE_WIND_MIT : '')
-  const [loading, setLoading] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [stage, setStage] = useState('')
-  const [error, setError] = useState(null)
-  const [dragging, setDragging] = useState(false)
-  const [fileNames, setFileNames] = useState([])
+  const [mode, setMode]                   = useState(initialMode === 'upload' ? 'upload' : 'paste')
+  const [text, setText]                   = useState(initialMode === 'sample' ? SAMPLE_WIND_MIT : '')
+  const [loading, setLoading]             = useState(autoGenerate)
+  const [progress, setProgress]           = useState(0)
+  const [stage, setStage]                 = useState(autoGenerate ? 'Reading document...' : '')
+  const [error, setError]                 = useState(null)
+  const [dragging, setDragging]           = useState(false)
+  const [fileNames, setFileNames]         = useState([])
   const [showEmailGate, setShowEmailGate] = useState(false)
-  const [showPaywall, setShowPaywall] = useState(false)
-  const [pendingRaw, setPendingRaw] = useState(null)
+  const [showPaywall, setShowPaywall]     = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [upgradeInfo, setUpgradeInfo]     = useState(null)
+  const [pendingRaw, setPendingRaw]       = useState(null)
   const skipGateRef = useRef(false)
-  const fileRef = useRef(null)
-  const autoFired = useRef(false)
-  const timers = useRef([])
+  const fileRef     = useRef(null)
+  const autoFired   = useRef(false)
+  const timers      = useRef([])
 
   const STAGES = [
     { pct: 15, label: 'Reading document...' },
@@ -288,29 +374,40 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig }) {
     const raw = (overrideText ?? text).trim()
     if (!raw || raw.length < 50) { setError('Paste more of the inspection report first.'); return }
 
-    // Sample mode is always free
-    const isSample = initialMode === 'sample' && !overrideText
+    const isSample = initialMode === 'sample'
 
     if (!isSample) {
       if (skipGateRef.current) {
-        // Email was just verified in handleEmailSubmit — proceed without re-checking
         skipGateRef.current = false
       } else {
-        const localUses = getLocalUses()
-        const email = getStoredEmail()
+        const { data: { session } } = await supabase.auth.getSession()
 
-        if (localUses >= 1) {
-          if (!email) {
-            // Need email before proceeding
-            setPendingRaw(overrideText ?? null)
-            setShowEmailGate(true)
+        if (session?.access_token) {
+          const result = await trackUsage(null, supabase, session.access_token)
+          if (!result?.allowed) {
+            if (result?.reason === 'cap') {
+              setUpgradeInfo(result)
+              setShowUpgradeModal(true)
+            } else {
+              setShowPaywall(true)
+            }
             return
           }
-          // Has email — check server
-          const result = await trackUsage(email, supabase)
-          if (!result?.allowed) {
-            setShowPaywall(true)
-            return
+        } else {
+          const localUses = getLocalUses()
+          const email = getStoredEmail()
+
+          if (localUses >= 1) {
+            if (!email) {
+              setPendingRaw(overrideText ?? null)
+              setShowEmailGate(true)
+              return
+            }
+            const result = await trackUsage(email, supabase)
+            if (!result?.allowed) {
+              setShowPaywall(true)
+              return
+            }
           }
         }
       }
@@ -356,8 +453,13 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig }) {
   useEffect(() => {
     if (autoGenerate && !autoFired.current) {
       autoFired.current = true
-      const t = setTimeout(() => extract(SAMPLE_WIND_MIT), 400)
-      return () => clearTimeout(t)
+      const t = setTimeout(() => {
+        if (autoFired.current) extract(SAMPLE_WIND_MIT)
+      }, 400)
+      return () => {
+        autoFired.current = false  // reset so StrictMode second-run can re-schedule
+        clearTimeout(t)
+      }
     }
   }, [autoGenerate, extract])
 
@@ -394,92 +496,113 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig }) {
     }
   }
 
+  // ── Loading screen ──
+  if (loading) {
+    return (
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '0 24px', textAlign: 'center', paddingTop: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 28 }}>
+          <div className="ip-spinner" />
+        </div>
+        <div style={{ fontFamily: T.font, fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 20 }}>{stage}</div>
+        <div className="ip-progress-bar" style={{ maxWidth: 360, margin: '0 auto' }}>
+          <div className="ip-progress-fill" style={{ width: `${progress}%` }} />
+        </div>
+        <div style={{ fontFamily: T.font, fontSize: 13, color: T.subtle, marginTop: 8 }}>{progress}%</div>
+      </div>
+    )
+  }
+
   return (
     <>
-    {showEmailGate && <EmailGate onSubmit={handleEmailSubmit} onDismiss={() => setShowEmailGate(false)} />}
-    {showPaywall && <PaywallGate />}
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: '0 20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
-        <div style={{ ...F.sans, fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: '-0.01em' }}>BindIQ</div>
-        <span style={{ ...F.sans, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: C.accent, textTransform: 'uppercase' }}>Bind Likelihood Scorer</span>
-      </div>
+      {showEmailGate && <EmailGate onSubmit={handleEmailSubmit} onDismiss={() => setShowEmailGate(false)} />}
+      {showPaywall && <PaywallGate />}
+      {showUpgradeModal && <UpgradeModal info={upgradeInfo} onDismiss={() => setShowUpgradeModal(false)} />}
+      <div style={{ maxWidth: 600, margin: '0 auto', padding: '0 20px' }}>
+        {!embed && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
+            <div style={{ fontFamily: T.font, fontSize: 16, fontWeight: 800, color: T.text, letterSpacing: '-0.01em' }}>BindIQ</div>
+            <span style={{ fontFamily: T.font, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: T.navy, textTransform: 'uppercase' }}>Bind Likelihood Scorer</span>
+          </div>
+        )}
 
-      {/* Mode tabs — hidden in sample mode */}
-      {initialMode === 'sample' ? (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-          <span style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', background: 'rgba(4,37,108,0.07)', border: `1px solid rgba(4,37,108,0.15)`, borderRadius: 6, padding: '4px 10px' }}>Sample report</span>
-          <span style={{ ...F.sans, fontSize: 12, color: C.subtle }}>{sc?.sampleLabel || 'Wind mitigation · Naples, FL'}</span>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
-          {[['paste','Paste text'],['upload','Upload PDF']].map(([m, label]) => (
-            <button key={m} className={`ip-btn-outline${mode === m ? ' active' : ''}`} onClick={() => setMode(m)}>{label}</button>
-          ))}
-        </div>
-      )}
+        {/* Mode tabs — hidden in sample mode */}
+        {initialMode === 'sample' ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+            <span style={{ fontFamily: T.font, fontSize: 12, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.08em', background: T.navyLight, border: `1px solid ${T.navyBorder}`, borderRadius: 6, padding: '4px 10px' }}>Sample report</span>
+            <span style={{ fontFamily: T.font, fontSize: 12, color: T.subtle }}>{sc?.sampleLabel || 'Wind mitigation · Naples, FL'}</span>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
+            {[['paste','Paste text'],['upload','Upload PDF']].map(([m, label]) => (
+              <button key={m} className={`ip-btn-outline${mode === m ? ' active' : ''}`} onClick={() => setMode(m)}>{label}</button>
+            ))}
+          </div>
+        )}
 
-      {/* Input area — hidden in sample mode */}
-      {initialMode === 'sample' ? null : mode === 'paste' ? (
-        <textarea
-          className="ip-textarea"
-          value={text}
-          onChange={e => setText(e.target.value)}
-          placeholder={sc?.formHint || 'Paste the full text of a 4-point or wind mitigation inspection report.'}
-          rows={10}
-        />
-      ) : (
-        <div
-          className={`ip-dropzone${dragging ? ' drag-over' : ''}`}
-          onClick={() => fileRef.current?.click()}
-          onDragOver={e => { e.preventDefault(); setDragging(true) }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={e => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files) }}
-        >
-          <input ref={fileRef} type="file" accept=".pdf,.txt" multiple style={{ display: 'none' }} onChange={e => handleFiles(e.target.files)} />
-          <div style={{ fontSize: 28, marginBottom: 10 }}>📄</div>
-          <div style={{ ...F.sans, fontSize: 15, fontWeight: 600, color: C.text, marginBottom: 6 }}>Drop up to 2 inspection PDFs here</div>
-          <div style={{ ...F.sans, fontSize: 13, color: C.muted }}>or click to browse · {sc?.uploadHint || '4-point + wind mit together'} · PDF only</div>
-          {fileNames.length > 0 && (
-            <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {fileNames.map(n => (
-                <div key={n} style={{ ...F.sans, fontSize: 13, color: C.positive, fontWeight: 600 }}>✓ {n}</div>
-              ))}
+        {/* Input area — hidden in sample mode */}
+        {initialMode === 'sample' ? null : mode === 'paste' ? (
+          <textarea
+            className="ip-textarea"
+            value={text}
+            onChange={e => setText(e.target.value)}
+            placeholder={sc?.formHint || 'Paste the full text of a 4-point or wind mitigation inspection report.'}
+            rows={10}
+          />
+        ) : (
+          <div
+            className={`ip-dropzone${dragging ? ' drag-over' : ''}`}
+            onClick={() => fileRef.current?.click()}
+            onDragOver={e => { e.preventDefault(); setDragging(true) }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={e => { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files) }}
+          >
+            <input ref={fileRef} type="file" accept=".pdf,.txt" multiple style={{ display: 'none' }} onChange={e => handleFiles(e.target.files)} />
+            <div style={{ fontSize: 28, marginBottom: 10 }}>📄</div>
+            <div style={{ fontFamily: T.font, fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 6 }}>Drop up to 2 inspection PDFs here</div>
+            <div style={{ fontFamily: T.font, fontSize: 13, color: T.muted }}>or click to browse · {sc?.uploadHint || '4-point + wind mit together'} · PDF only</div>
+            {fileNames.length > 0 && (
+              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {fileNames.map(n => (
+                  <div key={n} style={{ fontFamily: T.font, fontSize: 13, color: T.green, fontWeight: 600 }}>✓ {n}</div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Progress bar (non-loading state — PDF extraction) */}
+        {stage === 'Extracting text from PDFs...' && (
+          <div style={{ marginTop: 16 }}>
+            <div className="ip-progress-bar">
+              <div className="ip-progress-fill" style={{ width: `${progress}%` }} />
             </div>
-          )}
-        </div>
-      ) }
-
-      {/* Progress */}
-      {(loading || stage === 'Extracting text from PDFs...') && (
-        <div style={{ marginTop: 16 }}>
-          <div className="ip-progress-bar">
-            <div className="ip-progress-fill" style={{ width: `${progress}%` }} />
+            <div style={{ fontFamily: T.font, fontSize: 12, color: T.muted, marginTop: 8 }}>{stage}</div>
           </div>
-          <div style={{ ...F.sans, fontSize: 12, color: C.muted, marginTop: 8, display: 'flex', justifyContent: 'space-between' }}>
-            <span>{stage}</span>
-            {loading && <span>{progress}%</span>}
+        )}
+
+        {/* Error */}
+        {error && (
+          <div style={{ fontFamily: T.font, fontSize: 13, color: '#DC2626', background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.20)', borderRadius: 8, padding: '10px 14px', marginTop: 12 }}>
+            {error}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Error */}
-      {error && (
-        <div style={{ ...F.sans, fontSize: 13, color: C.danger, background: 'rgba(239,68,68,0.06)', border: `1px solid rgba(239,68,68,0.20)`, borderRadius: 8, padding: '10px 14px', marginTop: 12 }}>
-          {error}
-        </div>
-      )}
+        {/* Submit button — hidden in auto-generate loading state */}
+        {!(autoGenerate && loading) && (
+          <button className="ip-btn-primary" onClick={() => extract()} disabled={loading} style={{ marginTop: 16 }}>
+            {loading
+              ? <><div className="ip-spinner-sm" /><span>Scoring...</span></>
+              : <><span>Get BindIQ Score</span><span style={{ fontSize: 18 }}>→</span></>
+            }
+          </button>
+        )}
 
-      <button className="ip-btn-primary" onClick={() => extract()} disabled={loading} style={{ marginTop: 16 }}>
-        {loading
-          ? <><div className="ip-spinner"/><span>Scoring...</span></>
-          : <><span>Get BindIQ Score</span><span style={{ fontSize: 18 }}>→</span></>
-        }
-      </button>
-
-      <p style={{ ...F.sans, fontSize: 12, color: C.subtle, textAlign: 'center', marginTop: 12 }}>
-        {sc?.footerNote || 'Florida 4-point · Wind mitigation OIR-B1-1802'}
-      </p>
-    </div>
+        {!embed && (
+          <p style={{ fontFamily: T.font, fontSize: 12, color: T.subtle, textAlign: 'center', marginTop: 12 }}>
+            {sc?.footerNote || 'Florida 4-point · Wind mitigation OIR-B1-1802'}
+          </p>
+        )}
+      </div>
     </>
   )
 }
@@ -487,20 +610,19 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig }) {
 /* ─── Output components ─── */
 
 const WIND_MIT_LABELS = {
-  roof_covering:          'Roof Covering',
-  roof_deck_attachment:   'Roof Deck Attachment',
-  roof_to_wall_connection:'Roof-to-Wall Connection',
-  roof_geometry:          'Roof Geometry',
+  roof_covering:              'Roof Covering',
+  roof_deck_attachment:       'Roof Deck Attachment',
+  roof_to_wall_connection:    'Roof-to-Wall Connection',
+  roof_geometry:              'Roof Geometry',
   secondary_water_resistance: 'Secondary Water Resistance',
-  opening_protection:     'Opening Protection',
+  opening_protection:         'Opening Protection',
 }
 
-// Selection letter → colour (rough indication of how good each selection is)
 const SELECTION_COLOUR = {
   A: { bg: 'rgba(16,185,129,0.12)', color: '#065F46' },
   B: { bg: 'rgba(16,185,129,0.08)', color: '#047857' },
   C: { bg: 'rgba(245,158,11,0.10)', color: '#92400E' },
-  D: { bg: 'rgba(16,185,129,0.12)', color: '#065F46' }, // D = good for roof-to-wall
+  D: { bg: 'rgba(16,185,129,0.12)', color: '#065F46' },
   E: { bg: 'rgba(16,185,129,0.15)', color: '#065F46' },
   F: { bg: 'rgba(100,116,139,0.10)', color: '#475569' },
 }
@@ -523,7 +645,7 @@ function ConditionBadge({ condition }) {
   }
   const s = map[condition?.toLowerCase()] || map.unknown
   return (
-    <span style={{ ...F.sans, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: s.bg, color: s.color }}>
+    <span style={{ fontFamily: T.font, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: s.bg, color: s.color }}>
       {s.label}
     </span>
   )
@@ -540,18 +662,18 @@ function WindMitOutput({ wm }) {
   ]
 
   function renderValue(key, val) {
-    if (!val) return <span style={{ ...F.sans, fontSize: 13, color: C.subtle }}>Not found</span>
+    if (!val) return <span style={{ fontFamily: T.font, fontSize: 13, color: T.subtle }}>Not found</span>
 
     if (key === 'roof_geometry') {
       const shape = val.shape ? val.shape.charAt(0).toUpperCase() + val.shape.slice(1) : '—'
       const pct = val.hip_percentage != null ? ` (${val.hip_percentage}% hip)` : ''
-      return <span style={{ ...F.sans, fontSize: 13, color: C.text }}>{shape}{pct}</span>
+      return <span style={{ fontFamily: T.font, fontSize: 13, color: T.text }}>{shape}{pct}</span>
     }
 
     if (key === 'secondary_water_resistance') {
       const present = val.present
       return (
-        <span style={{ ...F.sans, fontSize: 13, color: present ? '#065F46' : C.danger, fontWeight: 600 }}>
+        <span style={{ fontFamily: T.font, fontSize: 13, color: present ? '#065F46' : '#DC2626', fontWeight: 600 }}>
           {present ? '✓ Present' : '✗ Not present'}{val.type ? ` — ${val.type}` : ''}
         </span>
       )
@@ -560,7 +682,7 @@ function WindMitOutput({ wm }) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         {val.selection && <SelectionBadge letter={val.selection} />}
-        <span style={{ ...F.sans, fontSize: 13, color: C.text }}>{val.description || '—'}</span>
+        <span style={{ fontFamily: T.font, fontSize: 13, color: T.text }}>{val.description || '—'}</span>
       </div>
     )
   }
@@ -569,7 +691,7 @@ function WindMitOutput({ wm }) {
     <div className="ip-section">
       {sections.map(({ key, value }) => (
         <div key={key} className="ip-field-row">
-          <div style={{ ...F.sans, fontSize: 12, fontWeight: 600, color: C.muted, width: 180, flexShrink: 0, paddingTop: 2 }}>
+          <div style={{ fontFamily: T.font, fontSize: 12, fontWeight: 600, color: T.muted, width: 180, flexShrink: 0, paddingTop: 2 }}>
             {WIND_MIT_LABELS[key]}
           </div>
           <div style={{ flex: 1 }}>
@@ -584,29 +706,29 @@ function WindMitOutput({ wm }) {
 function FourPointOutput({ fp }) {
   const systems = [
     { label: 'Roof',       icon: '🏠', data: fp.roof,       fields: [
-      { label: 'Material',          value: fp.roof?.material },
-      { label: 'Age',               value: fp.roof?.age_years != null ? `${fp.roof.age_years} years` : null },
-      { label: 'Est. remaining life', value: fp.roof?.estimated_remaining_life_years != null ? `${fp.roof.estimated_remaining_life_years} years` : null },
-      { label: 'Notes',             value: fp.roof?.notes },
+      { label: 'Material',              value: fp.roof?.material },
+      { label: 'Age',                   value: fp.roof?.age_years != null ? `${fp.roof.age_years} years` : null },
+      { label: 'Est. remaining life',   value: fp.roof?.estimated_remaining_life_years != null ? `${fp.roof.estimated_remaining_life_years} years` : null },
+      { label: 'Notes',                 value: fp.roof?.notes },
     ]},
     { label: 'HVAC',       icon: '❄️', data: fp.hvac,       fields: [
-      { label: 'Type',              value: fp.hvac?.type },
-      { label: 'Brand',             value: fp.hvac?.brand },
-      { label: 'Age',               value: fp.hvac?.age_years != null ? `${fp.hvac.age_years} years` : null },
-      { label: 'Notes',             value: fp.hvac?.notes },
+      { label: 'Type',                  value: fp.hvac?.type },
+      { label: 'Brand',                 value: fp.hvac?.brand },
+      { label: 'Age',                   value: fp.hvac?.age_years != null ? `${fp.hvac.age_years} years` : null },
+      { label: 'Notes',                 value: fp.hvac?.notes },
     ]},
     { label: 'Plumbing',   icon: '🔧', data: fp.plumbing,   fields: [
-      { label: 'Supply lines',      value: fp.plumbing?.supply_material },
-      { label: 'Drain lines',       value: fp.plumbing?.drain_material },
-      { label: 'Water heater age',  value: fp.plumbing?.water_heater_age_years != null ? `${fp.plumbing.water_heater_age_years} years` : null },
-      { label: 'Notes',             value: fp.plumbing?.notes },
+      { label: 'Supply lines',          value: fp.plumbing?.supply_material },
+      { label: 'Drain lines',           value: fp.plumbing?.drain_material },
+      { label: 'Water heater age',      value: fp.plumbing?.water_heater_age_years != null ? `${fp.plumbing.water_heater_age_years} years` : null },
+      { label: 'Notes',                 value: fp.plumbing?.notes },
     ]},
     { label: 'Electrical', icon: '⚡', data: fp.electrical, fields: [
-      { label: 'Panel brand',       value: fp.electrical?.panel_brand },
-      { label: 'Panel type',        value: fp.electrical?.panel_type?.replace('_', ' ') },
-      { label: 'Service size',      value: fp.electrical?.service_amps ? `${fp.electrical.service_amps} amps` : null },
-      { label: 'Wiring',            value: fp.electrical?.wiring_type },
-      { label: 'Notes',             value: fp.electrical?.notes },
+      { label: 'Panel brand',           value: fp.electrical?.panel_brand },
+      { label: 'Panel type',            value: fp.electrical?.panel_type?.replace('_', ' ') },
+      { label: 'Service size',          value: fp.electrical?.service_amps ? `${fp.electrical.service_amps} amps` : null },
+      { label: 'Wiring',                value: fp.electrical?.wiring_type },
+      { label: 'Notes',                 value: fp.electrical?.notes },
     ]},
   ]
 
@@ -616,13 +738,13 @@ function FourPointOutput({ fp }) {
         <div key={sys.label} className="ip-section">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{ fontSize: 18 }}>{sys.icon}</span>
-            <span style={{ ...F.sans, fontSize: 15, fontWeight: 700, color: C.text }}>{sys.label}</span>
+            <span style={{ fontFamily: T.font, fontSize: 15, fontWeight: 700, color: T.text }}>{sys.label}</span>
             {sys.data?.condition && <ConditionBadge condition={sys.data.condition} />}
           </div>
           {sys.fields.filter(f => f.value).map(f => (
             <div key={f.label} className="ip-field-row">
-              <div style={{ ...F.sans, fontSize: 12, fontWeight: 600, color: C.muted, width: 160, flexShrink: 0, paddingTop: 1 }}>{f.label}</div>
-              <div style={{ ...F.sans, fontSize: 13, color: C.text }}>{f.value}</div>
+              <div style={{ fontFamily: T.font, fontSize: 12, fontWeight: 600, color: T.muted, width: 160, flexShrink: 0, paddingTop: 1 }}>{f.label}</div>
+              <div style={{ fontFamily: T.font, fontSize: 13, color: T.text }}>{f.value}</div>
             </div>
           ))}
         </div>
@@ -637,8 +759,8 @@ function FlagsSection({ flags }) {
       <div style={{ background: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 10, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ fontSize: 20 }}>✅</span>
         <div>
-          <div style={{ ...F.sans, fontSize: 14, fontWeight: 700, color: '#065F46' }}>No red flags</div>
-          <div style={{ ...F.sans, fontSize: 13, color: '#047857', marginTop: 2 }}>Nothing found that would prevent placement with standard carriers.</div>
+          <div style={{ fontFamily: T.font, fontSize: 14, fontWeight: 700, color: '#065F46' }}>No red flags</div>
+          <div style={{ fontFamily: T.font, fontSize: 13, color: '#047857', marginTop: 2 }}>Nothing found that would prevent placement with standard carriers.</div>
         </div>
       </div>
     )
@@ -653,8 +775,8 @@ function FlagsSection({ flags }) {
         <div key={i} className="ip-flag-critical">
           <span style={{ fontSize: 18, flexShrink: 0 }}>🚨</span>
           <div>
-            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: '#991B1B' }}>{f.code.replace(/_/g, ' ')}</div>
-            <div style={{ ...F.sans, fontSize: 13, color: '#B91C1C', marginTop: 2 }}>{f.message}</div>
+            <div style={{ fontFamily: T.font, fontSize: 13, fontWeight: 700, color: '#991B1B' }}>{f.code.replace(/_/g, ' ')}</div>
+            <div style={{ fontFamily: T.font, fontSize: 13, color: '#B91C1C', marginTop: 2 }}>{f.message}</div>
           </div>
         </div>
       ))}
@@ -662,8 +784,8 @@ function FlagsSection({ flags }) {
         <div key={i} className="ip-flag-warning">
           <span style={{ fontSize: 18, flexShrink: 0 }}>⚠️</span>
           <div>
-            <div style={{ ...F.sans, fontSize: 13, fontWeight: 700, color: '#92400E' }}>{f.code.replace(/_/g, ' ')}</div>
-            <div style={{ ...F.sans, fontSize: 13, color: '#B45309', marginTop: 2 }}>{f.message}</div>
+            <div style={{ fontFamily: T.font, fontSize: 13, fontWeight: 700, color: '#92400E' }}>{f.code.replace(/_/g, ' ')}</div>
+            <div style={{ fontFamily: T.font, fontSize: 13, color: '#B45309', marginTop: 2 }}>{f.message}</div>
           </div>
         </div>
       ))}
@@ -675,62 +797,88 @@ function BindIQScore({ bs }) {
   if (!bs) return null
 
   const map = {
-    likely_bind:      { bg: 'rgba(16,185,129,0.07)', border: '1.5px solid rgba(16,185,129,0.28)', barColor: '#10B981', scoreColor: '#065F46', labelBg: 'rgba(16,185,129,0.14)', emoji: '🟢', label: 'Likely to Bind' },
-    conditional_risk: { bg: 'rgba(245,158,11,0.07)', border: '1.5px solid rgba(245,158,11,0.30)', barColor: '#F59E0B', scoreColor: '#92400E', labelBg: 'rgba(245,158,11,0.14)', emoji: '🟡', label: 'Conditional Risk' },
-    likely_decline:   { bg: 'rgba(239,68,68,0.07)',  border: '1.5px solid rgba(239,68,68,0.28)',  barColor: '#EF4444', scoreColor: '#991B1B', labelBg: 'rgba(239,68,68,0.14)',  emoji: '🔴', label: 'Likely Decline' },
+    likely_bind:      { bg: 'rgba(16,185,129,0.07)', border: '1.5px solid rgba(16,185,129,0.28)', barColor: '#10B981', scoreColor: '#065F46', emoji: '🟢', label: 'Likely to Bind' },
+    conditional_risk: { bg: 'rgba(245,158,11,0.07)', border: '1.5px solid rgba(245,158,11,0.30)', barColor: '#F59E0B', scoreColor: '#92400E', emoji: '🟡', label: 'Conditional Risk' },
+    likely_decline:   { bg: 'rgba(239,68,68,0.07)',  border: '1.5px solid rgba(239,68,68,0.28)',  barColor: '#EF4444', scoreColor: '#991B1B', emoji: '🔴', label: 'Likely Decline' },
   }
   const s = map[bs.label] || map.conditional_risk
 
   return (
     <div style={{ background: s.bg, border: s.border, borderRadius: 16, padding: '24px 26px', marginBottom: 24 }}>
-      {/* Score + label row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 16 }}>
         <div style={{ flexShrink: 0 }}>
-          <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: s.scoreColor, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 4 }}>BindIQ Score</div>
+          <div style={{ fontFamily: T.font, fontSize: 11, fontWeight: 700, color: s.scoreColor, letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: 4 }}>BindIQ Score</div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 3, lineHeight: 1 }}>
-            <span style={{ ...F.sans, fontSize: 56, fontWeight: 800, color: s.scoreColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{bs.score}</span>
-            <span style={{ ...F.sans, fontSize: 15, color: s.scoreColor, opacity: 0.45, fontWeight: 600 }}>/100</span>
+            <span style={{ fontFamily: T.font, fontSize: 56, fontWeight: 800, color: s.scoreColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{bs.score}</span>
+            <span style={{ fontFamily: T.font, fontSize: 15, color: s.scoreColor, opacity: 0.45, fontWeight: 600 }}>/100</span>
           </div>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <span style={{ fontSize: 20 }}>{s.emoji}</span>
-            <span style={{ ...F.sans, fontSize: 17, fontWeight: 800, color: s.scoreColor, letterSpacing: '-0.01em' }}>{s.label}</span>
+            <span style={{ fontFamily: T.font, fontSize: 17, fontWeight: 800, color: s.scoreColor, letterSpacing: '-0.01em' }}>{s.label}</span>
           </div>
           <div style={{ height: 8, background: 'rgba(0,0,0,0.07)', borderRadius: 4, overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${bs.score}%`, background: s.barColor, borderRadius: 4, transition: 'width 1s ease' }} />
           </div>
-          <div style={{ ...F.sans, fontSize: 11, color: s.scoreColor, opacity: 0.55, marginTop: 5 }}>{bs.scoreSubtitle || 'Standard carrier placement likelihood'}</div>
+          <div style={{ fontFamily: T.font, fontSize: 11, color: s.scoreColor, opacity: 0.55, marginTop: 5 }}>{bs.scoreSubtitle || 'Standard carrier placement likelihood'}</div>
         </div>
       </div>
 
-      {/* Why this score */}
       {bs.reasons?.length > 0 && (
         <div style={{ marginBottom: 16 }}>
-          <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: s.scoreColor, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Why this score</div>
+          <div style={{ fontFamily: T.font, fontSize: 11, fontWeight: 700, color: s.scoreColor, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Why this score</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {bs.reasons.map((r, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-                <span style={{ ...F.sans, fontSize: 13, color: s.scoreColor, flexShrink: 0, marginTop: 1 }}>·</span>
-                <span style={{ ...F.sans, fontSize: 13, color: s.scoreColor, lineHeight: 1.55, opacity: 0.85 }}>{r}</span>
+                <span style={{ fontFamily: T.font, fontSize: 13, color: s.scoreColor, flexShrink: 0, marginTop: 1 }}>·</span>
+                <span style={{ fontFamily: T.font, fontSize: 13, color: s.scoreColor, lineHeight: 1.55, opacity: 0.85 }}>{r}</span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Carrier impact */}
       {bs.carrier_impact && (
         <div style={{ paddingTop: 14, borderTop: `1px solid ${s.barColor}22` }}>
-          <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: s.scoreColor, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>Carrier impact</div>
-          <div style={{ ...F.sans, fontSize: 13, color: s.scoreColor, lineHeight: 1.65, opacity: 0.8 }}>{bs.carrier_impact}</div>
+          <div style={{ fontFamily: T.font, fontSize: 11, fontWeight: 700, color: s.scoreColor, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>Carrier impact</div>
+          <div style={{ fontFamily: T.font, fontSize: 13, color: s.scoreColor, lineHeight: 1.65, opacity: 0.8 }}>{bs.carrier_impact}</div>
         </div>
       )}
     </div>
   )
 }
 
-function InspectionOutput({ result, onReset }) {
+function UsageNudge({ embed }) {
+  if (embed) return null
+  const uses = getLocalUses()
+  const email = getStoredEmail()
+  if (uses === 0 || uses >= 3) return null
+  const remaining = 3 - uses
+  const isLastFree = remaining === 1 && !email
+
+  return (
+    <div style={{
+      fontFamily: T.font, fontSize: 13, fontWeight: 500,
+      background: isLastFree ? 'rgba(245,158,11,0.08)' : 'rgba(4,37,108,0.05)',
+      border: `1px solid ${isLastFree ? 'rgba(245,158,11,0.30)' : 'rgba(4,37,108,0.14)'}`,
+      borderRadius: 10, padding: '10px 16px', marginBottom: 20,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+    }}>
+      <span style={{ color: isLastFree ? '#92400E' : T.muted }}>
+        {isLastFree
+          ? '⚠️ This is your last free report. Enter your email to continue after this.'
+          : `✓ Report ${uses} of 3 free reports used — ${remaining} remaining.`
+        }
+      </span>
+      <Link to="/sign-up" style={{ fontFamily: T.font, fontSize: 12, fontWeight: 700, color: T.navy, textDecoration: 'none', whiteSpace: 'nowrap' }}>
+        Upgrade for unlimited →
+      </Link>
+    </div>
+  )
+}
+
+function InspectionOutput({ result, onReset, embed }) {
   const { form_type, property, wind_mitigation, four_point, flags, insurability_summary, bind_score } = result
   const [copied, setCopied] = useState(false)
 
@@ -749,13 +897,11 @@ function InspectionOutput({ result, onReset }) {
       property?.inspection_date ? `Inspected: ${property.inspection_date}` : '',
       '',
     ]
-
     if (bind_score?.reasons?.length) {
       lines.push('Score reasons:')
       bind_score.reasons.forEach(r => lines.push(`  · ${r}`))
       lines.push('')
     }
-
     if (flags?.length) {
       lines.push('Flags:')
       flags.forEach(f => lines.push(`  ${f.severity === 'critical' ? '🚨' : '⚠️'} ${f.code.replace(/_/g, ' ')}: ${f.message}`))
@@ -764,13 +910,11 @@ function InspectionOutput({ result, onReset }) {
       lines.push('✅ No red flags found')
       lines.push('')
     }
-
     if (bind_score?.carrier_impact) {
       lines.push('Carrier impact:', bind_score.carrier_impact)
     } else if (insurability_summary) {
       lines.push('Summary:', insurability_summary)
     }
-
     return lines.filter(Boolean).join('\n')
   }
 
@@ -781,19 +925,22 @@ function InspectionOutput({ result, onReset }) {
   }
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '0 20px 60px' }}>
+    <div style={{ maxWidth: 700, margin: '0 auto', padding: '0 20px 60px' }}>
 
-      {/* Header */}
+      {/* Conversion nudge bar */}
+      <UsageNudge embed={embed} />
+
+      {/* Result header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: C.accent, textTransform: 'uppercase', marginBottom: 4 }}>
+          <div style={{ fontFamily: T.font, fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', color: T.navy, textTransform: 'uppercase', marginBottom: 4 }}>
             {formLabel}
           </div>
-          <div style={{ ...F.sans, fontSize: 22, fontWeight: 800, color: C.text, letterSpacing: '-0.02em' }}>
+          <div style={{ fontFamily: T.font, fontSize: 22, fontWeight: 800, color: T.text, letterSpacing: '-0.02em' }}>
             {property?.address || 'Inspection Results'}
           </div>
           {(property?.inspection_date || property?.inspector_name) && (
-            <div style={{ ...F.sans, fontSize: 13, color: C.muted, marginTop: 4 }}>
+            <div style={{ fontFamily: T.font, fontSize: 13, color: T.muted, marginTop: 4 }}>
               {[property.inspection_date, property.inspector_name, property.license_number].filter(Boolean).join(' · ')}
             </div>
           )}
@@ -802,26 +949,33 @@ function InspectionOutput({ result, onReset }) {
           <button className={`copy-btn${copied ? ' copied' : ''}`} onClick={handleCopy}>
             {copied ? '✓ Copied' : 'Copy summary'}
           </button>
-          <button className="ip-btn-outline" onClick={onReset} style={{ fontSize: 12, padding: '6px 12px' }}>
-            New inspection
-          </button>
+          {!embed && (
+            <button className="ip-btn-outline" onClick={onReset} style={{ fontSize: 12, padding: '6px 12px' }}>
+              New inspection
+            </button>
+          )}
+          {embed && (
+            <a href="/inspect" style={{ fontFamily: T.font, fontSize: 12, padding: '6px 12px', borderRadius: 8, border: `1.5px solid ${T.border}`, color: T.navy, textDecoration: 'none', fontWeight: 600 }}>
+              Try with your report →
+            </a>
+          )}
         </div>
       </div>
 
-      {/* BindIQ Score — first thing the agent sees */}
+      {/* Score card */}
       <BindIQScore bs={bind_score} />
 
-      {/* Flags */}
+      {/* Red flags */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+        <div style={{ fontFamily: T.font, fontSize: 12, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
           Red Flags
         </div>
         <FlagsSection flags={flags} />
       </div>
 
-      {/* Form data */}
+      {/* Mitigation selections / inspection results */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+        <div style={{ fontFamily: T.font, fontSize: 12, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
           {form_type === 'wind_mitigation' ? 'Mitigation Selections' : 'Inspection Results'}
         </div>
         {form_type === 'wind_mitigation' && wind_mitigation && <WindMitOutput wm={wind_mitigation} />}
@@ -831,10 +985,10 @@ function InspectionOutput({ result, onReset }) {
       {/* Insurability summary */}
       {insurability_summary && (
         <div style={{ background: 'rgba(4,37,108,0.03)', border: '1px solid rgba(4,37,108,0.12)', borderRadius: 12, padding: '18px 20px' }}>
-          <div style={{ ...F.sans, fontSize: 12, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
+          <div style={{ fontFamily: T.font, fontSize: 12, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>
             Insurability Summary
           </div>
-          <div style={{ ...F.sans, fontSize: 14, color: C.text, lineHeight: 1.7 }}>
+          <div style={{ fontFamily: T.font, fontSize: 14, color: T.text, lineHeight: 1.7 }}>
             {insurability_summary}
           </div>
         </div>
@@ -863,16 +1017,10 @@ function EmailGate({ onSubmit, onDismiss }) {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(15,31,61,0.55)', backdropFilter: 'blur(6px)' }}>
       <div style={{ background: '#fff', borderRadius: 20, padding: 40, maxWidth: 440, width: '100%', boxShadow: '0 24px 80px rgba(15,31,61,0.25)', textAlign: 'center' }}>
-        <div style={{ width: 52, height: 52, borderRadius: '50%', background: C.accentBg, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', fontSize: 24 }}>
-          📄
-        </div>
-        <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-          Continue for free
-        </div>
-        <h2 style={{ ...F.sans, fontSize: 22, fontWeight: 800, color: C.text, margin: '0 0 10px', letterSpacing: '-0.02em' }}>
-          Get 2 more free reports
-        </h2>
-        <p style={{ ...F.sans, fontSize: 14, color: C.muted, lineHeight: 1.65, margin: '0 0 24px' }}>
+        <div style={{ width: 52, height: 52, borderRadius: '50%', background: T.navyLight, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', fontSize: 24 }}>📄</div>
+        <div style={{ fontFamily: T.font, fontSize: 11, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Continue for free</div>
+        <h2 style={{ fontFamily: T.font, fontSize: 22, fontWeight: 800, color: T.text, margin: '0 0 10px', letterSpacing: '-0.02em' }}>Get 2 more free reports</h2>
+        <p style={{ fontFamily: T.font, fontSize: 14, color: T.muted, lineHeight: 1.65, margin: '0 0 24px' }}>
           Enter your email to continue — no password, no credit card.
         </p>
         <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
@@ -882,21 +1030,18 @@ function EmailGate({ onSubmit, onDismiss }) {
             value={email}
             onChange={e => { setEmail(e.target.value); setErr('') }}
             autoFocus
-            style={{ ...F.sans, width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: 9, border: `1.5px solid ${err ? C.danger : C.border}`, fontSize: 14, color: C.text, outline: 'none', marginBottom: 8 }}
+            style={{ fontFamily: T.font, width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: 9, border: `1.5px solid ${err ? '#DC2626' : T.border}`, fontSize: 14, color: T.text, outline: 'none', marginBottom: 8 }}
           />
-          {err && <p style={{ ...F.sans, fontSize: 12, color: C.danger, margin: '0 0 10px' }}>{err}</p>}
+          {err && <p style={{ fontFamily: T.font, fontSize: 12, color: '#DC2626', margin: '0 0 10px' }}>{err}</p>}
           <button
             type="submit"
             disabled={busy}
-            style={{ ...F.sans, width: '100%', padding: '13px', background: C.accent, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1, boxShadow: '0 4px 16px rgba(4,37,108,0.30)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+            style={{ fontFamily: T.font, width: '100%', padding: '13px', background: T.navy, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.6 : 1, boxShadow: '0 4px 16px rgba(4,37,108,0.30)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
           >
             {busy ? <><div style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'ipspin 0.7s linear infinite' }} />Checking...</> : 'Continue →'}
           </button>
         </form>
-        <button
-          onClick={onDismiss}
-          style={{ ...F.sans, fontSize: 13, color: C.muted, background: 'none', border: 'none', cursor: 'pointer', padding: '12px 0 0', display: 'block', margin: '0 auto' }}
-        >
+        <button onClick={onDismiss} style={{ fontFamily: T.font, fontSize: 13, color: T.muted, background: 'none', border: 'none', cursor: 'pointer', padding: '12px 0 0', display: 'block', margin: '0 auto' }}>
           Maybe later
         </button>
       </div>
@@ -910,33 +1055,27 @@ function PaywallGate() {
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, background: 'rgba(15,31,61,0.55)', backdropFilter: 'blur(6px)' }}>
       <div style={{ background: '#fff', borderRadius: 20, padding: 40, maxWidth: 460, width: '100%', boxShadow: '0 24px 80px rgba(15,31,61,0.25)', textAlign: 'center' }}>
-        <div style={{ width: 52, height: 52, borderRadius: '50%', background: C.accentBg, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', fontSize: 24 }}>
-          📄
-        </div>
-        <div style={{ ...F.sans, fontSize: 11, fontWeight: 700, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
-          Free limit reached
-        </div>
-        <h2 style={{ ...F.sans, fontSize: 22, fontWeight: 800, color: C.text, margin: '0 0 10px', letterSpacing: '-0.02em' }}>
-          You've used your 3 free reports
-        </h2>
-        <p style={{ ...F.sans, fontSize: 14, color: C.muted, lineHeight: 1.65, margin: '0 0 28px' }}>
+        <div style={{ width: 52, height: 52, borderRadius: '50%', background: T.navyLight, border: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', fontSize: 24 }}>📄</div>
+        <div style={{ fontFamily: T.font, fontSize: 11, fontWeight: 700, color: T.navy, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Free limit reached</div>
+        <h2 style={{ fontFamily: T.font, fontSize: 22, fontWeight: 800, color: T.text, margin: '0 0 10px', letterSpacing: '-0.02em' }}>You've used your 3 free reports</h2>
+        <p style={{ fontFamily: T.font, fontSize: 14, color: T.muted, lineHeight: 1.65, margin: '0 0 28px' }}>
           Subscribe for unlimited 4-point and wind mitigation extractions — plus automatic red flag detection on every report.
         </p>
-        <div style={{ background: C.bgAlt, border: `1px solid ${C.border}`, borderRadius: 12, padding: '14px 20px', marginBottom: 24, textAlign: 'left' }}>
+        <div style={{ background: T.surface, border: `1px solid ${T.border}`, borderRadius: 12, padding: '14px 20px', marginBottom: 24, textAlign: 'left' }}>
           {['Unlimited extractions', 'Automatic red flag detection', 'All supported state forms', 'Cancel any time'].map(item => (
             <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="rgba(16,185,129,0.12)"/><path d="M4.5 7l1.8 1.8L9.5 5" stroke={C.positive} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-              <span style={{ ...F.sans, fontSize: 13, color: C.text }}>{item}</span>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="7" r="6" fill="rgba(16,185,129,0.12)"/>
+                <path d="M4.5 7l1.8 1.8L9.5 5" stroke={T.green} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span style={{ fontFamily: T.font, fontSize: 13, color: T.text }}>{item}</span>
             </div>
           ))}
-          <div style={{ ...F.sans, fontSize: 20, fontWeight: 800, color: C.text, marginTop: 12, letterSpacing: '-0.02em' }}>
-            $79<span style={{ fontSize: 13, fontWeight: 500, color: C.muted }}>/mo · or $59/mo billed annually</span>
+          <div style={{ fontFamily: T.font, fontSize: 20, fontWeight: 800, color: T.text, marginTop: 12, letterSpacing: '-0.02em' }}>
+            $79<span style={{ fontSize: 13, fontWeight: 500, color: T.muted }}>/mo · or $59/mo billed annually</span>
           </div>
         </div>
-        <Link
-          to="/sign-up"
-          style={{ ...F.sans, display: 'block', width: '100%', padding: '14px', background: C.accent, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 4px 16px rgba(4,37,108,0.30)' }}
-        >
+        <Link to="/sign-up" style={{ fontFamily: T.font, display: 'block', width: '100%', padding: '14px', background: T.navy, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 4px 16px rgba(4,37,108,0.30)' }}>
           Choose a plan →
         </Link>
       </div>
@@ -948,11 +1087,22 @@ function PaywallGate() {
 
 export default function InspectionPage() {
   const [searchParams] = useSearchParams()
-  const initialMode = searchParams.get('mode') // e.g. ?mode=sample
+  const initialMode = searchParams.get('mode')
+  const embed = searchParams.get('embed') === '1'
   const [stage, setStage] = useState(initialMode ? 'input' : 'entry')
+
+  // Sync signed-in user's email to localStorage so they bypass the email gate
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email && !getStoredEmail()) {
+        saveEmail(session.user.email)
+      }
+    })
+  }, [])
+
   const [inputMode, setInputMode] = useState(initialMode)
-  const [result, setResult] = useState(null)
-  const stateCode = useDetectedState()
+  const [result, setResult]       = useState(null)
+  const stateCode   = useDetectedState()
   const stateConfig = getStateConfig(stateCode)
 
   function handleSelect(mode) {
@@ -973,9 +1123,9 @@ export default function InspectionPage() {
   return (
     <>
       <style>{PAGE_CSS}</style>
-      <div style={{ minHeight: '100vh', background: C.bg, paddingTop: 72, paddingBottom: 40 }}>
+      <div style={{ minHeight: embed ? 'auto' : '100vh', background: T.surface, paddingTop: embed ? 20 : 100, paddingBottom: embed ? 24 : 40 }}>
         {result ? (
-          <InspectionOutput result={result} onReset={handleReset} />
+          <InspectionOutput result={result} onReset={handleReset} embed={embed} />
         ) : stage === 'entry' ? (
           <EntryScreen onSelect={handleSelect} stateConfig={stateConfig} />
         ) : (
@@ -984,6 +1134,7 @@ export default function InspectionPage() {
             autoGenerate={inputMode === 'sample'}
             onResult={handleResult}
             stateConfig={stateConfig}
+            embed={embed}
           />
         )}
       </div>

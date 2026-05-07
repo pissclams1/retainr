@@ -12,7 +12,7 @@ export default function AuthGuard({ children }) {
     )
   }
 
-  if (!session) return <Navigate to="/login" replace />
+  if (!session) return <Navigate to="/sign-in" replace />
 
   return children
 }
