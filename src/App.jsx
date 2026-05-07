@@ -1,9 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
-import { createClient } from '@supabase/supabase-js'
 import { ClerkProvider } from '@clerk/clerk-react'
-
-const _supabase = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY)
 
 // Handles /auth/confirm — Clerk handles magic link confirmation automatically
 // This page is now just a redirect to the inspection page

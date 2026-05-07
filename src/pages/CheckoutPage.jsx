@@ -1,12 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
 import { PRICE_IDS, PLANS } from '../lib/plans'
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-)
 
 const F = { sans: { fontFamily: "'DM Sans', system-ui, -apple-system, sans-serif" } }
 const C = {

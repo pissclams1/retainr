@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
 import { getStateConfig } from '../config/states'
 import { useDetectedState } from '../hooks/useDetectedState'
 import UpgradeModal from '../components/UpgradeModal'
@@ -20,11 +20,6 @@ async function trackUsage(email, supabaseClient, accessToken = null) {
     return data ?? { allowed: false }
   } catch { return { allowed: false } }
 }
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-)
 
 const T = {
   navy:       '#04256C',

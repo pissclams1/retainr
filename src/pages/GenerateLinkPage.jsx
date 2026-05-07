@@ -1,11 +1,6 @@
 import { useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
 import { Link } from 'react-router-dom'
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-)
 
 // ── Shared usage gate (same keys as InspectionPage) ───────────────────────────
 const USES_KEY  = 'bindiq_uses'

@@ -1,13 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
 import { useDetectedState } from '../hooks/useDetectedState'
 import { getStateConfig } from '../config/states'
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY,
-)
 
 const C = {
   navy: '#04256C',
