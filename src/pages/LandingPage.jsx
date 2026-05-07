@@ -588,7 +588,7 @@ function Pricing() {
                 </div>
 
                 <Link
-                  to={`/checkout?plan=${plan.key}`}
+                  to={`/checkout?plan=${plan.key}&billing=${annual ? 'annual' : 'monthly'}`}
                   style={{
                     fontFamily: T.font, display: 'block', textAlign: 'center', textDecoration: 'none',
                     padding: '11px 16px', borderRadius: 10, fontSize: 14, fontWeight: 700,

@@ -35,11 +35,12 @@ export default function CheckoutPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  // Allow pre-selecting a plan via ?plan=pro
+  // Allow pre-selecting a plan via ?plan=pro and billing via ?billing=annual
   const initialPlan = PLAN_KEYS.includes(searchParams.get('plan')) ? searchParams.get('plan') : 'pro'
+  const initialBilling = searchParams.get('billing') === 'annual' ? 'annual' : 'monthly'
 
   const [selectedPlan, setSelectedPlan] = useState(initialPlan)
-  const [billing, setBilling] = useState('monthly')
+  const [billing, setBilling] = useState(initialBilling)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -63,7 +64,7 @@ export default function CheckoutPage() {
         body: {
           price_id: priceId,
           success_url: `${window.location.origin}/inspect?subscribed=1`,
-          cancel_url:  `${window.location.origin}/checkout?plan=${selectedPlan}`,
+          cancel_url:  `${window.location.origin}/checkout?plan=${selectedPlan}&billing=${billing}`,
         },
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -214,7 +215,7 @@ export default function CheckoutPage() {
 
         <p style={{ ...F.sans, fontSize: 13, color: C.muted, textAlign: 'center', marginTop: 20 }}>
           Already have an account?{' '}
-          <Link to="/sign-up" style={{ color: C.accent, fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
+          <Link to="/sign-in" style={{ color: C.accent, fontWeight: 600, textDecoration: 'none' }}>Sign in</Link>
         </p>
       </div>
     </div>

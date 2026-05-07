@@ -360,29 +360,60 @@ Deno.serve(async (req) => {
       : 'FL'
 
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY')
-    if (!apiKey) return err('ANTHROPIC_API_KEY secret not set', 500)
+    if (!apiKey) {
+      console.error('ANTHROPIC_API_KEY not configured in Edge Function environment')
+      return err('Extraction service is not configured. Please contact support.', 503)
+    }
 
     if (rawText.length < 50) return err('Text too short — paste more of the inspection report')
     if (rawText.length > 60000) return err('Text too long — try a shorter excerpt')
 
-    const client = new Anthropic({ apiKey })
+    let message
+    try {
+      const client = new Anthropic({ apiKey })
+      message = await client.messages.create({
+        model: 'claude-haiku-4-5',
+        max_tokens: 1024,
+        temperature: 0,
+        system: buildSystemPrompt(stateCode),
+        messages: [{ role: 'user', content: USER_TEMPLATE(rawText) }],
+      })
+    } catch (apiErr) {
+      const apiMsg = apiErr instanceof Error ? apiErr.message : String(apiErr)
+      console.error('Anthropic API error:', apiMsg)
 
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5',
-      max_tokens: 1024,
-      temperature: 0,
-      system: buildSystemPrompt(stateCode),
-      messages: [{ role: 'user', content: USER_TEMPLATE(rawText) }],
-    })
+      if (apiMsg.includes('401') || apiMsg.includes('authentication') || apiMsg.includes('invalid_api_key')) {
+        return err('Extraction service authentication failed. Please contact support.', 503)
+      }
+      if (apiMsg.includes('429') || apiMsg.includes('rate_limit')) {
+        return err('Extraction service is temporarily overloaded. Please try again in a moment.', 429)
+      }
+      if (apiMsg.includes('timeout')) {
+        return err('Extraction timed out. The document may be too complex — try a shorter excerpt.', 504)
+      }
+
+      return err(`Extraction service error: ${apiMsg}`, 503)
+    }
+
+    if (!message.content || message.content.length === 0) {
+      console.error('Empty response from Anthropic API')
+      return err('Model returned empty response. Try again.', 500)
+    }
 
     const raw     = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+    if (!raw) {
+      console.error('No text content in API response')
+      return err('Model returned non-text response. Try again.', 500)
+    }
+
     const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim()
 
     let result: Record<string, unknown>
     try {
       result = JSON.parse(cleaned)
-    } catch {
-      console.error('JSON parse failed:', cleaned.slice(0, 400))
+    } catch (parseErr) {
+      const parseMsg = parseErr instanceof Error ? parseErr.message : String(parseErr)
+      console.error('JSON parse failed:', cleaned.slice(0, 200), '—', parseMsg)
       return err('Extraction failed — model returned malformed output. Try again.', 500)
     }
 
@@ -394,11 +425,12 @@ Deno.serve(async (req) => {
     result.state = stateCode
 
     return new Response(JSON.stringify({ result }), {
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e)
-    console.error('extract-inspection error:', msg)
+    console.error('extract-inspection unhandled error:', msg, e instanceof Error ? e.stack : '')
     return err(`Internal error: ${msg}`, 500)
   }
 })

@@ -44,6 +44,7 @@ import GenerateLinkPage from './pages/GenerateLinkPage'
 import IntakePage from './pages/IntakePage'
 import AdminPage from './pages/AdminPage'
 import DemoCapturePage from './pages/DemoCapturePage'
+import NotFoundPage from './pages/NotFoundPage'
 
 function Placeholder({ label }) {
   return (
@@ -112,7 +113,7 @@ export default function App() {
         } />
         <Route path="/admin" element={<AdminPage />} />
         <Route path="/demo-capture" element={<DemoCapturePage />} />
-        <Route path="*" element={<Navigate to="/inspect" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       </BrowserRouter>
     </ClerkProvider>
