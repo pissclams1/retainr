@@ -424,7 +424,6 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
       if (data?.error) throw new Error(data.error)
       stopProgress()
       setProgress(100)
-      await new Promise(r => setTimeout(r, 300))
       if (!isSample) incLocalUses()
       onResult(data.result)
     } catch (e) {
