@@ -458,29 +458,28 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
   }, [autoGenerate, extract])
 
   async function handleFiles(fileList) {
-    const files = Array.from(fileList).slice(0, 2)
+    const files = Array.from(fileList).slice(0, 1)  // Only process first file — concurrent uploads break extraction
     if (files.length === 0) return
     setFileNames(files.map(f => f.name))
     setError(null)
     setStage('Extracting text from PDFs...')
     try {
-      const texts = await Promise.all(files.map(async f => {
-        if (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) {
-          const extracted = await extractTextFromPDF(f)
-          if (!extracted || extracted.length < 50) {
-            throw new Error(`Could not extract text from ${f.name} — it may be a scanned image.`)
-          }
-          return extracted
-        } else {
-          return await new Promise((resolve, reject) => {
-            const reader = new FileReader()
-            reader.onload = e => resolve(e.target.result)
-            reader.onerror = () => reject(new Error(`Could not read ${f.name}`))
-            reader.readAsText(f)
-          })
+      const file = files[0]
+      let text
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+        text = await extractTextFromPDF(file)
+        if (!text || text.length < 50) {
+          throw new Error(`Could not extract text from ${file.name} — it may be a scanned image.`)
         }
-      }))
-      setText(texts.length > 1 ? texts.join('\n\n--- SECOND DOCUMENT ---\n\n') : texts[0])
+      } else {
+        text = await new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = e => resolve(e.target.result)
+          reader.onerror = () => reject(new Error(`Could not read ${file.name}`))
+          reader.readAsText(file)
+        })
+      }
+      setText(text)
       setStage('')
       setMode('paste')
     } catch (e) {
