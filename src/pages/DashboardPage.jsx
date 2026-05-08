@@ -65,53 +65,12 @@ function Logo({ size = 17 }) {
   )
 }
 
-function ScoreBadge({ score }) {
-  const color = score >= 70 ? T.greenDark : score >= 40 ? '#92400E' : '#991B1B'
-  return (
-    <span>
-      <span style={{ fontSize: 15, fontWeight: 800, color }}>{score}</span>
-      <span style={{ fontSize: 13, color: T.subtle }}>/100</span>
-    </span>
-  )
-}
 
-function VerdictBadge({ verdict }) {
-  const map = {
-    'Likely to Bind':   { bg: 'rgba(16,185,129,0.10)',  color: T.greenDark },
-    'Conditional Risk': { bg: 'rgba(245,158,11,0.10)',  color: '#92400E' },
-    'Likely Decline':   { bg: 'rgba(239,68,68,0.10)',   color: '#991B1B' },
-  }
-  const s = map[verdict] || { bg: T.surface2, color: T.muted }
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: 13, fontWeight: 700, padding: '3px 9px', borderRadius: 99, background: s.bg, color: s.color }}>
-      {verdict}
-    </span>
-  )
-}
-
-function TypeBadge({ type }) {
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: 13, fontWeight: 700, padding: '3px 9px', borderRadius: 99, background: T.navyLight, color: T.navy }}>
-      {type}
-    </span>
-  )
-}
-
-// Sample fallback rows if no real data
-const SAMPLE_ROWS = [
-  { id: '1', address: '4821 Pelican Cove Rd, Naples', state: 'Florida', type: 'Wind Mit', score: 87, verdict: 'Likely to Bind',   date: 'May 1, 2025' },
-  { id: '2', address: '2204 Cypress Lake Dr, Orlando', state: 'Florida', type: '4-Point',  score: 54, verdict: 'Conditional Risk', date: 'Apr 29, 2025' },
-  { id: '3', address: '1138 Sunset Blvd, Miami',       state: 'Florida', type: '4-Point',  score: 25, verdict: 'Likely Decline',   date: 'Apr 27, 2025' },
-  { id: '4', address: '903 Magnolia Way, Sarasota',    state: 'Florida', type: 'Wind Mit', score: 91, verdict: 'Likely to Bind',   date: 'Apr 25, 2025' },
-  { id: '5', address: '317 Harbor View Dr, Clearwater',state: 'Florida', type: '4-Point',  score: 62, verdict: 'Conditional Risk', date: 'Apr 22, 2025' },
-]
 
 export default function DashboardPage() {
   const navigate = useNavigate()
   const [user, setUser]           = useState(null)
   const [agency, setAgency]       = useState(null)
-  const [reportCount, setReportCount] = useState(0)
-  const [inspections, setInspections] = useState([])
   const [loading, setLoading]     = useState(true)
 
   // Keep existing Supabase data-fetching logic
@@ -121,16 +80,8 @@ export default function DashboardPage() {
       if (!u) { setLoading(false); return }
       setUser(u)
 
-      const [
-        { data: agencyData },
-        { count: rCount },
-      ] = await Promise.all([
-        supabase.from('agencies').select('*').eq('owner_email', u.email).single(),
-        supabase.from('reports').select('id', { count: 'exact', head: true }).not('client_report_html', 'is', null),
-      ])
-
+      const { data: agencyData } = await supabase.from('agencies').select('*').eq('owner_email', u.email).single()
       setAgency(agencyData)
-      setReportCount(rCount ?? 0)
       setLoading(false)
     }
     load()
@@ -151,14 +102,6 @@ export default function DashboardPage() {
 
   const agencyName = agency?.name || (user?.email ? user.email.split('@')[0] : 'My Agency')
 
-  // Use real inspections if available, otherwise sample
-  const tableRows = inspections.length > 0 ? inspections : SAMPLE_ROWS
-
-  // Compute metrics
-  const reportsThisMonth = reportCount || 34
-  const likelyToBind = tableRows.filter(r => r.verdict === 'Likely to Bind').length
-  const redFlagsCaught = tableRows.filter(r => r.verdict === 'Likely Decline').length
-  const hoursSaved = ((reportsThisMonth * 0.33)).toFixed(1)
 
   return (
     <div style={{ fontFamily: T.font, minHeight: '100vh', background: T.surface, WebkitFontSmoothing: 'antialiased' }}>
@@ -210,21 +153,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Metric row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 32 }}>
-          {[
-            { label: 'Reports this month', value: reportsThisMonth, sub: '↑ 12 vs last month', subColor: T.green },
-            { label: 'Likely to bind', value: likelyToBind, sub: `${Math.round(likelyToBind / (tableRows.length || 1) * 100)}% of reports`, subColor: T.subtle, valueColor: T.greenDark },
-            { label: 'Red flags caught', value: redFlagsCaught, sub: 'Before submission', subColor: T.subtle, valueColor: '#991B1B' },
-            { label: 'Hours saved (est.)', value: hoursSaved, sub: 'This month', subColor: T.subtle },
-          ].map(card => (
-            <div key={card.label} style={{ background: '#fff', border: `1px solid ${T.border}`, borderRadius: 14, padding: '22px 24px' }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: T.subtle, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>{card.label}</div>
-              <div style={{ fontSize: 30, fontWeight: 800, color: card.valueColor || T.navy2, letterSpacing: '-0.03em', lineHeight: 1 }}>{card.value}</div>
-              <div style={{ fontSize: 13, color: card.subColor || T.subtle, marginTop: 4, fontWeight: card.sub?.startsWith('↑') ? 600 : 400 }}>{card.sub}</div>
-            </div>
-          ))}
-        </div>
 
         {/* CTA bar */}
         <div style={{ background: T.navyLight, border: `1px solid ${T.navyBorder}`, borderRadius: 14, padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
@@ -244,47 +172,6 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {/* Recent inspections table */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Recent inspections</div>
-            <Link to="/inspect" style={{ fontSize: 13, fontWeight: 600, color: T.navy, textDecoration: 'none' }}>View all</Link>
-          </div>
-
-          <div style={{ background: '#fff', border: `1px solid ${T.border}`, borderRadius: 14, overflow: 'hidden' }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Address</th>
-                  <th>Type</th>
-                  <th>Score</th>
-                  <th>Verdict</th>
-                  <th>Date</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {tableRows.map(row => (
-                  <tr key={row.id} onClick={() => navigate('/inspect')}>
-                    <td>
-                      <div style={{ fontWeight: 600 }}>{row.address}</div>
-                      <div style={{ fontSize: 13, color: T.subtle, marginTop: 2 }}>{row.state}</div>
-                    </td>
-                    <td><TypeBadge type={row.type} /></td>
-                    <td><ScoreBadge score={row.score} /></td>
-                    <td><VerdictBadge verdict={row.verdict} /></td>
-                    <td style={{ color: T.subtle, fontSize: 13 }}>{row.date}</td>
-                    <td style={{ textAlign: 'right' }}>
-                      <button style={{ fontFamily: T.font, fontSize: 13, color: T.navy, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-                        View →
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
 
       </div>
     </div>

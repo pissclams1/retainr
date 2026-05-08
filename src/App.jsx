@@ -3,13 +3,17 @@ import { useEffect } from 'react'
 import { ClerkProvider } from '@clerk/clerk-react'
 
 // Handles /auth/confirm — Clerk handles magic link confirmation automatically
-// This page is now just a redirect to the inspection page
+// Reads redirect_to from query string (Supabase puts all params in query string)
 function AuthConfirmPage() {
   const navigate = useNavigate()
   useEffect(() => {
+    // Read redirect_to from query string
+    const params = new URLSearchParams(window.location.search)
+    const redirectTo = params.get('redirect_to') || '/dashboard'
+
     // Wait for Clerk to fully process the auth state and set session cookie
     const timeout = setTimeout(() => {
-      navigate('/inspect', { replace: true })
+      navigate(redirectTo, { replace: true })
     }, 2500)
     return () => clearTimeout(timeout)
   }, [navigate])

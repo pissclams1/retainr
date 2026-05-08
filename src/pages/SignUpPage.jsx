@@ -32,7 +32,7 @@ export default function SignUpPage() {
               }
             }}
             routing="hash"
-            afterSignUpUrl="/inspect"
+            afterSignUpUrl="/dashboard"
           />
         </div>
       </div>

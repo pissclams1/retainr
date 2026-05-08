@@ -57,7 +57,7 @@ export default function SignInPage() {
                 }
               }}
               routing="hash"
-              afterSignInUrl="/inspect"
+              afterSignInUrl="/dashboard"
             />
           </div>
         </div>
