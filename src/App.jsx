@@ -7,10 +7,10 @@ import { ClerkProvider } from '@clerk/clerk-react'
 function AuthConfirmPage() {
   const navigate = useNavigate()
   useEffect(() => {
-    // Wait a moment for Clerk to process the auth state, then redirect
+    // Wait for Clerk to fully process the auth state and set session cookie
     const timeout = setTimeout(() => {
       navigate('/inspect', { replace: true })
-    }, 1000)
+    }, 2500)
     return () => clearTimeout(timeout)
   }, [navigate])
 

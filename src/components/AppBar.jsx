@@ -1,15 +1,18 @@
 import { Link, useLocation } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { useClerk, useUser } from '@clerk/clerk-react'
 
 const APP_ROUTES = ['/clients', '/reports', '/alerts', '/billing']
 
 export default function AppBar() {
   const location = useLocation()
+  const { signOut } = useClerk()
+  const { user } = useUser()
+
   const isAppRoute = APP_ROUTES.some(r => location.pathname.startsWith(r))
   if (!isAppRoute) return null
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    await signOut()
     window.location.href = '/'
   }
 

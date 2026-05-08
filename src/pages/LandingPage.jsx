@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useUser } from '@clerk/clerk-react'
 import { PLANS } from '../lib/plans'
 import DemoAnimation from '../components/DemoAnimation'
 
@@ -149,6 +150,8 @@ export default function LandingPage() {
 // ─── Nav ─────────────────────────────────────────────────────────────────────
 function Nav({ geoState }) {
   const [scrolled, setScrolled] = useState(false)
+  const { user, isLoaded } = useUser()
+
   useEffect(() => {
     const h = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', h)
@@ -180,19 +183,39 @@ function Nav({ geoState }) {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <Link to="/sign-in" style={{ fontFamily: T.font, fontSize: 15, fontWeight: 500, color: T.muted, padding: '9px 16px', borderRadius: 9, textDecoration: 'none', transition: 'color 0.15s' }}>
-            Sign in
-          </Link>
-          <Link to="/inspect" style={{
-            fontFamily: T.font, display: 'inline-flex', alignItems: 'center',
-            background: T.navy, color: '#fff',
-            fontSize: 15, fontWeight: 700,
-            padding: '9px 20px', borderRadius: 9,
-            textDecoration: 'none',
-            boxShadow: '0 2px 8px rgba(4,37,108,0.25)',
-          }}>
-            Try free
-          </Link>
+          {isLoaded && user ? (
+            <>
+              <div style={{ fontFamily: T.font, fontSize: 15, fontWeight: 500, color: T.text, padding: '9px 16px' }}>
+                {user.firstName || user.emailAddresses?.[0]?.emailAddress || 'Account'}
+              </div>
+              <Link to="/inspect" style={{
+                fontFamily: T.font, display: 'inline-flex', alignItems: 'center',
+                background: T.navy, color: '#fff',
+                fontSize: 15, fontWeight: 700,
+                padding: '9px 20px', borderRadius: 9,
+                textDecoration: 'none',
+                boxShadow: '0 2px 8px rgba(4,37,108,0.25)',
+              }}>
+                Go to app →
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link to="/sign-in" style={{ fontFamily: T.font, fontSize: 15, fontWeight: 500, color: T.muted, padding: '9px 16px', borderRadius: 9, textDecoration: 'none', transition: 'color 0.15s' }}>
+                Sign in
+              </Link>
+              <Link to="/inspect" style={{
+                fontFamily: T.font, display: 'inline-flex', alignItems: 'center',
+                background: T.navy, color: '#fff',
+                fontSize: 15, fontWeight: 700,
+                padding: '9px 20px', borderRadius: 9,
+                textDecoration: 'none',
+                boxShadow: '0 2px 8px rgba(4,37,108,0.25)',
+              }}>
+                Try free
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>
@@ -712,6 +735,7 @@ function FinalCTA() {
 // ─── Footer ───────────────────────────────────────────────────────────────────
 function Footer({ geoState }) {
   const linkStyle = { fontSize: 13, color: T.muted, textDecoration: 'none' }
+  const { user, isLoaded } = useUser()
 
   return (
     <footer style={{ borderTop: `1px solid ${T.border}`, padding: '56px 32px 36px', background: '#fff' }}>
@@ -742,8 +766,17 @@ function Footer({ geoState }) {
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 }}>Account</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <Link to="/sign-in" style={linkStyle}>Sign in</Link>
-              <Link to="/sign-up" style={linkStyle}>Create account</Link>
+              {isLoaded && user ? (
+                <>
+                  <Link to="/inspect" style={linkStyle}>Go to app</Link>
+                  <Link to="/billing" style={linkStyle}>Billing</Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/sign-in" style={linkStyle}>Sign in</Link>
+                  <Link to="/sign-up" style={linkStyle}>Create account</Link>
+                </>
+              )}
             </div>
           </div>
 
