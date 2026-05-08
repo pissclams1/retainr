@@ -345,7 +345,7 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
   const [stage, setStage]                 = useState(autoGenerate ? 'Reading document...' : '')
   const [error, setError]                 = useState(null)
   const [dragging, setDragging]           = useState(false)
-  const [fileNames, setFileNames]         = useState([])
+  const [fileStatuses, setFileStatuses]   = useState([])
   const [showEmailGate, setShowEmailGate] = useState(false)
   const [showPaywall, setShowPaywall]     = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
@@ -382,9 +382,18 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
     timers.current = []
   }
 
-  const extract = useCallback(async (overrideText) => {
+  const extract = useCallback(async (overrideText, source = 'paste') => {
     const raw = (overrideText ?? text).trim()
-    if (!raw || raw.length < 50) { setError('Paste more of the inspection report first.'); return }
+
+    // Different thresholds for uploaded vs pasted text
+    const minLength = source === 'upload' ? 20 : 50
+    if (!raw || raw.length < minLength) {
+      const msg = source === 'upload'
+        ? 'Extracted text is too short. Please try: (1) another PDF format, (2) pasting the text directly instead.'
+        : 'Please paste at least 50 characters of inspection report text.'
+      setError(msg)
+      return
+    }
 
     const isSample = initialMode === 'sample'
 
@@ -475,11 +484,18 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
   }, [autoGenerate, extract])
 
   async function handleFiles(fileList) {
-    const files = Array.from(fileList).slice(0, 2)  // Accept up to 2 files
+    const files = Array.from(fileList)
+
+    // Validate file count
     if (files.length === 0) return
-    setFileNames(files.map(f => f.name))
+    if (files.length > 2) {
+      setError('Maximum 2 files allowed. Please select up to 2 files.')
+      return
+    }
+
+    setFileStatuses(files.map(f => ({ name: f.name, status: 'uploading', error: null })))
     setError(null)
-    setStage('Extracting text from PDFs...')
+    setStage('Extracting text from files...')
     try {
       // Extract text from all files separately, then combine them
       const texts = []
@@ -493,8 +509,9 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
             throw new Error(`Could not extract text from ${file.name} — it may be a scanned image. Try pasting the text instead.`)
           }
 
-          if (!text || text.length < 50) {
-            throw new Error(`${file.name} has no readable text — it may be a scanned image. Try pasting the text instead.`)
+          // Relaxed threshold for uploads - text extraction is imperfect
+          if (!text || text.trim().length === 0) {
+            throw new Error(`${file.name} has no readable text (scanned image?). Try pasting the text instead.`)
           }
         } else {
           text = await new Promise((resolve, reject) => {
@@ -503,26 +520,27 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
             reader.onerror = () => reject(new Error(`Could not read ${file.name}`))
             reader.readAsText(file)
           })
-          if (!text || text.length < 50) {
-            throw new Error(`${file.name} has no content. Try pasting text from the inspection report instead.`)
+          if (!text || text.trim().length === 0) {
+            throw new Error(`${file.name} is empty.`)
           }
         }
-        texts.push(text)
+        texts.push(text.trim())
       }
       // Combine texts naturally with a newline separator, not a marker
       const combinedText = texts.join('\n\n')
-      if (!combinedText || combinedText.length < 50) {
-        throw new Error('No readable text found in uploaded files. Please copy and paste the inspection report text instead.')
+      if (!combinedText || combinedText.trim().length === 0) {
+        throw new Error('No readable text found in uploaded files.')
       }
       setText(combinedText)
       setStage('')
       setMode('paste')
       // Auto-submit with the combined text directly (avoids stale closure in state)
-      extract(combinedText)
+      // Pass source='upload' since this came from file upload
+      extract(combinedText, 'upload')
     } catch (e) {
       console.error('File handling error:', e)
       setError(e.message || 'Could not process files. Try copying and pasting the text instead.')
-      setFileNames([])
+      setFileStatuses([])
       setStage('')
     }
   }
@@ -589,12 +607,19 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
           >
             <input ref={fileRef} type="file" accept=".pdf,.txt" multiple style={{ display: 'none' }} onChange={e => handleFiles(e.target.files)} />
             <div style={{ fontSize: 28, marginBottom: 10 }}>📄</div>
-            <div style={{ fontFamily: T.font, fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 6 }}>Drop up to 2 inspection PDFs here</div>
-            <div style={{ fontFamily: T.font, fontSize: 13, color: T.muted }}>or click to browse · PDF only</div>
-            {fileNames.length > 0 && (
-              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                {fileNames.map(n => (
-                  <div key={n} style={{ fontFamily: T.font, fontSize: 13, color: T.green, fontWeight: 600 }}>✓ {n}</div>
+            <div style={{ fontFamily: T.font, fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 6 }}>Drop 1–2 inspection PDFs here</div>
+            <div style={{ fontFamily: T.font, fontSize: 13, color: T.muted }}>or click to browse · PDF or TXT</div>
+            {fileStatuses.length > 0 && (
+              <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {fileStatuses.map(fs => (
+                  <div key={fs.name} style={{ fontFamily: T.font, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: fs.status === 'uploading' ? T.muted : fs.error ? '#EF4444' : T.green }}>
+                      {fs.status === 'uploading' ? '⏳' : fs.error ? '✗' : '✓'}
+                    </span>
+                    <span style={{ color: fs.error ? '#EF4444' : T.text, fontWeight: fs.error ? 600 : 400 }}>
+                      {fs.name}
+                    </span>
+                  </div>
                 ))}
               </div>
             )}
