@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useClerk, useUser } from '@clerk/clerk-react'
 
-const APP_ROUTES = ['/clients', '/reports', '/alerts', '/billing']
+const APP_ROUTES = ['/clients', '/reports', '/alerts', '/billing', '/inspect']
 
 export default function AppBar() {
   const location = useLocation()
