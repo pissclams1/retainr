@@ -486,9 +486,15 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
       for (const file of files) {
         let text
         if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-          text = await extractTextFromPDF(file)
+          try {
+            text = await extractTextFromPDF(file)
+          } catch (extractErr) {
+            console.error(`PDF extraction failed for ${file.name}:`, extractErr)
+            throw new Error(`Could not extract text from ${file.name} — it may be a scanned image. Try pasting the text instead.`)
+          }
+
           if (!text || text.length < 50) {
-            throw new Error(`Could not extract text from ${file.name} — it may be a scanned image.`)
+            throw new Error(`${file.name} has no readable text — it may be a scanned image. Try pasting the text instead.`)
           }
         } else {
           text = await new Promise((resolve, reject) => {
@@ -497,18 +503,25 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
             reader.onerror = () => reject(new Error(`Could not read ${file.name}`))
             reader.readAsText(file)
           })
+          if (!text || text.length < 50) {
+            throw new Error(`${file.name} has no content. Try pasting text from the inspection report instead.`)
+          }
         }
         texts.push(text)
       }
       // Combine texts naturally with a newline separator, not a marker
       const combinedText = texts.join('\n\n')
+      if (!combinedText || combinedText.length < 50) {
+        throw new Error('No readable text found in uploaded files. Please copy and paste the inspection report text instead.')
+      }
       setText(combinedText)
       setStage('')
       setMode('paste')
       // Auto-submit with the combined text directly (avoids stale closure in state)
       extract(combinedText)
     } catch (e) {
-      setError(e.message || 'Could not read files. Try copying and pasting the text instead.')
+      console.error('File handling error:', e)
+      setError(e.message || 'Could not process files. Try copying and pasting the text instead.')
       setFileNames([])
       setStage('')
     }
