@@ -355,6 +355,7 @@ Deno.serve(async (req) => {
     if (!body?.rawText?.trim()) return err('rawText is required')
 
     const { rawText, state } = body
+
     const stateCode = (typeof state === 'string' && STATE_CONTEXT[state.toUpperCase()])
       ? state.toUpperCase()
       : 'FL'

@@ -458,28 +458,34 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
   }, [autoGenerate, extract])
 
   async function handleFiles(fileList) {
-    const files = Array.from(fileList).slice(0, 1)  // Only process first file — concurrent uploads break extraction
+    const files = Array.from(fileList).slice(0, 2)  // Accept up to 2 files
     if (files.length === 0) return
     setFileNames(files.map(f => f.name))
     setError(null)
     setStage('Extracting text from PDFs...')
     try {
-      const file = files[0]
-      let text
-      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
-        text = await extractTextFromPDF(file)
-        if (!text || text.length < 50) {
-          throw new Error(`Could not extract text from ${file.name} — it may be a scanned image.`)
+      // Extract text from all files separately, then combine them
+      const texts = []
+      for (const file of files) {
+        let text
+        if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+          text = await extractTextFromPDF(file)
+          if (!text || text.length < 50) {
+            throw new Error(`Could not extract text from ${file.name} — it may be a scanned image.`)
+          }
+        } else {
+          text = await new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = e => resolve(e.target.result)
+            reader.onerror = () => reject(new Error(`Could not read ${file.name}`))
+            reader.readAsText(file)
+          })
         }
-      } else {
-        text = await new Promise((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = e => resolve(e.target.result)
-          reader.onerror = () => reject(new Error(`Could not read ${file.name}`))
-          reader.readAsText(file)
-        })
+        texts.push(text)
       }
-      setText(text)
+      // Combine texts naturally with a newline separator, not a marker
+      const combinedText = texts.join('\n\n')
+      setText(combinedText)
       setStage('')
       setMode('paste')
     } catch (e) {
@@ -552,7 +558,7 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
             <input ref={fileRef} type="file" accept=".pdf,.txt" multiple style={{ display: 'none' }} onChange={e => handleFiles(e.target.files)} />
             <div style={{ fontSize: 28, marginBottom: 10 }}>📄</div>
             <div style={{ fontFamily: T.font, fontSize: 15, fontWeight: 600, color: T.text, marginBottom: 6 }}>Drop up to 2 inspection PDFs here</div>
-            <div style={{ fontFamily: T.font, fontSize: 13, color: T.muted }}>or click to browse · {sc?.uploadHint || '4-point + wind mit together'} · PDF only</div>
+            <div style={{ fontFamily: T.font, fontSize: 13, color: T.muted }}>or click to browse · PDF only</div>
             {fileNames.length > 0 && (
               <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {fileNames.map(n => (
