@@ -251,16 +251,33 @@ async function loadPdfJs() {
 }
 
 async function extractTextFromPDF(file) {
-  const pdfjsLib = await loadPdfJs()
-  const arrayBuffer = await file.arrayBuffer()
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-  let fullText = ''
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i)
-    const content = await page.getTextContent()
-    fullText += content.items.map(item => item.str).join(' ') + '\n'
+  try {
+    const pdfjsLib = await loadPdfJs()
+    if (!pdfjsLib) throw new Error('PDF.js library failed to load')
+
+    const arrayBuffer = await file.arrayBuffer()
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+
+    let fullText = ''
+    for (let i = 1; i <= pdf.numPages; i++) {
+      try {
+        const page = await pdf.getPage(i)
+        const content = await page.getTextContent()
+        const pageText = content.items.map(item => item.str).join(' ')
+        fullText += pageText + '\n'
+      } catch (pageErr) {
+        console.warn(`Failed to extract page ${i}:`, pageErr)
+      }
+    }
+
+    if (!fullText.trim()) {
+      throw new Error('No text could be extracted from PDF — it may be a scanned image with no OCR')
+    }
+    return fullText.trim()
+  } catch (err) {
+    console.error('PDF extraction error:', err)
+    throw err
   }
-  return fullText.trim()
 }
 
 /* ─── Entry screen ─── */
