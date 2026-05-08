@@ -488,6 +488,8 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
       setText(combinedText)
       setStage('')
       setMode('paste')
+      // Auto-submit with the combined text directly (avoids stale closure in state)
+      extract(combinedText)
     } catch (e) {
       setError(e.message || 'Could not read files. Try copying and pasting the text instead.')
       setFileNames([])
