@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth'
 import { PRICE_IDS, PLANS } from '../lib/plans'
 
 const F = { sans: { fontFamily: "'DM Sans', system-ui, -apple-system, sans-serif" } }
@@ -34,6 +35,7 @@ const PLAN_KEYS = ['starter', 'pro', 'agency']
 export default function CheckoutPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const { session, getToken } = useAuth()
 
   // Allow pre-selecting a plan via ?plan=pro and billing via ?billing=annual
   const initialPlan = PLAN_KEYS.includes(searchParams.get('plan')) ? searchParams.get('plan') : 'pro'
@@ -53,13 +55,12 @@ export default function CheckoutPage() {
     setLoading(true)
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-
       if (!session) {
-        navigate(`/sign-up?redirect=/checkout?plan=${selectedPlan}`)
+        navigate(`/sign-up?redirect_to=/checkout&plan=${selectedPlan}`)
         return
       }
 
+      const token = await getToken()
       const { data, error: fnErr } = await supabase.functions.invoke('create-checkout-session', {
         body: {
           price_id: priceId,
@@ -67,7 +68,7 @@ export default function CheckoutPage() {
           cancel_url:  `${window.location.origin}/checkout?plan=${selectedPlan}&billing=${billing}`,
         },
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${token}`,
         },
       })
 
