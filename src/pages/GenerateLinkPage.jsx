@@ -121,7 +121,7 @@ function PaywallGate() {
           </div>
         </div>
         <Link
-          to="/sign-up"
+          to="/checkout?plan=starter"
           style={{ display: 'block', width: '100%', padding: '14px', background: C.navy, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 4px 16px rgba(4,37,108,0.30)' }}
         >
           Choose a plan →

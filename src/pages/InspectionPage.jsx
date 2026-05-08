@@ -1076,7 +1076,7 @@ function PaywallGate() {
             $79<span style={{ fontSize: 13, fontWeight: 500, color: T.muted }}>/mo · or $59/mo billed annually</span>
           </div>
         </div>
-        <Link to="/sign-up" style={{ fontFamily: T.font, display: 'block', width: '100%', padding: '14px', background: T.navy, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 4px 16px rgba(4,37,108,0.30)' }}>
+        <Link to="/checkout?plan=starter" style={{ fontFamily: T.font, display: 'block', width: '100%', padding: '14px', background: T.navy, color: '#fff', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: 'pointer', textDecoration: 'none', boxShadow: '0 4px 16px rgba(4,37,108,0.30)' }}>
           Choose a plan →
         </Link>
       </div>
