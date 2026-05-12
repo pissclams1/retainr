@@ -351,6 +351,7 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeInfo, setUpgradeInfo]     = useState(null)
   const [pendingRaw, setPendingRaw]       = useState(null)
+  const [textSource, setTextSource]       = useState('paste')
   const skipGateRef = useRef(false)
   const fileRef     = useRef(null)
   const autoFired   = useRef(false)
@@ -532,6 +533,7 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
         throw new Error('No readable text found in uploaded files.')
       }
       setText(combinedText)
+      setTextSource('upload')
       setStage('')
       setMode('paste')
       // Auto-submit with the combined text directly (avoids stale closure in state)
@@ -593,7 +595,7 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
           <textarea
             className="ip-textarea"
             value={text}
-            onChange={e => setText(e.target.value)}
+            onChange={e => { setText(e.target.value); setTextSource('paste') }}
             placeholder={sc?.formHint || 'Paste the full text of a 4-point or wind mitigation inspection report.'}
             rows={10}
           />
@@ -645,7 +647,7 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
 
         {/* Submit button — hidden in auto-generate loading state */}
         {!(autoGenerate && loading) && (
-          <button className="ip-btn-primary" onClick={() => extract()} disabled={loading} style={{ marginTop: 16 }}>
+          <button className="ip-btn-primary" onClick={() => extract(undefined, textSource)} disabled={loading} style={{ marginTop: 16 }}>
             {loading
               ? <><div className="ip-spinner-sm" /><span>Scoring...</span></>
               : <><span>Get BindIQ Score</span><span style={{ fontSize: 18 }}>→</span></>
