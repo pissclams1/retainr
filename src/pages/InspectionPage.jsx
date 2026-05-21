@@ -402,10 +402,11 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
       if (skipGateRef.current) {
         skipGateRef.current = false
       } else {
+        const customSessionToken = localStorage.getItem('auth_session_token')
         const { data: { session } } = await supabase.auth.getSession()
 
-        if (session?.access_token) {
-          const result = await trackUsage(null, supabase, session.access_token)
+        if (customSessionToken || session?.access_token) {
+          const result = await trackUsage(null, supabase, customSessionToken || session.access_token)
           if (!result?.allowed) {
             if (result?.reason === 'cap') {
               setUpgradeInfo(result)

@@ -6,9 +6,18 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 )
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 })
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: corsHeaders })
   }
 
   try {
@@ -17,7 +26,7 @@ serve(async (req) => {
     if (!sessionToken) {
       return new Response(
         JSON.stringify({ authenticated: false }),
-        { status: 200 },
+        { status: 200, headers: corsHeaders },
       )
     }
 
@@ -31,7 +40,7 @@ serve(async (req) => {
     if (sessionError || !session) {
       return new Response(
         JSON.stringify({ authenticated: false }),
-        { status: 200 },
+        { status: 200, headers: corsHeaders },
       )
     }
 
@@ -45,7 +54,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ authenticated: false }),
-        { status: 200 },
+        { status: 200, headers: corsHeaders },
       )
     }
 
@@ -59,7 +68,7 @@ serve(async (req) => {
     if (userError || !user) {
       return new Response(
         JSON.stringify({ authenticated: false }),
-        { status: 200 },
+        { status: 200, headers: corsHeaders },
       )
     }
 
@@ -69,13 +78,13 @@ serve(async (req) => {
         userId: user.id,
         email: user.email,
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (error) {
     console.error('Session check error:', error)
     return new Response(
       JSON.stringify({ error: error.message || 'Session check failed' }),
-      { status: 500 },
+      { status: 500, headers: corsHeaders },
     )
   }
 })

@@ -1,8 +1,4 @@
 /* retainr styles */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   /* Dark surfaces */
   --hero-bg:      #0F0F0E;

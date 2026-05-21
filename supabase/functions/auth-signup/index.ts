@@ -7,6 +7,11 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 )
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 // Simple password hashing using PBKDF2 (not ideal but sufficient for MVP)
 // In production, use bcrypt or Argon2id
 async function hashPassword(password: string): Promise<string> {
@@ -36,8 +41,12 @@ async function createSession(userId: string, rememberMe: boolean = false): Promi
 }
 
 serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 })
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: corsHeaders })
   }
 
   try {
@@ -46,14 +55,14 @@ serve(async (req) => {
     if (!email || !password) {
       return new Response(
         JSON.stringify({ error: 'Email and password are required' }),
-        { status: 400 },
+        { status: 400, headers: corsHeaders },
       )
     }
 
     if (password.length < 8) {
       return new Response(
         JSON.stringify({ error: 'Password must be at least 8 characters' }),
-        { status: 400 },
+        { status: 400, headers: corsHeaders },
       )
     }
 
@@ -67,7 +76,7 @@ serve(async (req) => {
     if (existing) {
       return new Response(
         JSON.stringify({ error: 'Email already registered' }),
-        { status: 409 },
+        { status: 409, headers: corsHeaders },
       )
     }
 
@@ -91,15 +100,16 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         userId: user.id,
+        email: email.toLowerCase(),
         sessionToken,
       }),
-      { status: 201, headers: { 'Content-Type': 'application/json' } },
+      { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (error) {
     console.error('Signup error:', error)
     return new Response(
       JSON.stringify({ error: error.message || 'Signup failed' }),
-      { status: 500 },
+      { status: 500, headers: corsHeaders },
     )
   }
 })

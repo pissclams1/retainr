@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useSessionAuth } from '../hooks/useSessionAuth'
 
 const T = {
   navy:       '#04256C',
@@ -69,6 +70,7 @@ function Logo({ size = 17 }) {
 
 export default function DashboardPage() {
   const navigate = useNavigate()
+  const { user: authUser, loading: authLoading, logout } = useSessionAuth()
   const [user, setUser]           = useState(null)
   const [agency, setAgency]       = useState(null)
   const [loading, setLoading]     = useState(true)
@@ -76,7 +78,8 @@ export default function DashboardPage() {
   // Keep existing Supabase data-fetching logic
   useEffect(() => {
     async function load() {
-      const { data: { user: u } } = await supabase.auth.getUser()
+      if (authLoading) return
+      const u = authUser
       if (!u) { setLoading(false); return }
       setUser(u)
 
@@ -85,17 +88,17 @@ export default function DashboardPage() {
       setLoading(false)
     }
     load()
-  }, [])
+  }, [authLoading, authUser])
 
   async function handleSignOut() {
-    await supabase.auth.signOut()
+    await logout()
     window.location.href = '/'
   }
 
   // Derive initials from user email/name
   const initials = (() => {
     if (!user) return 'ME'
-    const name = user.user_metadata?.full_name || user.email || ''
+    const name = user.email || ''
     const parts = name.split(/[\s@]/)
     return (parts[0]?.[0] || '') + (parts[1]?.[0] || parts[0]?.[1] || '')
   })().toUpperCase().slice(0, 2)

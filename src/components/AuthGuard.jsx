@@ -1,8 +1,8 @@
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import { useSessionAuth } from '../hooks/useSessionAuth'
 
 export default function AuthGuard({ children }) {
-  const { session, loading } = useAuth()
+  const { session, loading } = useSessionAuth()
 
   if (loading) {
     return (

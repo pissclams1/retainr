@@ -1,18 +1,18 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useClerk, useUser } from '@clerk/clerk-react'
+import { useSessionAuth } from '../hooks/useSessionAuth'
 
 const APP_ROUTES = ['/clients', '/reports', '/alerts', '/billing', '/inspect']
 
 export default function AppBar() {
   const location = useLocation()
-  const { signOut } = useClerk()
-  const { user } = useUser()
+  const { session, loading, logout } = useSessionAuth()
 
   const isAppRoute = APP_ROUTES.some(r => location.pathname.startsWith(r))
   if (!isAppRoute) return null
+  if (loading || !session) return null
 
   const handleSignOut = async () => {
-    await signOut()
+    await logout()
     window.location.href = '/'
   }
 

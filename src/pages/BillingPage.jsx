@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useSessionAuth } from '../hooks/useSessionAuth'
 import { PLANS } from '../lib/plans'
 import Button from '../components/ui/Button'
 import Callout from '../components/ui/Callout'
@@ -11,11 +12,16 @@ export default function BillingPage() {
   const [loading, setLoading]   = useState(true)
   const [upgrading, setUpgrading] = useState(null)
   const [searchParams]          = useSearchParams()
+  const { user, getToken, loading: authLoading } = useSessionAuth()
   const justUpgraded            = searchParams.get('success') === '1'
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
+      if (authLoading) return
+      if (!user?.email) {
+        setLoading(false)
+        return
+      }
       const { data } = await supabase
         .from('agencies')
         .select('id, name, subscription_tier, subscription_status, trial_ends_at')
@@ -25,27 +31,27 @@ export default function BillingPage() {
       setLoading(false)
     }
     load()
-  }, [])
+  }, [authLoading, user?.email])
 
   const handleManageBilling = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
+    const token = await getToken()
     const { data, error } = await supabase.functions.invoke('create-portal-session', {
       body: { return_url: `${window.location.origin}/billing` },
-      headers: { Authorization: `Bearer ${session.access_token}` },
+      headers: { Authorization: `Bearer ${token}` },
     })
     if (!error && data?.url) window.location.href = data.url
   }
 
   const handleUpgrade = async (priceId) => {
     setUpgrading(priceId)
-    const { data: { session } } = await supabase.auth.getSession()
+    const token = await getToken()
     const { data, error } = await supabase.functions.invoke('create-checkout-session', {
       body: {
         price_id:    priceId,
         success_url: `${window.location.origin}/billing?success=1`,
         cancel_url:  `${window.location.origin}/billing`,
       },
-      headers: { Authorization: `Bearer ${session.access_token}` },
+      headers: { Authorization: `Bearer ${token}` },
     })
     if (error || !data?.url) {
       setUpgrading(null)
