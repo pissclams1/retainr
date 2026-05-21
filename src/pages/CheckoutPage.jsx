@@ -56,7 +56,8 @@ export default function CheckoutPage() {
 
     try {
       if (!session) {
-        navigate(`/sign-up?redirect_to=/checkout&plan=${selectedPlan}`)
+        const redirectTo = encodeURIComponent(`/checkout?plan=${selectedPlan}&billing=${billing}`)
+        navigate(`/sign-up?redirect_to=${redirectTo}`)
         return
       }
 

@@ -24,6 +24,24 @@ const SUPABASE_URL     = Deno.env.get('SUPABASE_URL')!
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const ANON_KEY         = Deno.env.get('SUPABASE_ANON_KEY')!
 
+async function getCustomSessionUser(adminClient: ReturnType<typeof createClient>, token: string) {
+  const { data: session } = await adminClient
+    .from('sessions')
+    .select('user_id, expires_at')
+    .eq('session_token', token)
+    .single()
+
+  if (!session || new Date(session.expires_at) < new Date()) return null
+
+  const { data: user } = await adminClient
+    .from('users')
+    .select('id, email')
+    .eq('id', session.user_id)
+    .single()
+
+  return user?.email ? user : null
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
@@ -42,12 +60,16 @@ Deno.serve(async (req) => {
         global: { headers: { Authorization: authHeader } },
       })
       const { data: { user }, error: userErr } = await userClient.auth.getUser()
+      const customUser = userErr || !user?.email
+        ? await getCustomSessionUser(adminClient, bearerToken)
+        : null
+      const userEmail = user?.email ?? customUser?.email
 
-      if (!userErr && user?.email) {
+      if (userEmail) {
         const { data: agency, error: agErr } = await adminClient
           .from('agencies')
           .select('id, subscription_tier, subscription_status, reports_this_cycle, cycle_started_at')
-          .eq('owner_email', user.email)
+          .eq('owner_email', userEmail)
           .single()
 
         if (!agErr && agency) {

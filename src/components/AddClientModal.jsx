@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { TIER_LIMIT } from '../lib/plans'
+import { useSessionAuth } from '../hooks/useSessionAuth'
 import Button from './ui/Button'
 import Input from './ui/Input'
 
 export default function AddClientModal({ onClose }) {
   const navigate = useNavigate()
+  const { user, loading: authLoading } = useSessionAuth()
   const [saving, setSaving]       = useState(false)
   const [error, setError]         = useState(null)
   const [limitCheck, setLimitCheck] = useState({ loading: true, atLimit: false, tier: 'trial', count: 0 })
@@ -20,7 +22,11 @@ export default function AddClientModal({ onClose }) {
 
   useEffect(() => {
     async function checkLimit() {
-      const { data: { user } } = await supabase.auth.getUser()
+      if (authLoading) return
+      if (!user?.email) {
+        setLimitCheck({ loading: false, atLimit: true, tier: 'trial', count: 0 })
+        return
+      }
       const [{ data: agency }, { count }] = await Promise.all([
         supabase.from('agencies').select('subscription_tier').eq('owner_email', user.email).single(),
         supabase.from('clients').select('id', { count: 'exact', head: true }),
@@ -30,7 +36,7 @@ export default function AddClientModal({ onClose }) {
       setLimitCheck({ loading: false, atLimit: (count ?? 0) >= limit, tier, count: count ?? 0 })
     }
     checkLimit()
-  }, [])
+  }, [authLoading, user?.email])
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
 
@@ -40,7 +46,11 @@ export default function AddClientModal({ onClose }) {
     setSaving(true)
     setError(null)
 
-    const { data: { user } } = await supabase.auth.getUser()
+    if (!user?.email) {
+      setError('Please sign in again before adding a client.')
+      setSaving(false)
+      return
+    }
 
     // Get or create agency for this user
     let agencyId

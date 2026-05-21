@@ -7,6 +7,11 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 )
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
 // Simple password verification
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
   const encoder = new TextEncoder()
@@ -36,8 +41,12 @@ async function createSession(userId: string, rememberMe: boolean = false): Promi
 }
 
 serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
   if (req.method !== 'POST') {
-    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405 })
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: corsHeaders })
   }
 
   try {
@@ -46,7 +55,7 @@ serve(async (req) => {
     if (!email || !password) {
       return new Response(
         JSON.stringify({ error: 'Email and password are required' }),
-        { status: 400 },
+        { status: 400, headers: corsHeaders },
       )
     }
 
@@ -61,7 +70,7 @@ serve(async (req) => {
       // Don't reveal if email exists (security)
       return new Response(
         JSON.stringify({ error: 'Invalid email or password' }),
-        { status: 401 },
+        { status: 401, headers: corsHeaders },
       )
     }
 
@@ -70,7 +79,7 @@ serve(async (req) => {
     if (!passwordValid) {
       return new Response(
         JSON.stringify({ error: 'Invalid email or password' }),
-        { status: 401 },
+        { status: 401, headers: corsHeaders },
       )
     }
 
@@ -81,15 +90,16 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         userId: user.id,
+        email: email.toLowerCase(),
         sessionToken,
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (error) {
     console.error('Login error:', error)
     return new Response(
       JSON.stringify({ error: error.message || 'Login failed' }),
-      { status: 500 },
+      { status: 500, headers: corsHeaders },
     )
   }
 })

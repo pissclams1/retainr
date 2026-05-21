@@ -1,29 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
-import { ClerkProvider } from '@clerk/clerk-react'
-
-// Handles /auth/confirm — Clerk handles magic link confirmation automatically
-// Reads redirect_to from query string (Supabase puts all params in query string)
-function AuthConfirmPage() {
-  const navigate = useNavigate()
-  useEffect(() => {
-    // Read redirect_to from query string
-    const params = new URLSearchParams(window.location.search)
-    const redirectTo = params.get('redirect_to') || '/dashboard'
-
-    // Wait for Clerk to fully process the auth state and set session cookie
-    const timeout = setTimeout(() => {
-      navigate(redirectTo, { replace: true })
-    }, 2500)
-    return () => clearTimeout(timeout)
-  }, [navigate])
-
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif", color: '#64748B', fontSize: 14 }}>
-      Signing you in…
-    </div>
-  )
-}
 import AuthGuard from './components/AuthGuard'
 import AppBar from './components/AppBar'
 import LoginPage from './pages/LoginPage'
@@ -50,6 +26,29 @@ import AdminPage from './pages/AdminPage'
 import DemoCapturePage from './pages/DemoCapturePage'
 import NotFoundPage from './pages/NotFoundPage'
 
+// Handles /auth/confirm redirects from legacy magic-link flows.
+// Reads redirect_to from query string (Supabase puts all params in query string)
+function AuthConfirmPage() {
+  const navigate = useNavigate()
+  useEffect(() => {
+    // Read redirect_to from query string
+    const params = new URLSearchParams(window.location.search)
+    const redirectTo = params.get('redirect_to') || '/dashboard'
+
+    // Give the auth provider a moment to settle before routing onward.
+    const timeout = setTimeout(() => {
+      navigate(redirectTo, { replace: true })
+    }, 2500)
+    return () => clearTimeout(timeout)
+  }, [navigate])
+
+  return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif", color: '#64748B', fontSize: 14 }}>
+      Signing you in…
+    </div>
+  )
+}
+
 function Placeholder({ label }) {
   return (
     <p style={{ fontFamily: 'Geist, sans-serif', fontSize: '14px', color: 'var(--ink-5)' }}>
@@ -70,11 +69,10 @@ function AppLayout({ children }) {
 
 export default function App() {
   return (
-    <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}>
-      <BrowserRouter>
-        {/* AppBar reads the route internally and returns null on / and /login */}
-        <AppBar />
-        <Routes>
+    <BrowserRouter>
+      {/* AppBar reads the route internally and returns null on public pages */}
+      <AppBar />
+      <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Navigate to="/sign-in" replace />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
@@ -119,7 +117,6 @@ export default function App() {
         <Route path="/demo-capture" element={<DemoCapturePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
-      </BrowserRouter>
-    </ClerkProvider>
+    </BrowserRouter>
   )
 }

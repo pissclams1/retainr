@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useUser } from '@clerk/clerk-react'
+import { useSessionAuth } from '../hooks/useSessionAuth'
 
 const colors = {
   navy: '#04256C',
@@ -95,8 +95,8 @@ function SampleOutputCard() {
 }
 
 export default function LandingPage() {
-  const { user, isLoaded } = useUser()
-  const accountTarget = isLoaded && user ? '/inspect' : '/inspect?mode=sample'
+  const { session, loading } = useSessionAuth()
+  const accountTarget = !loading && session ? '/inspect' : '/inspect?mode=sample'
 
   return (
     <main style={{ fontFamily: "'DM Sans', system-ui, -apple-system, Segoe UI, sans-serif", color: colors.ink, background: '#fff' }}>
