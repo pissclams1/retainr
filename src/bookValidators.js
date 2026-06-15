@@ -1,4 +1,5 @@
 import { requiredInteriorPageSize } from './printSpecs.js'
+import { inspectPrintedNavigation } from './printNavigationValidator.js'
 
 const PT=72
 
@@ -25,7 +26,11 @@ export async function inspectInteriorPdf(file,settings={}){
   const pdf=await window.PDFLib.PDFDocument.load(await file.arrayBuffer(),{ignoreEncryption:true})
   const pages=pdf.getPages()
   const sizes=pages.map(p=>{const s=p.getSize();return {width:s.width/PT,height:s.height/PT}})
-  return evaluateInteriorGeometry(sizes,settings)
+  const geometry=evaluateInteriorGeometry(sizes,settings)
+  const navigation=await inspectPrintedNavigation(file)
+  const blockers=[...geometry.blockers,...navigation.blockers]
+  const warnings=[...geometry.warnings,...navigation.warnings]
+  return {...geometry,navigation,blockers,warnings,issues:blockers,pass:blockers.length===0}
 }
 
 function parseXml(source,label){
