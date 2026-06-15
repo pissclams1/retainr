@@ -1,16 +1,17 @@
 function romanToNumber(value){
   const roman=value.toUpperCase()
-  if(!/^[IVXLCDM]+$/.test(roman))return null
+  if(!/^(?=[MDCLXVI])M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$/.test(roman))return null
   const map={I:1,V:5,X:10,L:50,C:100,D:500,M:1000}
   let total=0
   for(let i=0;i<roman.length;i++)total+=(map[roman[i]]<(map[roman[i+1]]||0))?-map[roman[i]]:map[roman[i]]
   return total
 }
 
-function numberToken(value){
+export function numberToken(value){
   const clean=value.trim().replace(/[–—-]/g,'').trim()
   if(/^\d{1,4}$/.test(clean))return {style:'arabic',value:Number(clean),label:clean}
-  if(/^[ivxlcdm]{1,10}$/i.test(clean))return {style:'roman',value:romanToNumber(clean),label:clean}
+  const roman=romanToNumber(clean)
+  if(roman)return {style:'roman',value:roman,label:clean}
   return null
 }
 
@@ -40,21 +41,27 @@ export function analyzePrintedNavigation(pages){
   const body=sequenceStart>=0?arabic.slice(sequenceStart):arabic
   for(let i=1;i<body.length;i++){
     const previous=body[i-1],current=body[i]
-    if(current.pdfPage!==previous.pdfPage+1)warnings.push(`No extractable page number was found on PDF page ${previous.pdfPage+1}.`)
-    if(current.value===previous.value)blockers.push(`Printed page number ${current.value} is duplicated on consecutive pages.`)
+    if(current.pdfPage>previous.pdfPage+1){
+      for(let missing=previous.pdfPage+1;missing<current.pdfPage;missing++)warnings.push(`No extractable page number was found on PDF page ${missing}.`)
+    }
+    if(current.value===previous.value)blockers.push(`Printed page number ${current.value} is duplicated on consecutive numbered pages.`)
     else if(current.value<previous.value)blockers.push(`Printed page numbering moves backward from ${previous.value} to ${current.value} on PDF page ${current.pdfPage}.`)
     else if(current.value>previous.value+1)blockers.push(`Printed page numbering jumps from ${previous.value} to ${current.value} on PDF page ${current.pdfPage}.`)
   }
   if(!arabic.some(label=>label.value===1))warnings.push('No extractable printed page 1 was found. Confirm where body numbering begins.')
   if(body.length&&body.length<Math.max(3,Math.floor((pages.length-body[0].pdfPage+1)*.6)))warnings.push('Printed page numbers were not detected consistently through the body. This can indicate missing numbers or outlined/rasterized text.')
 
-  const labelMap=new Map(arabic.map(label=>[label.value,label.pdfPage]))
+  const labelMap=new Map()
+  for(const label of arabic){
+    if(labelMap.has(label.value)&&labelMap.get(label.value)!==label.pdfPage)blockers.push(`Printed page number ${label.value} appears on more than one PDF page.`)
+    else labelMap.set(label.value,label.pdfPage)
+  }
   const tocPages=pages.filter(page=>page.pdfPage<=20&&/\b(contents|table of contents)\b/i.test(page.text))
   const tocEntries=[]
   for(const page of tocPages){
     const lines=new Map()
     for(const item of page.items){
-      const key=Math.round(item.y/3)*3
+      const key=Math.round(item.y/4)*4
       lines.set(key,[...(lines.get(key)||[]),item])
     }
     for(const items of lines.values()){
@@ -80,11 +87,11 @@ export function analyzePrintedNavigation(pages){
       continue
     }
     const targetPage=pages[pdfPage-1]
-    const title=normalize(entry.title).replace(/^\d+\s*/,'')
+    const title=normalize(entry.title).replace(/^\d+\s*/,'').replace(/\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{4}\b/g,'').trim()
     if(title.length>=4){
       checkedTargets++
       const targetText=normalize(targetPage?.text||'')
-      const words=title.split(' ').filter(Boolean).slice(0,4)
+      const words=title.split(' ').filter(word=>word.length>2).slice(0,4)
       if(words.length&&words.every(word=>targetText.includes(word)))matchedTargets++
       else warnings.push(`Contents entry “${entry.title}” points to page ${entry.target}, but its heading was not confirmed on that page.`)
     }
