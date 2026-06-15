@@ -21,5 +21,7 @@ jobs:
         run: npm ci
       - name: Test deterministic logic
         run: node tests/logic.mjs
+      - name: Test printed navigation
+        run: node tests/navigation.mjs
       - name: Build application
         run: npm run build
