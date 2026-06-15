@@ -1,11 +1,7 @@
 const PT=72
 
-export async function inspectInteriorPdf(file,{trimWidth=6,trimHeight=9,expectedPageCount=null}={}){
-  if(!window.PDFLib) throw new Error('PDF engine failed to load.')
-  const pdf=await window.PDFLib.PDFDocument.load(await file.arrayBuffer(),{ignoreEncryption:true})
-  const pages=pdf.getPages()
-  if(!pages.length) throw new Error('The PDF has no pages.')
-  const sizes=pages.map(p=>{const s=p.getSize();return {width:s.width/PT,height:s.height/PT}})
+export function evaluateInteriorGeometry(sizes,{trimWidth=6,trimHeight=9,expectedPageCount=null}={}){
+  if(!sizes.length) throw new Error('The PDF has no pages.')
   const first=sizes[0]
   const tolerance=.01
   const inconsistentPages=[]
@@ -16,9 +12,17 @@ export async function inspectInteriorPdf(file,{trimWidth=6,trimHeight=9,expected
   if(!trimPass) blockers.push(`Interior pages are ${first.width.toFixed(3)} × ${first.height.toFixed(3)} in, not ${trimWidth.toFixed(3)} × ${trimHeight.toFixed(3)} in.`)
   if(inconsistentPages.length) blockers.push(`${inconsistentPages.length} page${inconsistentPages.length===1?' has':'s have'} a different page size. First affected page: ${inconsistentPages[0]}.`)
   const expected=Number(expectedPageCount)
-  if(Number.isFinite(expected)&&expected>0&&pages.length!==expected) blockers.push(`The PDF contains ${pages.length} pages, but the selected final page count is ${expected}.`)
-  if(pages.length%2!==0) warnings.push('The page count is odd. KDP may add a blank page during printing; confirm the final preview still looks intentional.')
-  return {pageCount:pages.length,expectedPageCount:Number.isFinite(expected)&&expected>0?expected:null,actual:first,trimPass,inconsistent:inconsistentPages.length,inconsistentPages,blockers,warnings,issues:blockers,pass:blockers.length===0}
+  if(Number.isFinite(expected)&&expected>0&&sizes.length!==expected) blockers.push(`The PDF contains ${sizes.length} pages, but the selected final page count is ${expected}.`)
+  if(sizes.length%2!==0) warnings.push('The page count is odd. KDP may add a blank page during printing; confirm the final preview still looks intentional.')
+  return {pageCount:sizes.length,expectedPageCount:Number.isFinite(expected)&&expected>0?expected:null,actual:first,trimPass,inconsistent:inconsistentPages.length,inconsistentPages,blockers,warnings,issues:blockers,pass:blockers.length===0}
+}
+
+export async function inspectInteriorPdf(file,settings={}){
+  if(!window.PDFLib) throw new Error('PDF engine failed to load.')
+  const pdf=await window.PDFLib.PDFDocument.load(await file.arrayBuffer(),{ignoreEncryption:true})
+  const pages=pdf.getPages()
+  const sizes=pages.map(p=>{const s=p.getSize();return {width:s.width/PT,height:s.height/PT}})
+  return evaluateInteriorGeometry(sizes,settings)
 }
 
 function parseXml(source,label){
