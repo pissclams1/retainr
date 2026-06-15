@@ -7,7 +7,7 @@ Baseline tested from user-supplied files already accepted by Amazon KDP. The bin
 | File | Expected result | Observed baseline |
 |---|---|---|
 | Paperback cover PDF | Pass | 1 page, 12.842276 x 9.250 in for 6 x 9, 263 pages, white paper |
-| Paperback interior PDF | Pass with advisory | 263 pages, every page 6 x 9 in; final page is blank/near-blank and page count is odd |
+| Paperback interior PDF | Pass with advisory | 263 pages, every page 6 x 9 in; final page is blank/near-blank and page count is odd. Neither is treated as a blocking failure. |
 | Kindle EPUB | Pass | Valid mimetype/container/package, title/author/language/identifier present, 30 manifest items, 28 spine items, navigation present, no missing manifest files |
 | eBook cover JPG | Pass | JPEG, RGB, 1365 x 2048 px, aspect ratio 0.6665 |
 
@@ -19,6 +19,7 @@ Baseline tested from user-supplied files already accepted by Amazon KDP. The bin
 | Cover 0.200 in narrow | Fail, no automatic repair | Passed regression |
 | Cover with width/height ratio drift | Fail, no automatic repair | Passed regression |
 | Interior with page 11 changed to 5.5 x 8.5 | Blocking mixed-page-size failure | Passed regression |
+| Interior with 262 pages while 263 is selected | Blocking page-count mismatch | Passed regression |
 | EPUB missing title metadata | Blocking metadata failure | Passed regression |
 | EPUB navigation item removed | Blocking navigation failure | Passed regression |
 | EPUB manifest file removed | Blocking missing-file failure | Passed regression |
