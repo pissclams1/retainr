@@ -1,6 +1,6 @@
 const PT=72
 
-export async function inspectInteriorPdf(file,{trimWidth=6,trimHeight=9}={}){
+export async function inspectInteriorPdf(file,{trimWidth=6,trimHeight=9,expectedPageCount=null}={}){
   if(!window.PDFLib) throw new Error('PDF engine failed to load.')
   const pdf=await window.PDFLib.PDFDocument.load(await file.arrayBuffer(),{ignoreEncryption:true})
   const pages=pdf.getPages()
@@ -15,8 +15,10 @@ export async function inspectInteriorPdf(file,{trimWidth=6,trimHeight=9}={}){
   const warnings=[]
   if(!trimPass) blockers.push(`Interior pages are ${first.width.toFixed(3)} × ${first.height.toFixed(3)} in, not ${trimWidth.toFixed(3)} × ${trimHeight.toFixed(3)} in.`)
   if(inconsistentPages.length) blockers.push(`${inconsistentPages.length} page${inconsistentPages.length===1?' has':'s have'} a different page size. First affected page: ${inconsistentPages[0]}.`)
+  const expected=Number(expectedPageCount)
+  if(Number.isFinite(expected)&&expected>0&&pages.length!==expected) blockers.push(`The PDF contains ${pages.length} pages, but the selected final page count is ${expected}.`)
   if(pages.length%2!==0) warnings.push('The page count is odd. KDP may add a blank page during printing; confirm the final preview still looks intentional.')
-  return {pageCount:pages.length,actual:first,trimPass,inconsistent:inconsistentPages.length,inconsistentPages,blockers,warnings,issues:blockers,pass:blockers.length===0}
+  return {pageCount:pages.length,expectedPageCount:Number.isFinite(expected)&&expected>0?expected:null,actual:first,trimPass,inconsistent:inconsistentPages.length,inconsistentPages,blockers,warnings,issues:blockers,pass:blockers.length===0}
 }
 
 function parseXml(source,label){
