@@ -1,11 +1,12 @@
 {
-  "name": "retainr",
+  "name": "publishready",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "test": "node tests/logic.mjs && node tests/navigation.mjs",
+    "build": "npm test && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
