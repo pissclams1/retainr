@@ -1,5 +1,7 @@
 const POINTS_PER_INCH = 72
 const BLEED = 0.125
+const MAX_SAFE_RESIZE_INCHES = 0.05
+const MAX_RATIO_DRIFT = 0.002
 
 export function spineWidth(pageCount, paper = 'White') {
   const pages = Number(pageCount)
@@ -17,6 +19,16 @@ export function requiredPaperbackCoverSize({ trimWidth = 6, trimHeight = 9, page
   }
 }
 
+export function isSafeCoverResize(actual, required) {
+  const widthDelta = Math.abs(actual.width - required.width)
+  const heightDelta = Math.abs(actual.height - required.height)
+  const widthScale = required.width / actual.width
+  const heightScale = required.height / actual.height
+  return widthDelta <= MAX_SAFE_RESIZE_INCHES
+    && heightDelta <= MAX_SAFE_RESIZE_INCHES
+    && Math.abs(widthScale - heightScale) <= MAX_RATIO_DRIFT
+}
+
 export async function inspectPaperbackCover(file, settings) {
   if (!window.PDFLib) throw new Error('The PDF inspection engine did not load. Refresh and try again.')
   const bytes = await file.arrayBuffer()
@@ -30,6 +42,7 @@ export async function inspectPaperbackCover(file, settings) {
   const delta = { width: actual.width - required.width, height: actual.height - required.height }
   const tolerance = 0.005
   const dimensionPass = Math.abs(delta.width) <= tolerance && Math.abs(delta.height) <= tolerance
+  const safeResize = !dimensionPass && isSafeCoverResize(actual, required)
 
   const issues = []
   if (Math.abs(delta.width) > tolerance) {
@@ -39,7 +52,7 @@ export async function inspectPaperbackCover(file, settings) {
       message: delta.width < 0
         ? `The cover is ${Math.abs(delta.width).toFixed(3)} inches too narrow.`
         : `The cover is ${Math.abs(delta.width).toFixed(3)} inches too wide.`,
-      fixable: Math.abs(delta.width) <= 0.25,
+      fixable: safeResize,
     })
   }
   if (Math.abs(delta.height) > tolerance) {
@@ -49,7 +62,7 @@ export async function inspectPaperbackCover(file, settings) {
       message: delta.height < 0
         ? `The cover is ${Math.abs(delta.height).toFixed(3)} inches too short.`
         : `The cover is ${Math.abs(delta.height).toFixed(3)} inches too tall.`,
-      fixable: Math.abs(delta.height) <= 0.25,
+      fixable: safeResize,
     })
   }
 
@@ -61,11 +74,12 @@ export async function inspectPaperbackCover(file, settings) {
     pageCount: pages.length,
     pass: dimensionPass,
     issues,
-    canAutoFix: issues.length > 0 && issues.every(issue => issue.fixable),
+    canAutoFix: safeResize,
   }
 }
 
 export async function repairPaperbackCover(inspection) {
+  if (!inspection?.canAutoFix) throw new Error('This cover cannot be repaired safely without redesign or manual review.')
   if (!window.PDFLib) throw new Error('The PDF repair engine did not load.')
   const { PDFDocument } = window.PDFLib
   const source = await PDFDocument.load(inspection.bytes)
@@ -78,7 +92,7 @@ export async function repairPaperbackCover(inspection) {
 
   const sourceWidth = inspection.actual.width * POINTS_PER_INCH
   const sourceHeight = inspection.actual.height * POINTS_PER_INCH
-  const scale = Math.max(targetWidth / sourceWidth, targetHeight / sourceHeight)
+  const scale = targetWidth / sourceWidth
   const drawWidth = sourceWidth * scale
   const drawHeight = sourceHeight * scale
 
