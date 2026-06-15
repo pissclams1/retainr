@@ -28,7 +28,7 @@ function FileChecker(){
  async function checkCover(file){if(!file)return;setRepairStatus('');setCover(file);setCoverResult(await guard(()=>inspectPaperbackCover(file,{trimWidth:tw,trimHeight:th,pageCount:Number(pages),paper})))}
  async function fixCover(){setRepairing(true);setRepairStatus('');setError('');try{const bytes=await repairPaperbackCover(coverResult);const repaired=new File([bytes],`${cover.name.replace(/\.pdf$/i,'')}-publishready-fixed.pdf`,{type:'application/pdf'});const verified=await inspectPaperbackCover(repaired,{trimWidth:tw,trimHeight:th,pageCount:Number(pages),paper});if(!verified.pass)throw new Error('The repaired cover did not pass verification, so it was not downloaded.');setCover(repaired);setCoverResult(verified);setRepairStatus('Repaired file verified against the selected dimensions.');downloadPdf(bytes,repaired.name)}catch(e){setError(e.message)}finally{setRepairing(false)}}
  async function checkDocx(file){if(!file)return;setDocx(file);setDocxResult(await guard(()=>inspectDocx(file)))}
- async function checkInterior(file){if(!file)return;setInterior(file);setInteriorResult(await guard(()=>inspectInteriorPdf(file,{trimWidth:tw,trimHeight:th})))}
+ async function checkInterior(file){if(!file)return;setInterior(file);setInteriorResult(await guard(()=>inspectInteriorPdf(file,{trimWidth:tw,trimHeight:th,expectedPageCount:Number(pages)})))}
  async function checkEpub(file){if(!file)return;setEpub(file);setEpubResult(await guard(()=>inspectEpub(file)))}
  async function checkEbookCover(file){if(!file)return;setEbookCover(file);setEbookCoverResult(await guard(()=>inspectEbookCover(file)))}
  useEffect(()=>{if(cover)checkCover(cover);if(interior)checkInterior(interior)},[trim,pages,paper])
