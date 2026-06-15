@@ -1,4 +1,5 @@
 import { minimumGutter, minimumOutsideMargin } from './printSpecs.js'
+import { extractPdfTextPages } from './pdfTextExtractor.js'
 
 const PT = 72
 
@@ -53,4 +54,9 @@ export function analyzeTextMargins(pages, settings = {}) {
   const warnings = []
   if (pages.some(page => !(page.items || []).length)) warnings.push('Some pages contain no extractable text, so outlined or rasterized text could not be margin-checked.')
   return { gutter, outside, violationCount: violations.length, violations, blockers, warnings, pass: blockers.length === 0 }
+}
+
+export async function inspectInteriorMargins(file, settings = {}) {
+  const pages = await extractPdfTextPages(file)
+  return analyzeTextMargins(pages, settings)
 }
