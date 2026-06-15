@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { requiredPaperbackCoverSize, spineWidth, isSafeCoverResize } from '../src/coverEngine.js'
 import { evaluateInteriorGeometry } from '../src/bookValidators.js'
 import { evaluateEbookCover } from '../src/ebookCoverValidator.js'
+import { requiredInteriorPageSize, minimumGutter, minimumOutsideMargin, evaluatePageCount } from '../src/printSpecs.js'
 
 const fixtures = JSON.parse(await readFile(new URL('./accepted-fixtures.json', import.meta.url), 'utf8'))
 const coverFixture = fixtures.paperbackCover
@@ -25,6 +26,8 @@ assert.equal(fixtures.ebookCover.widthPixels, 1365)
 assert.equal(fixtures.ebookCover.heightPixels, 2048)
 
 assert.equal(spineWidth(263, 'Cream').toFixed(4), '0.6575')
+assert.equal(spineWidth(263, 'Groundwood').toFixed(4), '0.6181')
+assert.equal(spineWidth(263, 'Color').toFixed(4), '0.6173')
 
 assert.equal(isSafeCoverResize(
   { width: accepted.width - 0.02, height: accepted.height - 0.014 },
@@ -39,12 +42,33 @@ assert.equal(isSafeCoverResize(
   accepted,
 ), false)
 
+assert.deepEqual(requiredInteriorPageSize({trimWidth:6,trimHeight:9,bleed:false}),{width:6,height:9})
+assert.deepEqual(requiredInteriorPageSize({trimWidth:6,trimHeight:9,bleed:true}),{width:6.125,height:9.25})
+assert.deepEqual([150,151,301,501,701].map(minimumGutter),[0.375,0.5,0.625,0.75,0.875])
+assert.deepEqual([minimumOutsideMargin(false),minimumOutsideMargin(true)],[0.25,0.375])
+assert.equal(evaluatePageCount(828,{paper:'White'}).pass,true)
+assert.equal(evaluatePageCount(829,{paper:'White'}).pass,false)
+assert.equal(evaluatePageCount(776,{paper:'Cream'}).pass,true)
+assert.equal(evaluatePageCount(777,{paper:'Cream'}).pass,false)
+
 const acceptedInterior=evaluateInteriorGeometry(
   Array.from({length:263},()=>({width:6,height:9})),
   {trimWidth:6,trimHeight:9,expectedPageCount:263},
 )
 assert.equal(acceptedInterior.pass,true)
 assert.equal(acceptedInterior.warnings.length,1)
+
+const acceptedBleedInterior=evaluateInteriorGeometry(
+  Array.from({length:264},()=>({width:6.125,height:9.25})),
+  {trimWidth:6,trimHeight:9,expectedPageCount:264,bleed:true},
+)
+assert.equal(acceptedBleedInterior.pass,true)
+
+const wrongBleedInterior=evaluateInteriorGeometry(
+  Array.from({length:264},()=>({width:6,height:9})),
+  {trimWidth:6,trimHeight:9,expectedPageCount:264,bleed:true},
+)
+assert.equal(wrongBleedInterior.pass,false)
 
 const mixedInterior=Array.from({length:263},()=>({width:6,height:9}))
 mixedInterior[10]={width:5.5,height:8.5}
