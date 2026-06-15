@@ -19,7 +19,7 @@ function linesFor(name,file,result){
 
 export function downloadPreflightReport({settings,cover,coverResult,interior,interiorResult,epub,epubResult,docx,docxResult,ebookCover,ebookCoverResult}){
   const output=[
-    'PUBLISHREADY PREFLIGHT REPORT',
+    'PUBLISHREADY CORRECTION REPORT',
     `Generated: ${new Date().toLocaleString()}`,
     `Trim: ${settings.trim}`,
     `Page count: ${settings.pages}`,
@@ -30,13 +30,13 @@ export function downloadPreflightReport({settings,cover,coverResult,interior,int
     ...linesFor('Kindle EPUB',epub,epubResult),
     ...linesFor('Manuscript DOCX',docx,docxResult),
     ...linesFor('eBook cover image',ebookCover,ebookCoverResult),
-    '\nThis beta report is a technical preflight, not a guarantee of KDP acceptance.'
+    '\nThis report identifies technical issues and supported corrections. It does not guarantee KDP acceptance.'
   ].join('\n')
   const blob=new Blob([output],{type:'text/plain'})
   const url=URL.createObjectURL(blob)
   const a=document.createElement('a')
   a.href=url
-  a.download='publishready-preflight-report.txt'
+  a.download='publishready-correction-report.txt'
   a.click()
   setTimeout(()=>URL.revokeObjectURL(url),500)
 }
