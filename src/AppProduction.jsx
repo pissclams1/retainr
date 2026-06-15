@@ -1,1 +1,1 @@
-export { default } from './AppLaunch'
+export { default } from './AppRoot'
