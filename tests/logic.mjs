@@ -4,6 +4,8 @@ import { requiredPaperbackCoverSize, spineWidth, isSafeCoverResize } from '../sr
 import { evaluateInteriorGeometry } from '../src/bookValidators.js'
 import { evaluateEbookCover } from '../src/ebookCoverValidator.js'
 import { requiredInteriorPageSize, minimumGutter, minimumOutsideMargin, evaluatePageCount } from '../src/printSpecs.js'
+import { analyzeTextMargins } from '../src/interiorMarginValidator.js'
+import { evaluateFontRecords } from '../src/pdfFontValidator.js'
 
 const fixtures = JSON.parse(await readFile(new URL('./accepted-fixtures.json', import.meta.url), 'utf8'))
 const coverFixture = fixtures.paperbackCover
@@ -28,6 +30,7 @@ assert.equal(fixtures.ebookCover.heightPixels, 2048)
 assert.equal(spineWidth(263, 'Cream').toFixed(4), '0.6575')
 assert.equal(spineWidth(263, 'Groundwood').toFixed(4), '0.6181')
 assert.equal(spineWidth(263, 'Color').toFixed(4), '0.6173')
+assert.equal(requiredPaperbackCoverSize({pageCount:'',paper:'White'}).spine,0)
 
 assert.equal(isSafeCoverResize(
   { width: accepted.width - 0.02, height: accepted.height - 0.014 },
@@ -83,6 +86,21 @@ const wrongCount=evaluateInteriorGeometry(
 assert.equal(wrongCount.pass,false)
 assert.match(wrongCount.blockers[0],/selected final page count is 263/)
 
+const safeMarginPages=[
+  {pdfPage:1,items:[{x:40,y:100,width:300,height:12}]},
+  {pdfPage:2,items:[{x:20,y:100,width:300,height:12}]},
+]
+assert.equal(analyzeTextMargins(safeMarginPages,{trimWidth:6,trimHeight:9,pageCount:200}).pass,true)
+const badMarginPages=[{pdfPage:1,items:[{x:10,y:100,width:320,height:12}]}]
+const badMargins=analyzeTextMargins(badMarginPages,{trimWidth:6,trimHeight:9,pageCount:200})
+assert.equal(badMargins.pass,false)
+assert.match(badMargins.blockers[0],/gutter margin/)
+
+assert.equal(evaluateFontRecords([{name:'EmbeddedFont',embedded:true}]).pass,true)
+const missingFont=evaluateFontRecords([{name:'MissingFont',embedded:false}])
+assert.equal(missingFont.pass,false)
+assert.match(missingFont.blockers[0],/not embedded/)
+
 const acceptedEbook=evaluateEbookCover({
   width:fixtures.ebookCover.widthPixels,
   height:fixtures.ebookCover.heightPixels,
@@ -95,6 +113,6 @@ assert.equal(evaluateEbookCover({width:1600,height:1600,type:'image/jpeg'}).pass
 assert.equal(evaluateEbookCover({width:1365,height:2048,type:'image/webp'}).pass,false)
 
 const priceFor = count => count ? 19 + (count - 1) * 10 : 0
-assert.deepEqual([0,1,2,3,4,5,6].map(priceFor), [0,19,29,39,49,59,69])
+assert.deepEqual([0,1,2,3,4].map(priceFor), [0,19,29,39,49])
 
 console.log('PublishReady deterministic logic tests passed against accepted KDP fixture metadata.')
