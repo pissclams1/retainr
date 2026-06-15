@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { requiredPaperbackCoverSize, spineWidth, isSafeCoverResize } from '../src/coverEngine.js'
 import { evaluateInteriorGeometry } from '../src/bookValidators.js'
+import { evaluateEbookCover } from '../src/ebookCoverValidator.js'
 
 const fixtures = JSON.parse(await readFile(new URL('./accepted-fixtures.json', import.meta.url), 'utf8'))
 const coverFixture = fixtures.paperbackCover
@@ -57,6 +58,17 @@ const wrongCount=evaluateInteriorGeometry(
 )
 assert.equal(wrongCount.pass,false)
 assert.match(wrongCount.blockers[0],/selected final page count is 263/)
+
+const acceptedEbook=evaluateEbookCover({
+  width:fixtures.ebookCover.widthPixels,
+  height:fixtures.ebookCover.heightPixels,
+  type:'image/jpeg',
+})
+assert.equal(acceptedEbook.pass,true)
+assert.equal(acceptedEbook.ratio.toFixed(4),'0.6665')
+assert.equal(evaluateEbookCover({width:800,height:1200,type:'image/jpeg'}).pass,false)
+assert.equal(evaluateEbookCover({width:1600,height:1600,type:'image/jpeg'}).pass,false)
+assert.equal(evaluateEbookCover({width:1365,height:2048,type:'image/webp'}).pass,false)
 
 const priceFor = count => count ? 19 + (count - 1) * 10 : 0
 assert.deepEqual([0,1,2,3,4,5,6].map(priceFor), [0,19,29,39,49,59,69])
