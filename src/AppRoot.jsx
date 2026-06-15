@@ -1,13 +1,14 @@
 import { useEffect } from 'react'
 import AppLaunch from './AppLaunch'
 import LaunchAccess from './LaunchAccess'
+import StripeCheckoutBridge from './StripeCheckoutBridge'
 
 export default function AppRoot(){
   useEffect(()=>{
     const updateCopy=()=>{
       document.querySelectorAll('.proof-note').forEach(node=>{
         if(node.textContent.includes('Margin figures remain correction guidance')){
-          node.textContent='Page geometry, page count, printed numbering, table-of-contents references, text margins, and embedded fonts are checked.'
+          node.textContent='Page geometry, page count, printed numbering, table-of-contents references, text margins, embedded fonts, and print-image resolution are checked.'
         }
       })
     }
@@ -18,6 +19,7 @@ export default function AppRoot(){
   },[])
   return <>
     <LaunchAccess />
+    <StripeCheckoutBridge />
     <AppLaunch />
   </>
 }
