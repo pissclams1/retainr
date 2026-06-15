@@ -3,10 +3,19 @@ const BLEED = 0.125
 const MAX_SAFE_RESIZE_INCHES = 0.05
 const MAX_RATIO_DRIFT = 0.002
 
+const SPINE_COEFFICIENTS = {
+  White: 0.002252,
+  Cream: 0.0025,
+  Groundwood: 0.00235,
+  Color: 0.002347,
+}
+
 export function spineWidth(pageCount, paper = 'White') {
   const pages = Number(pageCount)
   if (!Number.isFinite(pages) || pages <= 0) throw new Error('Enter a valid page count.')
-  return pages * (paper === 'Cream' ? 0.0025 : 0.002252)
+  const coefficient = SPINE_COEFFICIENTS[paper]
+  if (!coefficient) throw new Error('Choose a supported KDP paper or ink option.')
+  return pages * coefficient
 }
 
 export function requiredPaperbackCoverSize({ trimWidth = 6, trimHeight = 9, pageCount, paper = 'White' }) {
