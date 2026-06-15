@@ -1,20 +1,23 @@
+import { requiredInteriorPageSize } from './printSpecs.js'
+
 const PT=72
 
-export function evaluateInteriorGeometry(sizes,{trimWidth=6,trimHeight=9,expectedPageCount=null}={}){
+export function evaluateInteriorGeometry(sizes,{trimWidth=6,trimHeight=9,expectedPageCount=null,bleed=false}={}){
   if(!sizes.length) throw new Error('The PDF has no pages.')
   const first=sizes[0]
+  const required=requiredInteriorPageSize({trimWidth,trimHeight,bleed})
   const tolerance=.01
   const inconsistentPages=[]
   sizes.forEach((s,index)=>{if(Math.abs(s.width-first.width)>tolerance||Math.abs(s.height-first.height)>tolerance)inconsistentPages.push(index+1)})
-  const trimPass=Math.abs(first.width-trimWidth)<=tolerance&&Math.abs(first.height-trimHeight)<=tolerance
+  const trimPass=Math.abs(first.width-required.width)<=tolerance&&Math.abs(first.height-required.height)<=tolerance
   const blockers=[]
   const warnings=[]
-  if(!trimPass) blockers.push(`Interior pages are ${first.width.toFixed(3)} × ${first.height.toFixed(3)} in, not ${trimWidth.toFixed(3)} × ${trimHeight.toFixed(3)} in.`)
+  if(!trimPass) blockers.push(`Interior pages are ${first.width.toFixed(3)} × ${first.height.toFixed(3)} in, not the required ${required.width.toFixed(3)} × ${required.height.toFixed(3)} in for ${bleed?'full bleed':'no bleed'}.`)
   if(inconsistentPages.length) blockers.push(`${inconsistentPages.length} page${inconsistentPages.length===1?' has':'s have'} a different page size. First affected page: ${inconsistentPages[0]}.`)
   const expected=Number(expectedPageCount)
   if(Number.isFinite(expected)&&expected>0&&sizes.length!==expected) blockers.push(`The PDF contains ${sizes.length} pages, but the selected final page count is ${expected}.`)
   if(sizes.length%2!==0) warnings.push('The page count is odd. KDP may add a blank page during printing; confirm the final preview still looks intentional.')
-  return {pageCount:sizes.length,expectedPageCount:Number.isFinite(expected)&&expected>0?expected:null,actual:first,trimPass,inconsistent:inconsistentPages.length,inconsistentPages,blockers,warnings,issues:blockers,pass:blockers.length===0}
+  return {pageCount:sizes.length,expectedPageCount:Number.isFinite(expected)&&expected>0?expected:null,actual:first,required,bleed,trimPass,inconsistent:inconsistentPages.length,inconsistentPages,blockers,warnings,issues:blockers,pass:blockers.length===0}
 }
 
 export async function inspectInteriorPdf(file,settings={}){
