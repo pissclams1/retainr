@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { requiredPaperbackCoverSize, spineWidth, isSafeCoverResize } from '../src/coverEngine.js'
+import { evaluateInteriorGeometry } from '../src/bookValidators.js'
 
 const fixtures = JSON.parse(await readFile(new URL('./accepted-fixtures.json', import.meta.url), 'utf8'))
 const coverFixture = fixtures.paperbackCover
@@ -36,6 +37,26 @@ assert.equal(isSafeCoverResize(
   { width: accepted.width - 0.02, height: accepted.height + 0.04 },
   accepted,
 ), false)
+
+const acceptedInterior=evaluateInteriorGeometry(
+  Array.from({length:263},()=>({width:6,height:9})),
+  {trimWidth:6,trimHeight:9,expectedPageCount:263},
+)
+assert.equal(acceptedInterior.pass,true)
+assert.equal(acceptedInterior.warnings.length,1)
+
+const mixedInterior=Array.from({length:263},()=>({width:6,height:9}))
+mixedInterior[10]={width:5.5,height:8.5}
+const mixedResult=evaluateInteriorGeometry(mixedInterior,{trimWidth:6,trimHeight:9,expectedPageCount:263})
+assert.equal(mixedResult.pass,false)
+assert.equal(mixedResult.inconsistentPages[0],11)
+
+const wrongCount=evaluateInteriorGeometry(
+  Array.from({length:262},()=>({width:6,height:9})),
+  {trimWidth:6,trimHeight:9,expectedPageCount:263},
+)
+assert.equal(wrongCount.pass,false)
+assert.match(wrongCount.blockers[0],/selected final page count is 263/)
 
 const priceFor = count => count ? 19 + (count - 1) * 10 : 0
 assert.deepEqual([0,1,2,3,4,5,6].map(priceFor), [0,19,29,39,49,59,69])
