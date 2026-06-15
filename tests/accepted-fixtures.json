@@ -1,0 +1,37 @@
+{
+  "source": "User-supplied files confirmed accepted by Amazon KDP; binary files are intentionally not committed.",
+  "paperbackCover": {
+    "pageCount": 1,
+    "widthInches": 12.84227638888889,
+    "heightInches": 9.25,
+    "trimWidthInches": 6,
+    "trimHeightInches": 9,
+    "bookPageCount": 263,
+    "paper": "White"
+  },
+  "paperbackInterior": {
+    "pageCount": 263,
+    "widthInches": 6,
+    "heightInches": 9,
+    "inconsistentPageCount": 0,
+    "blankLikePages": [263]
+  },
+  "epub": {
+    "title": "Singularity's Dawn",
+    "creator": "Andreas Kiel",
+    "language": "en",
+    "identifier": "singularitys-dawn-andreas-kiel",
+    "manifestCount": 30,
+    "spineCount": 28,
+    "hasNavigation": true,
+    "missingManifestFiles": 0,
+    "note": "KDP accepted this EPUB even though nav.xhtml is not strict namespace-valid XML. Do not make strict XHTML parsing a blocking rule."
+  },
+  "ebookCover": {
+    "format": "JPEG",
+    "colorMode": "RGB",
+    "widthPixels": 1365,
+    "heightPixels": 2048,
+    "aspectRatio": 0.66650390625
+  }
+}
