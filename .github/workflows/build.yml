@@ -19,5 +19,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Test deterministic logic
+        run: node tests/logic.mjs
       - name: Build application
         run: npm run build
