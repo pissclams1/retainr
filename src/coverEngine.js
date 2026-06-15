@@ -19,7 +19,9 @@ export function spineWidth(pageCount, paper = 'White') {
 }
 
 export function requiredPaperbackCoverSize({ trimWidth = 6, trimHeight = 9, pageCount, paper = 'White' }) {
-  const spine = spineWidth(pageCount, paper)
+  const pages = Number(pageCount)
+  const coefficient = SPINE_COEFFICIENTS[paper] || SPINE_COEFFICIENTS.White
+  const spine = Number.isFinite(pages) && pages > 0 ? pages * coefficient : 0
   return {
     width: trimWidth * 2 + spine + BLEED * 2,
     height: trimHeight + BLEED * 2,
