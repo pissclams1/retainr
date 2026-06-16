@@ -8,7 +8,7 @@ export default function AppRoot(){
     const updateCopy=()=>{
       document.querySelectorAll('.hero .eyebrow').forEach(node=>{node.textContent='Free KDP preflight for independent authors'})
       document.querySelectorAll('.hero h1').forEach(node=>{node.innerHTML='We find and correct<br><span>KDP file problems.</span>'})
-      document.querySelectorAll('.hero .lead').forEach(node=>{node.textContent='Upload your KDP files before paying. If they look clean, PublishReady tells you they look publish-ready and there is nothing to buy. If issues appear, pay to unlock corrections and supported repaired files.'})
+      document.querySelectorAll('.hero .lead').forEach(node=>{node.textContent='PublishReady finds KDP problems and corrects supported file errors before you submit.'})
       document.querySelectorAll('.hero-actions .primary').forEach(node=>{node.textContent='Run Free Preflight →'})
       document.querySelectorAll('.hero-actions .secondary').forEach(node=>{node.textContent='How Pricing Works'})
       document.querySelectorAll('.trust span').forEach((node,index)=>{const copy=['✓ No charge for clean files','✓ Files stay local','✓ Pay only for corrections'];if(copy[index])node.textContent=copy[index]})
