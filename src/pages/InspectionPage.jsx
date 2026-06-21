@@ -419,7 +419,7 @@ function InputView({ initialMode, autoGenerate, onResult, stateConfig, embed }) 
           const localUses = getLocalUses()
           const email = getStoredEmail()
 
-          if (localUses >= 1) {
+          if (localUses >= 3) {
             if (!email) {
               setPendingRaw(overrideText ?? null)
               setShowEmailGate(true)
